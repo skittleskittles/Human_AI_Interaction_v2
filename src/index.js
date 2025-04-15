@@ -94,7 +94,11 @@ window.submitTrial = function () {
   document.getElementById("steps").textContent = steps;
 
   //document.getElementById("submit-btn").disabled = true;
-  document.getElementById("submit-btn").disabled = false; // added by Shang
+  if (accuracy === 100) {
+    document.getElementById("submit-btn").disabled = true;
+  } else {
+    document.getElementById("submit-btn").disabled = false;
+  }
   document.getElementById("next-btn").disabled = false;
 };
 
@@ -136,39 +140,7 @@ window.nextTrial = function () {
   document.getElementById("next-btn").disabled = true;
 };
 
-// TODO 
-window.reset = function () {
-  if (currentRound < 0 || currentRound >= rounds.length) return;
 
-  const current = rounds[currentRound];
-
-  // Clear dropZone and re-add empty boxes
-  const dropZone = document.getElementById("dropZone");
-  dropZone.innerHTML = "";
-  current.answer.forEach(() => {
-    const box = document.createElement("div");
-    box.className = "box";
-    box.setAttribute("ondrop", "drop(event)");
-    box.setAttribute("ondragover", "allowDrop(event)");
-    dropZone.appendChild(box);
-  });
-
-  // Clear and re-add options
-  const container = document.getElementById("option-container");
-  container.innerHTML = current.people
-    .map(
-      (id) =>
-        `<div class="option" draggable="true" id="${id}" ondragstart="drag(event)">${id}</div>`
-    )
-    .join("");
-
-  // Step counter +1
-  steps++;
-  document.getElementById("steps").textContent = steps;
-
-  // Disable submit again until boxes are filled
-  document.getElementById("submit-btn").disabled = true;
-};
 
 
 // Load from questions.json and start
