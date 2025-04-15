@@ -32,17 +32,51 @@ window.drag = function (ev) {
   ev.dataTransfer.setData("text", ev.target.id);
 };
 
+// window.drop = function (ev) {
+//   ev.preventDefault();
+//   const data = ev.dataTransfer.getData("text");
+//   const draggedEl = document.getElementById(data);
+//   if (ev.target.classList.contains("box") && ev.target.children.length === 0) {
+//     ev.target.appendChild(draggedEl);
+//     steps++;
+//     document.getElementById("steps").textContent = steps;
+//     checkAllBoxesFilled();
+//   }
+// };
+
+// Shang added this, this allows swaping elements and also counts as one step. 
 window.drop = function (ev) {
   ev.preventDefault();
   const data = ev.dataTransfer.getData("text");
   const draggedEl = document.getElementById(data);
-  if (ev.target.classList.contains("box") && ev.target.children.length === 0) {
-    ev.target.appendChild(draggedEl);
-    steps++;
-    document.getElementById("steps").textContent = steps;
-    checkAllBoxesFilled();
+  let dropTarget = ev.target;
+
+  // If dropping on a child inside a box (like another person div), find the box
+  if (!dropTarget.classList.contains("box") && dropTarget.parentElement.classList.contains("box")) {
+    dropTarget = dropTarget.parentElement;
   }
+
+  if (!dropTarget.classList.contains("box")) 
+    return;
+
+  const sourceBox = draggedEl.parentElement;
+  const targetChild = dropTarget.firstElementChild;
+
+  if (dropTarget === sourceBox) 
+    return;
+  if (targetChild) {
+    sourceBox.appendChild(targetChild); // Move targetChild back
+  }
+
+  dropTarget.appendChild(draggedEl); // Move draggedEl to target
+  steps++;
+  document.getElementById("steps").textContent = steps;
+  checkAllBoxesFilled();
+  return;
+
+
 };
+
 
 window.submitTrial = function () {
   const boxes = document.querySelectorAll(".box");
@@ -59,7 +93,8 @@ window.submitTrial = function () {
   steps++;
   document.getElementById("steps").textContent = steps;
 
-  document.getElementById("submit-btn").disabled = true;
+  //document.getElementById("submit-btn").disabled = true;
+  document.getElementById("submit-btn").disabled = false; // added by Shang
   document.getElementById("next-btn").disabled = false;
 };
 
@@ -100,6 +135,41 @@ window.nextTrial = function () {
   document.getElementById("submit-btn").disabled = true;
   document.getElementById("next-btn").disabled = true;
 };
+
+// TODO 
+window.reset = function () {
+  if (currentRound < 0 || currentRound >= rounds.length) return;
+
+  const current = rounds[currentRound];
+
+  // Clear dropZone and re-add empty boxes
+  const dropZone = document.getElementById("dropZone");
+  dropZone.innerHTML = "";
+  current.answer.forEach(() => {
+    const box = document.createElement("div");
+    box.className = "box";
+    box.setAttribute("ondrop", "drop(event)");
+    box.setAttribute("ondragover", "allowDrop(event)");
+    dropZone.appendChild(box);
+  });
+
+  // Clear and re-add options
+  const container = document.getElementById("option-container");
+  container.innerHTML = current.people
+    .map(
+      (id) =>
+        `<div class="option" draggable="true" id="${id}" ondragstart="drag(event)">${id}</div>`
+    )
+    .join("");
+
+  // Step counter +1
+  steps++;
+  document.getElementById("steps").textContent = steps;
+
+  // Disable submit again until boxes are filled
+  document.getElementById("submit-btn").disabled = true;
+};
+
 
 // Load from questions.json and start
 fetch("questions.json")
