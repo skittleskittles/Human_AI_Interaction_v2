@@ -24,27 +24,26 @@ function checkAllBoxesFilled() {
   document.getElementById("submit-btn").disabled = !allFilled;
 }
 
+function checkResetAvailability() {
+  const allOptions = document.querySelectorAll(".option");
+  const optionContainer = document.getElementById("option-container");
+  const allInStartZone = Array.from(allOptions).every((opt) =>
+    optionContainer.contains(opt)
+  );
+
+  document.getElementById("reset-btn").disabled = allInStartZone;
+}
+
 window.allowDrop = function (ev) {
   ev.preventDefault();
 };
 
 window.drag = function (ev) {
   ev.dataTransfer.setData("text", ev.target.id);
+  checkResetAvailability();
 };
 
-// window.drop = function (ev) {
-//   ev.preventDefault();
-//   const data = ev.dataTransfer.getData("text");
-//   const draggedEl = document.getElementById(data);
-//   if (ev.target.classList.contains("box") && ev.target.children.length === 0) {
-//     ev.target.appendChild(draggedEl);
-//     steps++;
-//     document.getElementById("steps").textContent = steps;
-//     checkAllBoxesFilled();
-//   }
-// };
-
-// Shang added this, this allows swaping elements and also counts as one step. 
+// Shang added this, this allows swaping elements and also counts as one step.
 window.drop = function (ev) {
   ev.preventDefault();
   const data = ev.dataTransfer.getData("text");
@@ -52,18 +51,19 @@ window.drop = function (ev) {
   let dropTarget = ev.target;
 
   // If dropping on a child inside a box (like another person div), find the box
-  if (!dropTarget.classList.contains("box") && dropTarget.parentElement.classList.contains("box")) {
+  if (
+    !dropTarget.classList.contains("box") &&
+    dropTarget.parentElement.classList.contains("box")
+  ) {
     dropTarget = dropTarget.parentElement;
   }
 
-  if (!dropTarget.classList.contains("box")) 
-    return;
+  if (!dropTarget.classList.contains("box")) return;
 
   const sourceBox = draggedEl.parentElement;
   const targetChild = dropTarget.firstElementChild;
 
-  if (dropTarget === sourceBox) 
-    return;
+  if (dropTarget === sourceBox) return;
   if (targetChild) {
     sourceBox.appendChild(targetChild); // Move targetChild back
   }
@@ -72,11 +72,9 @@ window.drop = function (ev) {
   steps++;
   document.getElementById("steps").textContent = steps;
   checkAllBoxesFilled();
+  checkResetAvailability();
   return;
-
-
 };
-
 
 window.submitTrial = function () {
   const boxes = document.querySelectorAll(".box");
@@ -100,6 +98,26 @@ window.submitTrial = function () {
     document.getElementById("submit-btn").disabled = false;
   }
   document.getElementById("next-btn").disabled = false;
+};
+
+window.reset = function () {
+  const current = rounds[currentRound];
+
+  document.querySelectorAll(".box").forEach((box) => (box.innerHTML = ""));
+
+  const container = document.getElementById("option-container");
+  container.innerHTML = current.people
+    .map(
+      (id) =>
+        `<div class="option" draggable="true" id="${id}" ondragstart="drag(event)">${id}</div>`
+    )
+    .join("");
+
+  checkAllBoxesFilled();
+  checkResetAvailability();
+
+  steps++;
+  document.getElementById("steps").textContent = steps;
 };
 
 window.nextTrial = function () {
@@ -136,12 +154,10 @@ window.nextTrial = function () {
   document.getElementById("accuracy").textContent = "--";
   steps = 0;
   document.getElementById("steps").textContent = steps;
-  document.getElementById("submit-btn").disabled = true;
   document.getElementById("next-btn").disabled = true;
+  checkAllBoxesFilled();
+  checkResetAvailability();
 };
-
-
-
 
 // Load from questions.json and start
 fetch("questions.json")

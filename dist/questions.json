@@ -51,6 +51,16 @@
     ]
   },
   {
+    "people": ["Linda", "Jennifer", "Thomas", "Paul", "Jacob", "Eric"],
+    "answer": ["Linda", "Jennifer", "Thomas", "Paul", "Jacob", "Eric"],
+    "statements": [
+      "Linda is younger than Thomas",
+      "Jacob is older than Paul",
+      "Thomas is younger than Paul",
+      "There is 1 person younger than Jennifer"
+    ]
+  },
+  {
     "people": ["Linda", "Jennifer", "Thomas", "Paul", "Jacob"],
     "answer": ["Paul", "Thomas", "Linda", "Jacob", "Jennifer"],
     "statements": [
