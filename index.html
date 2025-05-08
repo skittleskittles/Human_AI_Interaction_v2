@@ -12,7 +12,8 @@
       .container {
         display: flex;
         width: 100%;
-        height: 100vh;
+        height: 100%;
+        box-sizing: border-box;
       }
       .left-panel,
       .center-panel,
@@ -21,38 +22,71 @@
         border: 1px solid #ccc;
         background: #f9f9f9;
         height: calc(100vh - 40px);
+        box-sizing: border-box;
+        overflow: auto;
       }
       .left-panel {
         width: 20%;
       }
       .center-panel {
-        width: 50%;
+        width: 65%;
         display: flex;
         flex-direction: column;
         position: relative;
-        overflow: hidden;
       }
       .right-panel {
-        width: 30%;
-      }
-      .drop-zone {
+        width: 35%;
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 180px auto 80px auto;
-        padding: 0 10px;
+        flex-direction: column;
+        padding: 20px;
+      }
+
+      .drop-container {
+        margin: 100px auto 40px auto;
         width: 100%;
         max-width: 80%;
-        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .label-row,
+      .box-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+      }
+
+      .label {
+        width: 90px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 5px;
+      }
+
+      .box-container {
+        display: flex;
+        gap: 20px;
       }
       .box {
         width: 90px;
         height: 70px;
         border: 2px solid #000;
+        box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: center;
       }
+      .side-label {
+        width: 60px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+      }
+
       #option-container {
         flex: 1;
         overflow-y: auto;
@@ -73,6 +107,8 @@
         line-height: 50px;
         display: flex;
         justify-content: center;
+        /* transition: transform 0.25s ease;
+        will-change: transform; */
       }
       .buttons-container {
         position: absolute;
@@ -80,9 +116,10 @@
         left: 50%;
         transform: translateX(-50%);
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
+        /* flex-direction: column;
+        align-items: center; */
+        justify-content: center;
+        gap: 15px;
       }
 
       button {
@@ -103,14 +140,29 @@
         opacity: 0.6;
       }
 
+      .timer-box {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin: 2%;
+      }
+
+      .info-container {
+        flex: 1; /* 占据除 time-box 以外的所有空间 */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
       .info-box {
-        margin: 20px;
-        padding: 20px;
+        /* margin: 10px; */
+        padding: 0 20px 10px 20px;
         background-color: #fff;
         border: 2px solid #171717;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         font-size: 18px;
         font-weight: bold;
         text-align: left;
-        line-height: 1.8;
-      }</style><script defer="defer" src="main.bundle.js"></script></head><body><div class="container"><div class="left-panel"><h3>AI Instructions</h3><p id="ai-instructions">(Instructions from AI will go here)</p></div><div class="center-panel"><div class="drop-zone" id="dropZone"><div class="box" ondrop="drop(event)" ondragover="allowDrop(event)"></div><div class="box" ondrop="drop(event)" ondragover="allowDrop(event)"></div><div class="box" ondrop="drop(event)" ondragover="allowDrop(event)"></div><div class="box" ondrop="drop(event)" ondragover="allowDrop(event)"></div><div class="box" ondrop="drop(event)" ondragover="allowDrop(event)"></div></div><div id="option-container"><div class="option" draggable="true" id="A" ondragstart="drag(event)">A</div><div class="option" draggable="true" id="B" ondragstart="drag(event)">B</div><div class="option" draggable="true" id="C" ondragstart="drag(event)">C</div><div class="option" draggable="true" id="D" ondragstart="drag(event)">D</div><div class="option" draggable="true" id="E" ondragstart="drag(event)">E</div></div><div class="buttons-container"><button id="submit-btn" onclick="submitTrial()" disabled="disabled">SUBMIT</button> <button id="reset-btn" onclick="reset()" disabled="disabled">RESET</button> <button id="next-btn" onclick="nextTrial()" disabled="disabled">NEXT TRIAL</button></div></div><div class="right-panel"><div class="info-box" style="margin-top: 50px"><h3>Instructions</h3><p>Drag A-E into any of the 5 boxes. Submit when ready.</p></div><div class="info-box" style="margin-top: 50px"><div><strong>Timer:</strong> <span id="timer">10:00</span></div><div><strong>Steps:</strong> <span id="steps">0</span></div><div><strong>Accuracy:</strong> <span id="accuracy">--</span></div></div><div id="statement-box" class="info-box" style="margin-top: 50px"><h3>Statement</h3><ul><li>...</li><li>...</li><li>...</li></ul></div></div></div></body></html>
+        line-height: 1.6;
+        overflow: auto;
+      }</style><script defer="defer" src="main.bundle.js"></script></head><body><div class="container"><div class="left-panel" style="display: none"><h3>AI Instructions</h3><p id="ai-instructions">(Instructions from AI will go here)</p></div><div class="center-panel"><div class="drop-container"><div class="label-row"><div class="label">1</div><div class="label">2</div><div class="label">3</div><div class="label">4</div><div class="label">5</div></div><div class="box-row" id="dropZone"><div id="left-label" class="side-label">front</div><div id="box-container" class="box-container"><div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div><div class="box"></div></div><div id="right-label" class="side-label">end</div></div></div><div id="option-container"><div class="option" draggable="true" id="A">A</div><div class="option" draggable="true" id="B">B</div><div class="option" draggable="true" id="C">C</div><div class="option" draggable="true" id="D">D</div><div class="option" draggable="true" id="E">E</div></div><div class="buttons-container"><button id="submit-btn" disabled="disabled">SUBMIT</button> <button id="reset-btn" disabled="disabled">RESET</button> <button id="next-btn" disabled="disabled">NEXT TRIAL</button></div></div><div class="right-panel"><div class="timer-box"><strong>TIME REMAINING:</strong> <span id="timer">20:00</span></div><div class="info-container"><div class="info-box"><h3>Instructions</h3><p>Determine the correct object order using the given statements.<br/>You have <span id="submission-count">3</span> submissions remaining for this trial.</p></div><div id="statement-box" class="info-box"><h3>Statement</h3><ul><li>...</li><li>...</li><li>...</li></ul></div><div id="result-box" class="info-box"><h3>Results</h3><div id="result-content" style="display: none"><div>You got <span id="correct-count">0</span> objects placed correctly.</div><div>Accuracy (0–100): <span id="accuracy">--</span></div></div></div></div></div></div></body></html>
