@@ -64,8 +64,12 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: "src/data/questions.json", // ✅ 相对路径
+          from: "src/data/questions.json",
           to: "questions.json",
+        },
+        {
+          from: "src/data/questions.csv",
+          to: "questions.csv",
         },
       ],
     }),

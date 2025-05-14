@@ -103,7 +103,7 @@ export function nextTrial() {
   renderBoxes(current.answer.length);
   renderOptions(current.people);
   renderStatements(current.statements);
-  updateSideLabels(current.statements);
+  updateSideLabels(current.front_end);
   initializeAfterNextRound();
 }
 
@@ -144,24 +144,15 @@ function renderStatements(statements) {
   list.innerHTML = statements.map((s) => `<li>${s}</li>`).join("");
 }
 
-function updateSideLabels(statements) {
+function updateSideLabels(front_end) {
   const leftLabel = document.getElementById("left-label");
   const rightLabel = document.getElementById("right-label");
 
-  const isHeight = statements.some(
-    (s) => s.includes("shorter") || s.includes("taller")
-  );
-  const isAge = statements.some(
-    (s) => s.includes("younger") || s.includes("older")
-  );
-
-  if (isHeight) {
-    leftLabel.textContent = "short";
-    rightLabel.textContent = "tall";
-  } else if (isAge) {
-    leftLabel.textContent = "young";
-    rightLabel.textContent = "old";
+  if (Array.isArray(front_end) && front_end.length === 2) {
+    leftLabel.textContent = front_end[0];
+    rightLabel.textContent = front_end[1];
   } else {
+    // fallback if parsing fails
     leftLabel.textContent = "front";
     rightLabel.textContent = "end";
   }
