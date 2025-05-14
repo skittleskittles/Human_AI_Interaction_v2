@@ -1,9 +1,18 @@
-import { remainingSubmissions } from "./constant.js";
+import {
+  curAccuracy,
+  getAccuracy,
+  getCorrectCount,
+  hasSubmittedThisTrial,
+  remainingSubmissions,
+  getCorrectTrialCount,
+} from "./data/variable.js";
 
 /***
  * Buttons
  */
-export function updateButtonStates({ forceEnableNext = false } = {}) {
+export function updateButtonStates({
+  forceEnableNext = hasSubmittedThisTrial(),
+} = {}) {
   // check if all boxes are filled
   const boxes = document.querySelectorAll(".box");
   const allFilled = Array.from(boxes).every((box) => box.children.length > 0);
@@ -15,14 +24,15 @@ export function updateButtonStates({ forceEnableNext = false } = {}) {
     optionContainer.contains(opt)
   );
 
-  const canSubmit = allFilled && remainingSubmissions() > 0;
-  const canReset = !allInStartZone;
+  const canSubmit =
+    allFilled && remainingSubmissions() > 0 && getAccuracy() !== 100;
+  const canReset =
+    !allInStartZone && remainingSubmissions() > 0 && getAccuracy() !== 100;
 
   updateButtons({
     submit: canSubmit,
     reset: canReset,
-    next:
-      forceEnableNext || document.getElementById("next-btn").disabled === false,
+    next: forceEnableNext,
   });
 }
 
@@ -35,12 +45,14 @@ export function updateButtons({ submit, reset, next }) {
 /***
  * Result Box Content
  */
-export function showResultContent(correctCount, accuracy) {
+export function showResultContent() {
   const content = document.getElementById("result-content");
   content.style.display = "block";
 
-  document.getElementById("correct-count").textContent = correctCount;
-  document.getElementById("accuracy").textContent = `${accuracy}%`;
+  document.getElementById("correct-choice").textContent = getCorrectCount();
+  document.getElementById("accuracy").textContent = `${getAccuracy()}%`;
+  document.getElementById("correct-trials").textContent =
+    getCorrectTrialCount();
 }
 
 export function hideResultContent() {

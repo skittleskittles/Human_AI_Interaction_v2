@@ -1,4 +1,4 @@
-import { incrementSteps } from "./constant.js";
+import { incrementSteps } from "./data/variable.js";
 import { hideResultContent, updateButtonStates } from "./uiState.js";
 
 export function bindDragDropEvents() {

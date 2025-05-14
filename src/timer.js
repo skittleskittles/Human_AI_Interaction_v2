@@ -1,16 +1,16 @@
-import { state } from "./constant.js";
+import { globalState } from "./data/variable.js";
 
 export function startTimer() {
-  state.interval = setInterval(() => {
-    if (state.timer <= 0) {
-      clearInterval(state.interval);
+  globalState.interval = setInterval(() => {
+    if (globalState.timer <= 0) {
+      clearInterval(globalState.interval);
       document.getElementById("timer").textContent = "00:00";
       handleTimeOut();
       return;
     }
-    state.timer--;
-    const min = String(Math.floor(state.timer / 60)).padStart(2, "0");
-    const sec = String(state.timer % 60).padStart(2, "0");
+    globalState.timer--;
+    const min = String(Math.floor(globalState.timer / 60)).padStart(2, "0");
+    const sec = String(globalState.timer % 60).padStart(2, "0");
     document.getElementById("timer").textContent = `${min}:${sec}`;
   }, 1000);
 }

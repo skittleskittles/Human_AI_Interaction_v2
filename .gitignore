@@ -3,3 +3,4 @@
 .parcel-cache
 ./pages/dev-bundle
 node_modules
+firebase-config.js

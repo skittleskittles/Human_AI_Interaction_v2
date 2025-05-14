@@ -69,14 +69,17 @@
         width: 90px;
         text-align: center;
         font-weight: bold;
+        /* display: flex; */
         font-size: 18px;
         margin-bottom: 5px;
       }
 
+      .label-container,
       .box-container {
         display: flex;
         gap: 20px;
       }
+
       .box {
         width: 90px;
         height: 70px;
@@ -185,11 +188,17 @@
       <div class="center-panel">
         <div class="drop-container">
           <div class="label-row">
-            <div class="label">1</div>
-            <div class="label">2</div>
-            <div class="label">3</div>
-            <div class="label">4</div>
-            <div class="label">5</div>
+            <div id="position-label" class="side-label">position</div>
+
+            <div id="label-container" class="label-container">
+              <div class="label">1</div>
+              <div class="label">2</div>
+              <div class="label">3</div>
+              <div class="label">4</div>
+              <div class="label">5</div>
+            </div>
+
+            <div class="side-label"></div>
           </div>
 
           <div class="box-row" id="dropZone">
@@ -247,10 +256,14 @@
             <h3>Results</h3>
             <div id="result-content" style="display: none">
               <div>
-                You got <span id="correct-count">0</span> objects placed
+                You got <span id="correct-choice">0</span> objects placed
                 correctly.
               </div>
               <div>Accuracy (0–100): <span id="accuracy">--</span></div>
+              <div>
+                You have got <span id="correct-trials">0</span> trial(s) 100%
+                correct so far.
+              </div>
             </div>
           </div>
         </div>

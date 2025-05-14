@@ -4,7 +4,9 @@ import {
   remainingSubmissions,
   decrementSubmissions,
   resetSubmissions,
-} from "./constant.js";
+  setAccuracyState,
+  incrementCorrectTrialCount,
+} from "./data/variable.js";
 import {
   updateButtonStates,
   showResultContent,
@@ -36,15 +38,22 @@ function submitTrial() {
 
   const userAns = getUserAnswer();
   const current = rounds[currentRound];
-  const { correctCount, accuracy } = evaluateAnswer(userAns, current.answer);
-  updateAfterSubmission(correctCount, accuracy);
+  const { correctChoice, accuracy } = evaluateAnswer(userAns, current.answer);
+  updateAfterSubmission(correctChoice, accuracy);
 }
 
-function updateAfterSubmission(correctCount, accuracy) {
-  showResultContent(correctCount, accuracy);
+function updateAfterSubmission(correctChoice, accuracy) {
+  setAccuracyState({ correctChoice: correctChoice, accuracy: accuracy });
+
+  if (accuracy === 100) {
+    incrementCorrectTrialCount();
+  }
+
+  showResultContent();
   incrementSteps();
   decrementSubmissions();
   updateRemainingSubmissionInfo();
+
   updateButtonStates({ forceEnableNext: true });
 }
 
@@ -109,13 +118,13 @@ function advanceRound() {
 
 function renderBoxes(count) {
   /* label row */
-  const labelRow = document.querySelector(".label-row");
-  labelRow.innerHTML = "";
+  const labelContainer = document.getElementById("label-container");
+  labelContainer.innerHTML = "";
   for (let i = 1; i <= count; i++) {
     const label = document.createElement("div");
     label.className = "label";
     label.textContent = i;
-    labelRow.appendChild(label);
+    labelContainer.appendChild(label);
   }
 
   /* box row */
@@ -162,6 +171,8 @@ function initializeAfterNextRound() {
   hideResultContent();
   resetSteps();
   resetSubmissions();
+  setAccuracyState();
   updateRemainingSubmissionInfo();
+
   updateButtonStates();
 }

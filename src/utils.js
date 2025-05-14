@@ -5,7 +5,7 @@ export function getUserAnswer() {
 }
 
 export function evaluateAnswer(userAns, correctAns) {
-  let correctCount = 0;
+  let correctChoice = 0;
   const total = correctAns.length;
   let totalScore = 0;
 
@@ -14,10 +14,18 @@ export function evaluateAnswer(userAns, correctAns) {
     if (placed !== -1) {
       const dist = Math.abs(placed - i);
       totalScore += (total - dist) / total;
-      if (placed === i) correctCount++;
+      if (placed === i) correctChoice++;
     }
   }
 
-  const accuracy = ((totalScore / total) * 100).toFixed(1);
-  return { correctCount, accuracy };
+  const rawAccuracy = (totalScore / total) * 100;
+  const accuracy =
+    rawAccuracy % 1 === 0
+      ? Number(rawAccuracy.toFixed(0))
+      : Number(rawAccuracy.toFixed(1));
+  return { correctChoice, accuracy };
+}
+
+export function getCurrentDate() {
+  return new Date();
 }
