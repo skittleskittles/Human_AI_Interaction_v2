@@ -1,26 +1,52 @@
 import {
+  getCurQuestionData,
+  advanceTrial,
+  getCurTrialId,
   incrementSteps,
-  resetSteps,
+  resetTrialSteps,
+  updatePerformanceAfterSubmission,
+  getPerformance,
   remainingSubmissions,
   decrementSubmissions,
   resetSubmissions,
-  setAccuracyState,
-  incrementCorrectTrialCount,
+  shouldShowAttentionCheck,
+  checkEndAttentionCheck,
+  isAttentionCheck,
+  isComprehensionCheck,
+  resetSubmissionPerformance,
+  shouldEndAttentionCheck,
 } from "./data/variable.js";
 import {
-  updateButtonStates,
+  refreshInteractionState,
   showResultContent,
   hideResultContent,
 } from "./uiState.js";
 import { bindDragDropEvents } from "./dragDrop.js";
 import { getUserAnswer, evaluateAnswer } from "./utils.js";
+import {
+  startTimer,
+  resetTimer,
+  pauseTimer,
+  resumeTimer,
+  getTimerValue,
+} from "./timer.js";
+import { User } from "./collectData.js";
+import {
+  createNewExperimentData,
+  createNewTrialData,
+  getCurExperimentData,
+  getCurTrialData,
+  recordUserChoiceData,
+  updateExperimentData,
+  updateTrialData,
+} from "./collectData.js";
 
-let rounds = [];
-let currentRound = -1;
-
-export function setRounds(data) {
-  rounds = data;
-}
+const attentionTrial = {
+  answer: ["A", "B", "C", "D", "E"],
+  options: ["A", "B", "C", "D", "E"],
+  statements: ["This is an attention check.", "Answer: A, B, C, D, E"],
+  front_end: ["front", "end"],
+};
 
 export function bindTrialButtons() {
   document.getElementById("submit-btn").addEventListener("click", submitTrial);
@@ -37,24 +63,39 @@ function submitTrial() {
   if (remainingSubmissions() <= 0) return;
 
   const userAns = getUserAnswer();
-  const current = rounds[currentRound];
-  const { correctChoice, accuracy } = evaluateAnswer(userAns, current.answer);
-  updateAfterSubmission(correctChoice, accuracy);
-}
+  let correctChoice, score;
 
-function updateAfterSubmission(correctChoice, accuracy) {
-  setAccuracyState({ correctChoice: correctChoice, accuracy: accuracy });
-
-  if (accuracy === 100) {
-    incrementCorrectTrialCount();
+  if (isAttentionCheck()) {
+    ({ correctChoice, score } = evaluateAnswer(userAns, attentionTrial.answer));
+  } else {
+    ({ correctChoice, score } = evaluateAnswer(
+      userAns,
+      getCurQuestionData().answer
+    ));
   }
 
-  showResultContent();
+  updateAfterSubmission(userAns, correctChoice, score);
+}
+
+function updateAfterSubmission(userAns, correctChoice, score) {
   incrementSteps();
-  decrementSubmissions();
+  decrementSubmissions(score);
+  updatePerformanceAfterSubmission(correctChoice, score);
+  showResultContent();
   updateRemainingSubmissionInfo();
 
-  updateButtonStates({ forceEnableNext: true });
+  refreshInteractionState({ forceEnableNext: true });
+
+  const performance = JSON.parse(JSON.stringify(getPerformance()));
+  const submissionTimeSec = getTimerValue("submission");
+  const trialTimeSec = getTimerValue("trial");
+
+  resetSubmissionPerformance();
+  resetTimer("submission");
+  startTimer("submission");
+
+  /* database */
+  dbRecordTrial(performance, userAns, submissionTimeSec, trialTimeSec, true);
 }
 
 function updateRemainingSubmissionInfo() {
@@ -68,9 +109,9 @@ function updateRemainingSubmissionInfo() {
  ********************************************
  */
 function resetTrial() {
-  const current = rounds[currentRound];
+  const current = getCurQuestionData();
   clearBoxes();
-  renderOptions(current.people);
+  renderBoxesAndOptions(current.options, current.style);
   initializeAfterReset();
 }
 
@@ -78,17 +119,9 @@ function clearBoxes() {
   document.querySelectorAll(".box").forEach((box) => (box.innerHTML = ""));
 }
 
-function renderOptions(people) {
-  const container = document.getElementById("option-container");
-  container.innerHTML = people
-    .map((id) => `<div class="option" draggable="true" id="${id}">${id}</div>`)
-    .join("");
-  bindDragDropEvents();
-}
-
 function initializeAfterReset() {
   incrementSteps();
-  updateButtonStates();
+  refreshInteractionState();
 }
 
 /*
@@ -97,46 +130,125 @@ function initializeAfterReset() {
  ********************************************
  */
 export function nextTrial() {
-  if (!advanceRound()) return;
-  const current = rounds[currentRound];
-
-  renderBoxes(current.answer.length);
-  renderOptions(current.people);
-  renderStatements(current.statements);
-  updateSideLabels(current.front_end);
-  initializeAfterNextRound();
-}
-
-function advanceRound() {
-  currentRound++;
-  if (currentRound >= rounds.length) {
-    alert("All trials completed!");
-    return false;
+  /* initial database */
+  if (User.experiments.length === 0) {
+    // Initialize experiment if it doesn't exist
+    dbInitExperimentData();
   }
-  return true;
+
+  dbRecordTrial(getPerformance()); // Record last trial data
+
+  if (shouldEndAttentionCheck()) {
+    resumeTimer("global");
+  }
+
+  let answer = [];
+  if (shouldShowAttentionCheck()) {
+    pauseTimer("global");
+    advanceTrial(true);
+    renderTrial(attentionTrial);
+    answer = attentionTrial.answer;
+  } else {
+    if (!advanceTrial()) return;
+    renderTrial(getCurQuestionData());
+    answer = getCurQuestionData().answer;
+  }
+
+  dbInitTrialData(answer); // Init next trial data
 }
 
-function renderBoxes(count) {
-  /* label row */
+function initializeAfterNextTrial() {
+  hideResultContent();
+  resetTrialSteps();
+  resetSubmissions();
+  resetSubmissionPerformance();
+  updateRemainingSubmissionInfo();
+
+  refreshInteractionState();
+
+  resetTimer("trial");
+  resetTimer("submission");
+  startTimer("trial");
+  startTimer("submission");
+}
+
+/*
+ ********************************************
+ * Render
+ ********************************************
+ */
+function renderTrial(trial) {
+  renderBoxesAndOptions(trial.options, trial.style);
+  renderStatements(trial.statements);
+  updateSideLabels(trial.front_end);
+  initializeAfterNextTrial();
+}
+
+function renderBoxesAndOptions(options, style = []) {
+  if (isAttentionCheck()) {
+    document.getElementById("trialID").textContent = "ATTENTION CHECK Trial";
+  } else {
+    document.getElementById("trialID").textContent = "Trial " + getCurTrialId();
+  }
+
+  const optionContainer = document.getElementById("option-container");
+  const boxContainer = document.getElementById("box-container");
   const labelContainer = document.getElementById("label-container");
-  labelContainer.innerHTML = "";
-  for (let i = 1; i <= count; i++) {
-    const label = document.createElement("div");
-    label.className = "label";
-    label.textContent = i;
-    labelContainer.appendChild(label);
-  }
 
-  /* box row */
-  const container = document.getElementById("box-container");
-  container.innerHTML = "";
-  for (let i = 0; i < count; i++) {
+  optionContainer.innerHTML = "";
+  boxContainer.innerHTML = "";
+  labelContainer.innerHTML = "";
+
+  options.forEach((id, i) => {
+    const pattern = style[i] || "blank";
+
+    // Create option element
+    const option = document.createElement("div");
+    option.className = "option";
+    option.draggable = true;
+    option.id = id;
+    option.textContent = id;
+    option.dataset.pattern = pattern; // optional, for testing/debug
+    applyPatternStyle(option, pattern); // add style based on pattern
+    optionContainer.appendChild(option);
+
+    const optionWidth = option.getBoundingClientRect().width;
+
+    // Create corresponding box with +20px width
     const box = document.createElement("div");
     box.className = "box";
-    container.appendChild(box);
-  }
+    box.style.width = optionWidth + 20 + "px";
+    boxContainer.appendChild(box);
+
+    // Create label directly above the corresponding box
+    const label = document.createElement("div");
+    label.className = "label";
+    label.style.width = optionWidth + 20 + "px";
+    label.textContent = i + 1;
+    labelContainer.appendChild(label);
+  });
 
   bindDragDropEvents();
+}
+
+function applyPatternStyle(element, pattern) {
+  const base = {
+    blank: "lightblue",
+    "dotted circles":
+      "repeating-radial-gradient(circle, lightblue, lightblue 5px, white 5px, white 10px)",
+    "horizontal lines":
+      "repeating-linear-gradient(to bottom, lightblue, lightblue 5px, white 5px, white 10px)",
+    "vertical lines":
+      "repeating-linear-gradient(to right, lightblue, lightblue 5px, white 5px, white 10px)",
+    "diagonal stripes":
+      "repeating-linear-gradient(45deg, lightblue, lightblue 5px, white 5px, white 10px)",
+    "horizontal stripes": `
+  repeating-linear-gradient(to right, transparent 0 8px, lightblue 8px 16px),
+  repeating-linear-gradient(to bottom, transparent 0 8px, lightblue 8px 16px)
+`,
+  };
+
+  element.style.background = base[pattern] || base["blank"];
 }
 
 function renderStatements(statements) {
@@ -158,12 +270,75 @@ function updateSideLabels(front_end) {
   }
 }
 
-function initializeAfterNextRound() {
-  hideResultContent();
-  resetSteps();
-  resetSubmissions();
-  setAccuracyState();
-  updateRemainingSubmissionInfo();
+/*
+ ********************************************
+ * Database
+ ********************************************
+ */
+function dbInitExperimentData() {
+  const newExperiment = createNewExperimentData();
+  User.experiments.push(newExperiment);
+}
 
-  updateButtonStates();
+function dbInitTrialData(answer) {
+  if (User.experiments.length === 0) {
+    // Initialize experiment if it doesn't exist
+    dbInitExperimentData();
+  }
+
+  const trialId = getCurTrialId();
+  const isComprehension = isComprehensionCheck();
+  const isAttention = isAttentionCheck();
+  const curExp = User.experiments[0];
+
+  // Check if trial already exists (for comprehension trials only)
+  if (
+    isComprehension &&
+    curExp.comprehension_trials.some((t) => t.trial_id === trialId)
+  ) {
+    return; // Trial already exists, do not re-add
+  }
+
+  const newTrial = createNewTrialData(
+    trialId,
+    answer,
+    isComprehension,
+    isAttention
+  );
+
+  if (isComprehension) {
+    curExp.comprehension_trials.push(newTrial);
+  } else {
+    curExp.trials.push(newTrial);
+  }
+}
+
+function dbRecordTrial(
+  performance,
+  userAns = [],
+  submissionTimeSec = 0,
+  trialTimeSec = 0,
+  isSubmission = false
+) {
+  const curExperiment = getCurExperimentData();
+  const lastTrial = getCurTrialData(isComprehensionCheck());
+
+  if (!lastTrial) return;
+
+  console.log("performance: ", performance);
+  if (isSubmission && userAns.length > 0 && submissionTimeSec != 0) {
+    // Add submission-level user choice if provided
+    recordUserChoiceData(lastTrial, userAns, performance, submissionTimeSec);
+  }
+
+  // Always update trial-level summary
+  updateTrialData(lastTrial, performance, trialTimeSec);
+
+  // Update experiment-level tracking
+  updateExperimentData(curExperiment, isComprehensionCheck(), lastTrial);
+
+  // Save to Firestore
+  import("./firebase/saveData2Firebase.js").then((module) => {
+    module.saveSingleTrial(curExperiment, lastTrial);
+  });
 }

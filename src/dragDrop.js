@@ -1,9 +1,23 @@
 import { incrementSteps } from "./data/variable.js";
-import { hideResultContent, updateButtonStates } from "./uiState.js";
+import { hideResultContent, refreshInteractionState } from "./uiState.js";
 
 export function bindDragDropEvents() {
   bindDragEvents();
   bindDropEvents();
+}
+
+export function disableDrag() {
+  document.querySelectorAll(".option").forEach((el) => {
+    el.setAttribute("draggable", "false");
+    el.style.cursor = "not-allowed";
+  });
+}
+
+export function enableDrag() {
+  document.querySelectorAll(".option").forEach((el) => {
+    el.setAttribute("draggable", "true");
+    el.style.cursor = "move";
+  });
 }
 
 function bindDragEvents() {
@@ -49,7 +63,7 @@ function bindDropEvents() {
     dropBox.appendChild(draggedEl);
 
     incrementSteps();
-    updateButtonStates();
+    refreshInteractionState();
     hideResultContent();
   });
 }

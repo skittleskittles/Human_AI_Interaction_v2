@@ -1,16 +1,14 @@
 import {
-  curAccuracy,
-  getAccuracy,
-  getCorrectCount,
+  getPerformance,
   hasSubmittedThisTrial,
   remainingSubmissions,
-  getCorrectTrialCount,
 } from "./data/variable.js";
+import { disableDrag, enableDrag } from "./dragDrop.js";
 
 /***
- * Buttons
+ * refreshInteractionState: Buttons click & Options drag
  */
-export function updateButtonStates({
+export function refreshInteractionState({
   forceEnableNext = hasSubmittedThisTrial(),
 } = {}) {
   // check if all boxes are filled
@@ -24,16 +22,24 @@ export function updateButtonStates({
     optionContainer.contains(opt)
   );
 
-  const canSubmit =
-    allFilled && remainingSubmissions() > 0 && getAccuracy() !== 100;
+  const performance = getPerformance();
+  const score = performance.lastSubmission.score;
+
+  const canSubmit = allFilled && remainingSubmissions() > 0 && score !== 100;
   const canReset =
-    !allInStartZone && remainingSubmissions() > 0 && getAccuracy() !== 100;
+    !allInStartZone && remainingSubmissions() > 0 && score !== 100;
 
   updateButtons({
     submit: canSubmit,
     reset: canReset,
     next: forceEnableNext,
   });
+
+  if (remainingSubmissions() === 0) {
+    disableDrag();
+  } else {
+    enableDrag();
+  }
 }
 
 export function updateButtons({ submit, reset, next }) {
@@ -46,16 +52,32 @@ export function updateButtons({ submit, reset, next }) {
  * Result Box Content
  */
 export function showResultContent() {
+  const performance = getPerformance();
+
   const content = document.getElementById("result-content");
   content.style.display = "block";
 
-  document.getElementById("correct-choice").textContent = getCorrectCount();
-  document.getElementById("accuracy").textContent = `${getAccuracy()}%`;
+  document.getElementById("correct-choice").textContent =
+    performance.lastSubmission.correctChoice;
+  document.getElementById(
+    "score"
+  ).textContent = `${performance.lastSubmission.score}`;
   document.getElementById("correct-trials").textContent =
-    getCorrectTrialCount();
+    performance.correctTrialCount;
 }
 
 export function hideResultContent() {
   const content = document.getElementById("result-content");
   content.style.display = "none";
+}
+
+/***
+ * Loading Page
+ */
+export function showLoading() {
+  document.getElementById("loading-overlay").style.display = "flex";
+}
+
+export function hideLoading() {
+  document.getElementById("loading-overlay").style.display = "none";
 }

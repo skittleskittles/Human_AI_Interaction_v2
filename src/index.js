@@ -1,25 +1,62 @@
+import { setQuestionsData } from "./data/variable.js";
 import { startTimer } from "./timer.js";
-import { setRounds, nextTrial, bindTrialButtons } from "./trialAction.js";
+import { nextTrial, bindTrialButtons } from "./trialAction.js";
+import { User } from "./collectData.js";
 import Papa from "papaparse";
+import { getCurDate, getUrlParameters, generateUID } from "./utils.js";
+import {
+  checkIfUserExists,
+  saveOrUpdateUser,
+} from "./firebase/saveData2Firebase.js";
+import { showLoading, hideLoading } from "./uiState.js";
 
-// fetch("questions.json")
-//   .then((res) => res.json())
-//   .then((data) => {
-//     setRounds(data);
-//     bindTrialButtons();
-//     nextTrial();
-//     startTimer();
-//   });
+let urlParams = getUrlParameters();
 
-Papa.parse("questions.csv", {
+let objectCount;
+if (urlParams.NUM_OBJECTS !== undefined) {
+  objectCount = Number(urlParams.NUM_OBJECTS);
+}
+
+User.prolific_pid = generateUID();
+if (urlParams.PROLIFIC_PID !== undefined) {
+  User.prolific_pid = urlParams.PROLIFIC_PID;
+}
+
+/***
+ * Check Multiple Users
+ */
+showLoading();
+
+const userExists = await checkIfUserExists(User.prolific_pid);
+
+if (userExists) {
+  alert("Multiple attempts are not allowed.");
+  // 可跳转或阻止加载
+  // todo fsy
+}
+
+hideLoading();
+
+/***
+ * Loading Questions
+ */
+const csvFile =
+  objectCount === 6
+    ? "questions_six_objects.csv"
+    : "questions_five_objects.csv";
+
+console.log("objectCount:", objectCount);
+console.log(csvFile);
+
+Papa.parse(csvFile, {
   download: true,
   header: true,
-  complete: function (results) {
+  complete: async function (results) {
     const rawData = results.data;
-    const parsedRounds = rawData.map((row) => {
+    const parsedData = rawData.map((row) => {
       const answer = row["Correct Order"].split(",").map((s) => s.trim());
 
-      const people = [...answer]; // 保持原顺序
+      const options = [...answer].sort(); // 按字母顺序排序
       const numStatements = parseInt(row["Num Statements"], 10);
       const statements = [];
       for (let i = 1; i <= numStatements; i++) {
@@ -42,15 +79,26 @@ Papa.parse("questions.csv", {
           style = JSON.parse(row["style"].replace(/'/g, '"'));
         } catch (e) {
           console.warn("Failed to parse style:", row["style"]);
-          style = [];
+          style = Array(answer.length).fill("blank");
         }
       }
-      return { answer, people, statements, front_end, style };
+      // map original answer → style, then reassign based on alphabetical option order
+      const styleMap = {};
+      answer.forEach((name, i) => {
+        styleMap[name] = style[i] || "blank"; // fallback to "blank" if mismatch
+      });
+      const sortedStyle = options.map((name) => styleMap[name]);
+
+      return { answer, options, style: sortedStyle, statements, front_end };
     });
 
-    setRounds(parsedRounds);
+    User.create_time = getCurDate();
+    saveOrUpdateUser(getCurDate());
+
+    setQuestionsData(parsedData);
     bindTrialButtons();
     nextTrial();
-    startTimer();
+
+    startTimer("global");
   },
 });

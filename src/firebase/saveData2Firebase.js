@@ -14,10 +14,9 @@ import { firebaseConfig } from "./firebase-config.js";
 
 // Import Authentication
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
-import { User, getCurrentExperimentData } from "../logic/collectData";
+import { User } from "../collectData.js";
 
-import { getCurrentDate } from "../utils/utils";
-import { globalState } from "../data/variable";
+import { getCurDate } from "../utils.js";
 
 // Initialize App
 const firebaseApp = initializeApp(firebaseConfig);
@@ -50,7 +49,7 @@ onAuthStateChanged(auth, (user) => {
  */
 export async function saveSingleTrial(experiment, trial) {
   try {
-    const endTime = trial?.end_time || getCurrentDate();
+    const endTime = trial?.end_time || getCurDate();
     const userDocRef = await saveOrUpdateUser(endTime);
 
     if (!experiment) {
@@ -164,20 +163,19 @@ async function saveTrialData(expRef, trial) {
     }
     await setDoc(trialRef, {
       trial_id: trial.trial_id,
-      is_attention_check: trial.is_attention_check,
-      is_comprehension_check: trial.is_comprehension_check,
       create_time: trial.create_time,
       end_time: trial.end_time,
-      performance: trial.performance,
-      user_score: trial.user_score,
-      best_score: trial.best_score,
-      replay_num: trial.replay_num,
-      reselect_num: trial.reselect_num,
-      think_time: trial.think_time,
-      total_time: trial.total_time,
+      is_attention_check: trial.is_attention_check,
+      is_comprehension_check: trial.is_comprehension_check,
+      score: trial.score,
+      correct_num: trial.correct_num,
       ai_choice: trial.ai_choice,
       best_choice: trial.best_choice,
       user_choice: trial.user_choice,
+      total_submissions: trial.total_submissions,
+      total_steps: trial.total_steps,
+      total_correct_trials: trial.total_correct_trials,
+      total_time: trial.total_time,
     });
   } catch (error) {
     console.error("❌ Failed to save trial data:", error);

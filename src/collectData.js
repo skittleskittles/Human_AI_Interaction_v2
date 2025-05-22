@@ -3,27 +3,30 @@
  *   - https://docs.google.com/document/d/1bmtTgm39KQYB385JB6DSbq2pWNm6omMeQpxw29AaBP0/edit?tab=t.dire4py9pef7#heading=h.yuzh9ft0k3h8
  */
 
-import { getCurrentDate } from "./utils.js";
+import { getCurTrialId } from "./data/variable.js";
+import { getCurDate } from "./utils.js";
 
 /**
  * @typedef {Object} User
  * @property {string} prolific_pid
+ * @property {string} firebase_uid
  * @property {Date} create_time
  * @property {Date} end_time
- * @property {Feedback} feedback
- * @property {Experiment[]} experiments
  * @property {boolean} is_consent
  * @property {boolean} is_passed_education
  * @property {boolean} is_passed_all_experiments
+ * @property {Feedback} feedback
+ * @property {Experiment[]} experiments
  */
 export const User = {
   prolific_pid: "",
+  firebase_uid: "",
   create_time: new Date(),
   end_time: new Date(),
-  experiments: [], // Experiment
   is_consent: false,
   is_passed_education: false,
   is_passed_all_experiments: false,
+  experiments: [], // Experiment
 };
 
 /**
@@ -37,14 +40,14 @@ export const User = {
  * @property {Trial[]} trials
  * @property {Trial[]} comprehension_trials
  */
-export function createNewExperimentData(experiment_id, num_trials) {
+export function createNewExperimentData(experiment_id = 0) {
   return {
     experiment_id,
-    create_time: getCurrentDate(),
-    end_time: getCurrentDate(), // will be updated at the end
+    create_time: getCurDate(),
+    end_time: getCurDate(), // will be updated at the end
     failed_attention_check_count: 0,
     is_finished: false,
-    num_trials,
+    num_trials: 0,
     trials: [], // will be populated with Trial objects
     comprehension_trials: [],
   };
@@ -54,11 +57,11 @@ export function createNewExperimentData(experiment_id, num_trials) {
  * Returns the current Experiment object from User based on globalState.
  * @returns {Experiment}
  */
-export function getCurrentExperimentData() {
+export function getCurExperimentData() {
   if (User.experiments.length === 0) {
     return null;
   }
-  return User.experiments[globalState.curExperiment];
+  return User.experiments[0];
 }
 
 /**
@@ -66,122 +69,166 @@ export function getCurrentExperimentData() {
  * @property {number} trial_id
  * @property {Date} create_time
  * @property {Date} end_time
- * @property {number} accuracy
+ * @property {boolean} is_attention_check
+ * @property {boolean} is_comprehension_check
+ * @property {number} score
+ * @property {number} correct_num
  * @property {Choice[]} ai_choice
  * @property {Choice[]} best_choice
  * @property {Choice[]} user_choice
- * @property {CustomCount} total_submission_num
- * @property {CustomCount} total_steps_num
- * @property {CustomCount} think_time // seconds, 第一次动画结束到开始拦截
- * @property {CustomCount} total_time // seconds, 每一轮trial总时间
- * @property {boolean} is_attention_check
- * @property {boolean} is_comprehension_check
+ * @property {Number} total_submissions
+ * @property {Number} total_steps
+ * @property {Number} total_correct_trials
+ * @property {Number} total_time // seconds, 每一轮trial总时间
  */
 /**
- * Creates a new Trial object with default values
- * @param {number} trial_id
+ * Creates a new Trial
  * @returns {Trial}
  */
 export function createNewTrialData(
   trial_id,
+  answer,
   is_comprehension_check,
   is_attention_check
 ) {
   return {
     trial_id,
-    create_time: getCurrentDate(),
-    end_time: getCurrentDate(),
-    accuracy: 0,
-    ai_choice: [], // []Choice
-    best_choice: [], // []Choice
-    user_choice: [], // []Choice
-    total_submission_num: 0,
-    total_steps_num: 0,
-    total_time: 0,
+    create_time: getCurDate(),
+    end_time: getCurDate(),
     is_comprehension_check: is_comprehension_check,
     is_attention_check: is_attention_check,
+    score: 0,
+    correct_num: 0,
+    ai_choice: [], // []Choice
+    best_choice: [{ choices: answer, score: 100 }], // []Choice
+    user_choice: [], // []Choice
+    total_steps: 0,
+    total_submissions: 0,
+    total_correct_trials: 0,
+    total_time: 0,
   };
 }
 
 /**
  * Updates experiment-level and user-level status after each trial.
  * Handles attention check results and final trial checks.
- *
- * @param {number} experiment
- * @param {number} curTrial
- * @param {string} userSolution - The user's selected solution.
- * @param {string} bestSolution - The correct or optimal solution.
  */
 export function updateExperimentData(
   experiment,
   isComprehensionCheck,
-  curTrial,
-  userSolution
+  curTrial
 ) {
   if (isComprehensionCheck) {
     return;
   }
+
+  experiment.num_trials = curTrial.trial_id;
+
+  // todo fsy: update failed_attention_check_count
   // Check if current trial is an attention check trial
-  if (isAttentionCheck()) {
-    const passed = userSolution.totalValueProp * 100 === 100;
-    globalState.ATTENTION_CHECK_TRIALS[curTrial.trial_id] = passed;
-    experiment.failed_attention_check_count = countFailedAttentionCheck();
-  }
+  // if (isAttentionCheck()) {
+  //   const passed = userChoices.score === 100;
+  //   globalState.ATTENTION_CHECK_TRIALS[curTrial.trial_id] = passed;
+  //   experiment.failed_attention_check_count = countFailedAttentionCheck();
+  // }
 
-  // Check if this is the last trial of the main experiment
-  const isLastTrial = curTrial.trial_id === globalState.NUM_MAIN_TRIALS;
-  if (isLastTrial) {
-    experiment.is_finished = true;
+  // todo fsy: update is_finished
+  // // Check if this is the last trial of the main experiment
+  // const isLastTrial = curTrial.trial_id === globalState.NUM_MAIN_TRIALS;
+  // if (isLastTrial) {
+  //   experiment.is_finished = true;
 
-    // Mark the user's overall experiment pass status
-    User.is_passed_all_experiments =
-      experiment.is_finished &&
-      experiment.failed_attention_check_count < getAttentionCheckTrialCount();
-  }
+  //   // Mark the user's overall experiment pass status
+  //   User.is_passed_all_experiments =
+  //     experiment.is_finished &&
+  //     experiment.failed_attention_check_count < getAttentionCheckTrialCount();
+  // }
 }
 
 /**
  * Updates the end info for the current trial
- * @param {Trial} trial - the current trial object
- * @param {Object} scores - { userScore: number, bestScore: number }
  */
-export function updateTrialData(
-  trial,
-  userSolution,
-  bestSolution,
-  trialSec,
-  isAfterAI
-) {
-  trial.end_time = getCurrentDate();
-  trial.user_score = userSolution.totalValue;
-  trial.best_score = bestSolution.totalValue;
-  trial.performance = userSolution.totalValueProp * 100;
-
-  recordBestChoiceData(trial, bestSolution);
-  addToCustomCount(trial.total_time, trialSec, isAfterAI); // todo fsy: total time 的trialSec会一直累加
+export function updateTrialData(trial, performance, trialTimeSec) {
+  trial.end_time = getCurDate();
+  trial.score = performance.lastSubmission.score;
+  trial.correct_num = performance.lastSubmission.correctChoice;
+  trial.total_submissions = performance.submissionCount;
+  trial.total_steps = performance.totalSteps;
+  trial.total_correct_trials = performance.correctTrialCount;
+  trial.total_time = trialTimeSec;
 }
 
 /**
  * Returns the current Trial object from User based on globalState.
  * @returns {Trial}
  */
-export function getCurrentTrialData(isComprehensionCheck) {
-  const currentExperiment = getCurrentExperimentData();
+export function getCurTrialData(isComprehensionCheck) {
+  const currentExperiment = getCurExperimentData();
   if (!currentExperiment) {
     return null;
   }
   if (isComprehensionCheck) {
     // comprehension trials
     if (currentExperiment.comprehension_trials.length > 0) {
-      return currentExperiment?.comprehension_trials[globalState.curTrial - 1];
+      return currentExperiment?.comprehension_trials[getCurTrialId() - 1];
     }
   } else {
     // regular trials
     if (currentExperiment.trials.length > 0) {
-      return currentExperiment?.trials[globalState.curTrial - 1];
+      return currentExperiment?.trials[getCurTrialId() - 1];
     }
   }
   return null;
+}
+
+/**
+ * @typedef {Object} Choice
+ * @property {string[]} choices
+ * @property {number} score
+ * @property {'no_ai' | 'before_ai_show' | 'after_ai_show'} ai_assisted_flag
+ * @property {number} correct_num
+ * @property {number} steps
+ * @property {number} time_spent
+ */
+
+export function recordUserChoiceData(
+  trial,
+  userAns,
+  performance,
+  submissionTimeSec
+) {
+  let ai_assisted_flag = "no_ai";
+  // if (globalState.AI_HELP > 0) {
+  //   ai_assisted_flag = globalState.canShowAIAnswer
+  //     ? "after_ai_show"
+  //     : "before_ai_show";
+  // }
+
+  const userChoice = createChoice(
+    userAns,
+    performance,
+    submissionTimeSec,
+    ai_assisted_flag
+  );
+  trial.user_choice.push(userChoice);
+}
+
+export function createChoice(
+  userAns,
+  performance,
+  submissionTimeSec,
+  ai_assisted_flag = "no_ai"
+) {
+  const userChoice = {
+    choices: userAns,
+    correct_num: performance.lastSubmission.correctChoice,
+    score: performance.lastSubmission.score,
+    steps: performance.lastSubmission.steps,
+    time_spent: submissionTimeSec,
+    ai_assisted_flag: ai_assisted_flag,
+  };
+
+  return userChoice;
 }
 
 /**
@@ -206,13 +253,3 @@ export function addToCustomCount(countObj, value, isAfterAI) {
   }
   countObj.total += value;
 }
-
-/**
- * @typedef {Object} Choice
- * @property {string[]} choices
- * @property {number} accuracy
- * @property {'no_ai' | 'before_ai_show' | 'after_ai_show'} ai_assisted_flag
- * @property {number} correct_num
- * @property {number} steps
- * @property {number} time_spent
- */
