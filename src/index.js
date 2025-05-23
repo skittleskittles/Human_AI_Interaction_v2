@@ -12,9 +12,9 @@ import { showLoading, hideLoading } from "./uiState.js";
 
 let urlParams = getUrlParameters();
 
-let objectCount;
-if (urlParams.NUM_OBJECTS !== undefined) {
-  objectCount = Number(urlParams.NUM_OBJECTS);
+let objectCount = 5;
+if (urlParams.v !== undefined && urlParams.v == "zeta") {
+  objectCount = 6;
 }
 
 User.prolific_pid = generateUID();

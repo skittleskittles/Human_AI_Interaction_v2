@@ -52,3 +52,17 @@ export function generateUID(length = 16) {
 
   return "test_" + uid;
 }
+
+/**
+ * Adds a pixel value and rem value together and returns the result in px.
+ * @param {number} px - The base pixel value.
+ * @param {number} rem - The rem value to add (e.g., 0.2).
+ * @returns {string} - The total width in pixels, as a string with "px" unit.
+ */
+export function addPxAndRem(px, rem) {
+  const remInPx = parseFloat(
+    getComputedStyle(document.documentElement).fontSize
+  );
+  const total = px + rem * remInPx;
+  return `${total}px`;
+}

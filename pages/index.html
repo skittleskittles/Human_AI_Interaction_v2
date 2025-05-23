@@ -56,7 +56,7 @@
         line-height: 1.6;
       }
       .drop-container {
-        margin: 3.75rem auto 2.5rem auto;
+        margin: 6rem auto 0rem auto;
         width: max-content;
         display: flex;
         flex-direction: column;
@@ -72,7 +72,7 @@
       }
 
       .label {
-        min-width: 5.625rem;
+        width: 5.5rem;
         text-align: center;
         font-weight: bold;
         font-size: 1rem;
@@ -86,20 +86,34 @@
       }
 
       .box {
-        width: 4.5rem;
-        height: 3.5rem;
-        padding: 0 0.5rem;
+        width: 5.5rem;
+        min-height: 3.5rem;
         border: 0.1rem solid #000;
         box-sizing: border-box;
         display: flex;
         align-items: center;
         justify-content: center;
-        white-space: nowrap; /* 防止文字换行 */
       }
 
       .side-label {
-        width: 4.5rem;
+        width: 5rem;
         text-align: center;
+        font-size: 1rem;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .left-label {
+        width: 5rem;
+        text-align: right;
+        font-size: 1rem;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .right-label {
+        width: 5rem;
+        text-align: left;
         font-size: 1rem;
         font-weight: bold;
         color: #333;
@@ -107,37 +121,36 @@
 
       #option-container {
         flex: 1;
-        overflow: auto;
         display: flex;
         justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
+        align-items: flex-start; /* 靠上对齐 */
+        margin: 5rem auto auto auto;
         gap: 1.25rem;
         padding: 0.625rem;
       }
       .option {
-        min-width: 3.5rem;
-        height: 2.5rem;
-        padding: 0 0.5rem;
+        width: 4.5rem;
+        min-height: 2rem;
+        padding: 0.5rem 0.5rem;
         background: lightblue;
         border: 0.05rem solid #000;
+        box-sizing: border-box;
         cursor: move;
         text-align: center;
-        line-height: 1.5rem;
         display: flex;
         justify-content: center;
         align-items: center;
-        white-space: nowrap; /* 防止文字换行 */
         font-weight: bold;
         font-family: "Fira Code", monospace;
       }
+
       .buttons-container {
-        position: absolute;
-        bottom: 1.25rem;
-        left: 50%;
-        transform: translateX(-50%);
         display: flex;
         justify-content: center;
+        position: absolute;
+        bottom: 5rem;
+        left: 50%;
+        transform: translateX(-50%);
         gap: 0.9375rem;
         overflow: auto;
       }
@@ -219,7 +232,7 @@
         </div>
         <div class="drop-container">
           <div class="label-row">
-            <div id="position-label" class="side-label">position</div>
+            <div id="position-label" class="left-label">position</div>
 
             <div id="label-container" class="label-container">
               <div class="label">1</div>
@@ -233,7 +246,7 @@
           </div>
 
           <div class="box-row" id="dropZone">
-            <div id="left-label" class="side-label">front</div>
+            <div id="left-side-label" class="left-label">front</div>
 
             <div id="box-container" class="box-container">
               <div class="box"></div>
@@ -243,7 +256,7 @@
               <div class="box"></div>
             </div>
 
-            <div id="right-label" class="side-label">end</div>
+            <div id="right-side-label" class="right-label">end</div>
           </div>
         </div>
 

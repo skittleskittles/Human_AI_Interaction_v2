@@ -22,7 +22,7 @@ import {
   hideResultContent,
 } from "./uiState.js";
 import { bindDragDropEvents } from "./dragDrop.js";
-import { getUserAnswer, evaluateAnswer } from "./utils.js";
+import { getUserAnswer, evaluateAnswer, addPxAndRem } from "./utils.js";
 import {
   startTimer,
   resetTimer,
@@ -199,31 +199,47 @@ function renderBoxesAndOptions(options, style = []) {
   boxContainer.innerHTML = "";
   labelContainer.innerHTML = "";
 
+  // Step 1: Create invisible options to measure true max width
+  const tempOptions = options.map((id, i) => {
+    const option = document.createElement("div");
+    option.className = "option";
+    option.style.position = "absolute";
+    option.style.visibility = "hidden";
+    option.textContent = id;
+    document.body.appendChild(option);
+    return option;
+  });
+
+  // Step 2: Measure max height
+  const maxHeight = Math.max(
+    ...tempOptions.map((el) => el.getBoundingClientRect().height)
+  );
+
+  // Step 3: Clean up temp elements
+  tempOptions.forEach((el) => el.remove());
+
+  // Step 4: Render visible elements using maxWidth
   options.forEach((id, i) => {
     const pattern = style[i] || "blank";
 
-    // Create option element
     const option = document.createElement("div");
     option.className = "option";
     option.draggable = true;
     option.id = id;
     option.textContent = id;
-    option.dataset.pattern = pattern; // optional, for testing/debug
-    applyPatternStyle(option, pattern); // add style based on pattern
+    option.dataset.pattern = pattern;
+    applyPatternStyle(option, pattern);
+    option.style.height = `${maxHeight}px`;
     optionContainer.appendChild(option);
 
-    const optionWidth = option.getBoundingClientRect().width;
-
-    // Create corresponding box with +20px width
     const box = document.createElement("div");
     box.className = "box";
-    box.style.width = optionWidth + 20 + "px";
+    box.style.height = addPxAndRem(maxHeight, 1);
+    console.log("maxHeight:", maxHeight, "boxHeight:", box.style.height);
     boxContainer.appendChild(box);
 
-    // Create label directly above the corresponding box
     const label = document.createElement("div");
     label.className = "label";
-    label.style.width = optionWidth + 20 + "px";
     label.textContent = i + 1;
     labelContainer.appendChild(label);
   });
@@ -257,8 +273,8 @@ function renderStatements(statements) {
 }
 
 function updateSideLabels(front_end) {
-  const leftLabel = document.getElementById("left-label");
-  const rightLabel = document.getElementById("right-label");
+  const leftLabel = document.getElementById("left-side-label");
+  const rightLabel = document.getElementById("right-side-label");
 
   if (Array.isArray(front_end) && front_end.length === 2) {
     leftLabel.textContent = front_end[0];
