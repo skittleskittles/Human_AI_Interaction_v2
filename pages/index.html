@@ -196,7 +196,7 @@
         font-size: 1rem;
         font-weight: bold;
         text-align: left;
-        line-height: 1.6;
+        line-height: 1.5;
         overflow: auto;
       }
     </style>
@@ -282,11 +282,14 @@
         <div class="info-container">
           <div class="info-box">
             <h3>Instructions</h3>
-            <p>
-              Determine the correct object order using the given statements.<br />
-              You have <span id="submission-count">3</span> submissions
-              remaining for this trial.
-            </p>
+            <div id="instruction-text">
+              <p>
+                Determine the correct object order using the given statements.
+                <br />
+                You have <span id="submission-count">3</span> submissions
+                remaining for this trial.
+              </p>
+            </div>
           </div>
           <div id="statement-box" class="info-box">
             <h3>Statement</h3>
@@ -307,6 +310,9 @@
               <div>
                 You have got <span id="correct-trials">0</span> trial(s) 100%
                 correct so far.
+              </div>
+              <div id="attention-failed" style="display: none">
+                You have failed this attention check.
               </div>
             </div>
           </div>

@@ -3,6 +3,8 @@ import { pauseTimer, resumeTimer } from "../timer";
 const MAX_SUBMISSION_LIMIT = 3;
 
 export const globalState = {
+  objectCount: 5,
+
   questions: [],
   curTrialId: 0,
   curQuestionId: 0,
@@ -27,6 +29,17 @@ export const globalState = {
   /* comprehension check */
   isComprehensionCheck: false,
 };
+
+/**
+ * objectCount
+ */
+export function setObjCount(objCnt) {
+  globalState.objectCount = objCnt;
+}
+
+export function getObjCount(objCnt) {
+  return globalState.objectCount;
+}
 
 /**
  * Trials
@@ -116,7 +129,6 @@ export function resetSubmissionPerformance() {
   globalState.performance.lastSubmission.correctChoice = 0;
   globalState.performance.lastSubmission.score = 0;
   globalState.performance.lastSubmission.steps = 0;
-  console.log("resetSubmissionPerformance");
 }
 
 export function updatePerformanceAfterSubmission(correctChoice, score) {
@@ -126,8 +138,6 @@ export function updatePerformanceAfterSubmission(correctChoice, score) {
   if (score === 100 && !isAttentionCheck()) {
     globalState.performance.correctTrialCount++;
   }
-  console.log("updatePerformanceAfterSubmission");
-  console.log("performance 1: ", globalState.performance);
 }
 
 export function getPerformance() {

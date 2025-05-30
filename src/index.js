@@ -1,4 +1,4 @@
-import { setQuestionsData } from "./data/variable.js";
+import { getObjCount, setObjCount, setQuestionsData } from "./data/variable.js";
 import { startTimer } from "./timer.js";
 import { nextTrial, bindTrialButtons } from "./trialAction.js";
 import { User } from "./collectData.js";
@@ -12,9 +12,8 @@ import { showLoading, hideLoading } from "./uiState.js";
 
 let urlParams = getUrlParameters();
 
-let objectCount = 5;
 if (urlParams.v !== undefined && urlParams.v == "zeta") {
-  objectCount = 6;
+  setObjCount(6);
 }
 
 User.prolific_pid = generateUID();
@@ -41,12 +40,12 @@ hideLoading();
  * Loading Questions
  */
 const csvFile =
-  objectCount === 6
-    ? "questions_six_objects.csv"
-    : "questions_five_objects.csv";
+  getObjCount() === 6
+    ? "six_objects_instructions.csv"
+    : "five_objects_simple.csv";
 
-console.log("objectCount:", objectCount);
-console.log(csvFile);
+// console.log("objectCount:", objectCount);
+// console.log(csvFile);
 
 Papa.parse(csvFile, {
   download: true,
@@ -72,6 +71,7 @@ Papa.parse(csvFile, {
           .map((s) => s.trim());
       }
 
+      let instruction = row["instruction"];
       let style = [];
       if (row["style"]) {
         try {
@@ -89,7 +89,14 @@ Papa.parse(csvFile, {
       });
       const sortedStyle = options.map((name) => styleMap[name]);
 
-      return { answer, options, style: sortedStyle, statements, front_end };
+      return {
+        answer,
+        options,
+        instruction,
+        style: sortedStyle,
+        statements,
+        front_end,
+      };
     });
 
     User.create_time = getCurDate();

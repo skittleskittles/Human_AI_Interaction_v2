@@ -1,6 +1,7 @@
 import {
   getPerformance,
   hasSubmittedThisTrial,
+  isAttentionCheck,
   remainingSubmissions,
 } from "./data/variable.js";
 import { disableDrag, enableDrag } from "./dragDrop.js";
@@ -64,6 +65,11 @@ export function showResultContent() {
   ).textContent = `${performance.lastSubmission.score}`;
   document.getElementById("correct-trials").textContent =
     performance.correctTrialCount;
+
+  if (isAttentionCheck() && performance.lastSubmission.score !== 100) {
+    console.log(isAttentionCheck(), performance.lastSubmission.score);
+    document.getElementById("attention-failed").style.display = "block";
+  }
 }
 
 export function hideResultContent() {

@@ -64,12 +64,12 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: "src/data/questions_five_objects.csv",
-          to: "questions_five_objects.csv",
+          from: "src/data/five_objects_simple.csv",
+          to: "five_objects_simple.csv",
         },
         {
-          from: "src/data/questions_six_objects.csv",
-          to: "questions_six_objects.csv",
+          from: "src/data/six_objects_instructions.csv",
+          to: "six_objects_instructions.csv",
         },
       ],
     }),

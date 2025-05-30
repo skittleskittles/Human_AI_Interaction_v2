@@ -15,6 +15,7 @@ import {
   isComprehensionCheck,
   resetSubmissionPerformance,
   shouldEndAttentionCheck,
+  getObjCount,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
@@ -41,12 +42,33 @@ import {
   updateTrialData,
 } from "./collectData.js";
 
-const attentionTrial = {
-  answer: ["A", "B", "C", "D", "E"],
-  options: ["A", "B", "C", "D", "E"],
-  statements: ["This is an attention check.", "Answer: A, B, C, D, E"],
-  front_end: ["front", "end"],
-};
+const attentionTrial =
+  getObjCount() === 5
+    ? {
+        answer: ["A", "B", "C", "D", "E"],
+        options: ["A", "B", "C", "D", "E"],
+        statements: [
+          "C is at position 3",
+          "A is at position 1",
+          "D is at position 4",
+          "B is at position 2",
+          "E is at position 5",
+        ],
+        front_end: ["front", "end"],
+      }
+    : {
+        answer: ["A", "B", "C", "D", "E", "F"],
+        options: ["A", "B", "C", "D", "E", "F"],
+        statements: [
+          "C is at position 3",
+          "A is at position 1",
+          "D is at position 4",
+          "B is at position 2",
+          "E is at position 5",
+          "F is at position 6",
+        ],
+        front_end: ["front", "end"],
+      };
 
 export function bindTrialButtons() {
   document.getElementById("submit-btn").addEventListener("click", submitTrial);
@@ -178,10 +200,32 @@ function initializeAfterNextTrial() {
  ********************************************
  */
 function renderTrial(trial) {
+  renderInstructions(trial.instruction);
   renderBoxesAndOptions(trial.options, trial.style);
   renderStatements(trial.statements);
   updateSideLabels(trial.front_end);
   initializeAfterNextTrial();
+}
+
+function renderInstructions(instructionText) {
+  let instruction;
+
+  if (isAttentionCheck()) {
+    instruction = `<p>
+      This is the attention check trial.<br/>
+      The timer is paused for this trial.<br/>
+      You have <span id="submission-count">3</span> submissions remaining for this trial.<br/>
+      If you fail the attention check, you will not get the bonus payment regardless of your overall performance. 
+    </p>`;
+  } else {
+    instruction = `<p>
+        ${instructionText}<br/>
+        You have <span id="submission-count">3</span> submissions remaining for this trial.<br/>
+        Maximize your score with minimal time.
+      </p>`;
+  }
+
+  document.getElementById("instruction-text").innerHTML = instruction;
 }
 
 function renderBoxesAndOptions(options, style = []) {
@@ -235,7 +279,6 @@ function renderBoxesAndOptions(options, style = []) {
     const box = document.createElement("div");
     box.className = "box";
     box.style.height = addPxAndRem(maxHeight, 1);
-    console.log("maxHeight:", maxHeight, "boxHeight:", box.style.height);
     boxContainer.appendChild(box);
 
     const label = document.createElement("div");
