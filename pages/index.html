@@ -79,9 +79,28 @@
         margin-bottom: 0.3125rem;
       }
 
-      .label-container,
+      .label-row-wrapper {
+        position: relative;
+      }
+
+      .position-label-fixed {
+        position: absolute;
+        left: -5.5rem;
+        top: 0;
+        font-weight: bold;
+        font-size: 1rem;
+        width: 5.5rem;
+        text-align: center;
+      }
+
       .box-container {
         display: flex;
+        gap: 20px;
+      }
+
+      .label-container {
+        display: flex;
+        justify-content: center;
         gap: 20px;
       }
 
@@ -95,25 +114,26 @@
         justify-content: center;
       }
 
-      .side-label {
-        width: 5rem;
+      .box-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .box-placeholder {
+        width: 5.5rem;
         text-align: center;
+      }
+
+      .side-label-under {
+        margin-top: 0.25rem;
         font-size: 1rem;
         font-weight: bold;
         color: #333;
       }
 
-      .left-label {
-        width: 5rem;
+      #position-label {
+        width: 5.5rem;
         text-align: right;
-        font-size: 1rem;
-        font-weight: bold;
-        color: #333;
-      }
-
-      .right-label {
-        width: 5rem;
-        text-align: left;
         font-size: 1rem;
         font-weight: bold;
         color: #333;
@@ -231,9 +251,10 @@
           <h3 id="trialID">Trial 1</h3>
         </div>
         <div class="drop-container">
-          <div class="label-row">
-            <div id="position-label" class="left-label">position</div>
-
+          <div
+            class="label-row-wrapper"
+            style="position: relative; display: flex; justify-content: center"
+          >
             <div id="label-container" class="label-container">
               <div class="label">1</div>
               <div class="label">2</div>
@@ -242,21 +263,31 @@
               <div class="label">5</div>
             </div>
 
-            <div class="side-label"></div>
+            <div class="position-label-fixed">position</div>
           </div>
 
           <div class="box-row" id="dropZone">
-            <div id="left-side-label" class="left-label">front</div>
-
             <div id="box-container" class="box-container">
-              <div class="box"></div>
-              <div class="box"></div>
-              <div class="box"></div>
-              <div class="box"></div>
-              <div class="box"></div>
-            </div>
+              <!-- <div class="box-placeholder"></div> -->
+              <div class="box-group">
+                <div class="box"></div>
+                <div class="side-label-under" id="front-side-label">front</div>
+              </div>
+              <div class="box-group">
+                <div class="box"></div>
+              </div>
+              <div class="box-group">
+                <div class="box"></div>
+              </div>
+              <div class="box-group">
+                <div class="box"></div>
+              </div>
+              <div class="box-group">
+                <div class="box"></div>
 
-            <div id="right-side-label" class="right-label">end</div>
+                <div class="side-label-under" id="end-side-label">end</div>
+              </div>
+            </div>
           </div>
         </div>
 

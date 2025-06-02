@@ -244,48 +244,59 @@ function renderBoxesAndOptions(options, style = []) {
   boxContainer.innerHTML = "";
   labelContainer.innerHTML = "";
 
-  // Step 1: Create invisible options to measure true max width
-  const tempOptions = options.map((id, i) => {
-    const option = document.createElement("div");
-    option.className = "option";
-    option.style.position = "absolute";
-    option.style.visibility = "hidden";
-    option.textContent = id;
-    document.body.appendChild(option);
-    return option;
+  // Step 1: Measure option height
+  const tempOptions = options.map((id) => {
+    const el = document.createElement("div");
+    el.className = "option";
+    el.style.position = "absolute";
+    el.style.visibility = "hidden";
+    el.textContent = id;
+    document.body.appendChild(el);
+    return el;
   });
 
-  // Step 2: Measure max height
   const maxHeight = Math.max(
     ...tempOptions.map((el) => el.getBoundingClientRect().height)
   );
-
-  // Step 3: Clean up temp elements
   tempOptions.forEach((el) => el.remove());
 
-  // Step 4: Render visible elements using maxWidth
+  // Step 2: Render options and boxes
   options.forEach((id, i) => {
-    const pattern = style[i] || "blank";
+    // Top label: 1, 2, ...
+    const label = document.createElement("div");
+    label.className = "label";
+    label.textContent = i + 1;
+    labelContainer.appendChild(label);
 
+    // Option
     const option = document.createElement("div");
     option.className = "option";
     option.draggable = true;
     option.id = id;
     option.textContent = id;
-    option.dataset.pattern = pattern;
-    applyPatternStyle(option, pattern);
+    option.dataset.pattern = style[i] || "blank";
+    applyPatternStyle(option, style[i] || "blank");
     option.style.height = `${maxHeight}px`;
     optionContainer.appendChild(option);
+
+    // Box + optional front/end label
+    const boxGroup = document.createElement("div");
+    boxGroup.className = "box-group";
 
     const box = document.createElement("div");
     box.className = "box";
     box.style.height = addPxAndRem(maxHeight, 1);
-    boxContainer.appendChild(box);
+    boxGroup.appendChild(box);
 
-    const label = document.createElement("div");
-    label.className = "label";
-    label.textContent = i + 1;
-    labelContainer.appendChild(label);
+    if (i === 0 || i === options.length - 1) {
+      const label = document.createElement("div");
+      label.className = "side-label-under";
+      label.id = i === 0 ? "front-label-under" : "end-label-under";
+      label.textContent = i === 0 ? "front" : "end"; // default
+      boxGroup.appendChild(label);
+    }
+
+    boxContainer.appendChild(boxGroup);
   });
 
   bindDragDropEvents();
@@ -317,16 +328,15 @@ function renderStatements(statements) {
 }
 
 function updateSideLabels(front_end) {
-  const leftLabel = document.getElementById("left-side-label");
-  const rightLabel = document.getElementById("right-side-label");
+  const frontLabel = document.getElementById("front-label-under");
+  const endLabel = document.getElementById("end-label-under");
 
   if (Array.isArray(front_end) && front_end.length === 2) {
-    leftLabel.textContent = front_end[0];
-    rightLabel.textContent = front_end[1];
+    if (frontLabel) frontLabel.textContent = front_end[0];
+    if (endLabel) endLabel.textContent = front_end[1];
   } else {
-    // fallback if parsing fails
-    leftLabel.textContent = "front";
-    rightLabel.textContent = "end";
+    if (frontLabel) frontLabel.textContent = "front";
+    if (endLabel) endLabel.textContent = "end";
   }
 }
 
