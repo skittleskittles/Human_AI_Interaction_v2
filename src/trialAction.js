@@ -214,14 +214,14 @@ function renderInstructions(instructionText) {
     instruction = `<p>
       This is the attention check trial.<br/>
       The timer is paused for this trial.<br/>
-      You have <span id="submission-count">3</span> submissions remaining for this trial.<br/>
+      You have <span id="submission-count">3</span> submission(s) remaining for this trial.<br/>
       You need to score 100 to pass this trial.<br/>
       If you fail the attention check, you will not get the bonus payment regardless of your overall performance. 
     </p>`;
   } else {
     instruction = `<p>
         ${instructionText}<br/>
-        You have <span id="submission-count">3</span> submissions remaining for this trial.<br/>
+        You have <span id="submission-count">3</span> submission(s) remaining for this trial.<br/>
         Maximize your score with minimal time.
       </p>`;
   }
