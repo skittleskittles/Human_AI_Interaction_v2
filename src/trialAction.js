@@ -94,6 +94,7 @@ function updateAfterSubmission(userAns, correctChoice, score) {
     "trialTimeSec:",
     trialTimeSec
   );
+  console.log("performance:", performance);
 
   if (isComprehensionCheck()) {
     if (score !== 100 && remainingSubmissions() == 0) {
@@ -177,7 +178,6 @@ export function nextTrial() {
   if (!isComprehensionCheck() && timeBox.style.display === "none") {
     timeBox.style.display = "block";
     startTimer("global");
-    console.log("startTimer");
   } else if (isComprehensionCheck()) {
     timeBox.style.display = "none";
   }
@@ -397,7 +397,7 @@ function dbInitTrialData(answer) {
 
   let trialId;
   if (isComprehension) {
-    trialId = "comprehension_" + getCurTrialIndex();
+    trialId = getCurTrialIndex();
   } else if (isAttention) {
     trialId = "attention check";
   } else {
@@ -438,7 +438,6 @@ function dbRecordTrial(
 
   if (!lastTrial) return;
 
-  console.log("performance: ", performance);
   if (isSubmission && userAns.length > 0 && submissionTimeSec != 0) {
     // Add submission-level user choice if provided
     recordUserChoiceData(lastTrial, userAns, performance, submissionTimeSec);

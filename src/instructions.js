@@ -264,7 +264,6 @@ export function showMultipleAttemptsPopUp() {
 }
 
 export function showEnterMainGamePopUp() {
-  console.log("show enter main game");
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
   modalInfo.innerHTML = `<p>
