@@ -66,3 +66,33 @@ export function addPxAndRem(px, rem) {
   const total = px + rem * remInPx;
   return `${total}px`;
 }
+
+/**
+ * Redirect Prolific Related
+ */
+export function redirectProlificCompleted() {
+  // Default (pass attention check and finish all 20 minutes + finish survey)
+  setTimeout(() => {
+    window.location.replace(
+      "https://app.prolific.com/submissions/complete?cc=CUNOOJZ6"
+    );
+  }, 3000);
+}
+
+export function redirectProlificBonusPayment() {
+  // Bonus Payment (pass attention check and finish all 20 minutes + get good performance + finish survey)
+  setTimeout(() => {
+    window.location.replace(
+      "https://app.prolific.com/submissions/complete?cc=C1NUH6S1 "
+    );
+  }, 3000);
+}
+
+export function redirectProlificFailedAllAttentionCheck() {
+  // Fail attention check and finish all 20 minutes + finish survey
+  setTimeout(() => {
+    window.location.replace(
+      "https://app.prolific.com/submissions/complete?cc=CCTMPD57"
+    );
+  }, 3000);
+}

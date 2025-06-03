@@ -1,12 +1,21 @@
 import { pauseTimer, resumeTimer } from "../timer";
+import {
+  attentionTrial,
+  attentionTrial5,
+  attentionTrial6,
+  comprehensionTrials,
+} from "./specialTrials";
 
-const MAX_SUBMISSION_LIMIT = 3;
+const MAX_SUBMISSION_LIMIT = 2;
+const NUM_COMPREHENSION_TRIALS = 2;
 
 export const globalState = {
+  AI_HELP: 0,
+
   objectCount: 5,
 
   questions: [],
-  curTrialId: 0,
+  curTrialIndex: 0,
   curQuestionId: 0,
 
   performance: {
@@ -27,7 +36,15 @@ export const globalState = {
   attentionCheckShown: false,
 
   /* comprehension check */
-  isComprehensionCheck: false,
+  comprehensionCheckShown: false,
+};
+
+export const AI_HELP_TYPE = {
+  NO_AI: 0,
+  OPTIMAL_AI_BEFORE: 1,
+  OPTIMAL_AI_AFTER: 2,
+  SUB_AI_AFTER: 3,
+  SUBAI_REQUEST: 4,
 };
 
 /**
@@ -37,7 +54,7 @@ export function setObjCount(objCnt) {
   globalState.objectCount = objCnt;
 }
 
-export function getObjCount(objCnt) {
+export function getObjCount() {
   return globalState.objectCount;
 }
 
@@ -49,18 +66,31 @@ export function setQuestionsData(data) {
 }
 
 export function getCurQuestionData() {
-  return globalState.questions[globalState.curQuestionId - 1];
+  let cur;
+  if (isAttentionCheck()) {
+    cur = getObjCount() === 5 ? attentionTrial5 : attentionTrial6;
+  } else if (isComprehensionCheck()) {
+    cur = comprehensionTrials[getCurTrialIndex() - 1];
+  } else {
+    cur = globalState.questions[globalState.curQuestionId - 1];
+  }
+  return cur;
 }
 
-export function getCurTrialId() {
+export function getCurTrialIndex() {
   // attention check also counts
-  return globalState.curTrialId;
+  return globalState.curTrialIndex;
 }
 
-export function advanceTrial(shouldShowAttentionCheck) {
-  globalState.curTrialId++;
+export function getCurQuestionId() {
+  // attention check does not count
+  return globalState.curQuestionId;
+}
 
-  if (shouldShowAttentionCheck) {
+export function advanceTrial(shouldShowSpecialTrials) {
+  globalState.curTrialIndex++;
+
+  if (shouldShowSpecialTrials) {
     return true;
   }
 
@@ -71,6 +101,10 @@ export function advanceTrial(shouldShowAttentionCheck) {
     return false;
   }
   return true;
+}
+
+export function resetTrialID() {
+  globalState.curTrialIndex = 0;
 }
 
 /**
@@ -135,7 +169,7 @@ export function updatePerformanceAfterSubmission(correctChoice, score) {
   globalState.performance.lastSubmission.correctChoice = correctChoice;
   globalState.performance.lastSubmission.score = score;
   globalState.performance.submissionCount = getTrialTotalSubmissions();
-  if (score === 100 && !isAttentionCheck()) {
+  if (score === 100 && !isAttentionCheck() && !isComprehensionCheck()) {
     globalState.performance.correctTrialCount++;
   }
 }
@@ -148,7 +182,11 @@ export function getPerformance() {
  * Attention Check
  */
 export function shouldShowAttentionCheck() {
-  if (globalState.attentionCheckPending && !globalState.attentionCheckShown) {
+  if (
+    globalState.attentionCheckPending &&
+    !globalState.comprehensionCheckShown &&
+    !globalState.attentionCheckShown
+  ) {
     globalState.attentionCheckPending = false;
     globalState.attentionCheckShown = true;
     return true;
@@ -171,6 +209,26 @@ export function shouldEndAttentionCheck() {
 /**
  * Comprehension Check
  */
+export function getComprehensionTrialsNum() {
+  return NUM_COMPREHENSION_TRIALS;
+}
+
+export function shouldShowComprehensionCheck() {
+  if (!globalState.comprehensionCheckShown) {
+    globalState.comprehensionCheckShown = true;
+    return true;
+  }
+  return false;
+}
+
 export function isComprehensionCheck() {
-  return globalState.isComprehensionCheck;
+  return globalState.comprehensionCheckShown;
+}
+
+export function shouldEndComprehensionCheck() {
+  if (globalState.comprehensionCheckShown) {
+    globalState.comprehensionCheckShown = false;
+    return true;
+  }
+  return false;
 }

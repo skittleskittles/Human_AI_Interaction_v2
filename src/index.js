@@ -1,7 +1,14 @@
-import { getObjCount, setObjCount, setQuestionsData } from "./data/variable.js";
-import { startTimer } from "./timer.js";
-import { nextTrial, bindTrialButtons } from "./trialAction.js";
+import { gameContainer } from "./data/domElements.js";
+import {
+  getObjCount,
+  setObjCount,
+  setQuestionsData,
+  shouldShowComprehensionCheck,
+} from "./data/variable.js";
 import { User } from "./collectData.js";
+import { startTimer } from "./timer.js";
+import { loadModal } from "./modal.js";
+import { nextTrial, bindTrialButtons } from "./trialAction.js";
 import Papa from "papaparse";
 import { getCurDate, getUrlParameters, generateUID } from "./utils.js";
 import {
@@ -9,103 +16,140 @@ import {
   saveOrUpdateUser,
 } from "./firebase/saveData2Firebase.js";
 import { showLoading, hideLoading } from "./uiState.js";
+import { showConsent } from "./consent.js";
+import {
+  showEnterComprehensionTrials,
+  showMultipleAttempts,
+} from "./instructions.js";
 
-let urlParams = getUrlParameters();
+async function initExperimentEnvironment() {
+  try {
+    // 1. Parse URL parameters
+    const urlParams = getUrlParameters();
 
-if (urlParams.v !== undefined && urlParams.v == "zeta") {
-  setObjCount(6);
-}
+    // 2. Set object count based on `v=zeta`
+    if (urlParams.v !== undefined && urlParams.v === "zeta") {
+      setObjCount(6);
+    } else {
+      setObjCount(5);
+    }
 
-User.prolific_pid = generateUID();
-if (urlParams.PROLIFIC_PID !== undefined) {
-  User.prolific_pid = urlParams.PROLIFIC_PID;
-}
+    // 3. Set Prolific ID (default to random if missing)
+    User.prolific_pid = urlParams.PROLIFIC_PID || generateUID();
 
-/***
- * Check Multiple Users
- */
-showLoading();
+    // 4. Choose file after objCount set
+    const csvFile =
+      getObjCount() === 6
+        ? "six_objects_instructions.csv"
+        : "five_objects_simple.csv";
 
-const userExists = await checkIfUserExists(User.prolific_pid);
+    // 5. Load CSV data via Papa.parse
+    Papa.parse(csvFile, {
+      download: true,
+      header: true,
+      complete: async function (results) {
+        const rawData = results.data;
+        const parsedData = rawData.map((row) => {
+          const answer = row["Correct Order"].split(",").map((s) => s.trim());
+          const options = [...answer].sort();
 
-if (userExists) {
-  alert("Multiple attempts are not allowed.");
-  // 可跳转或阻止加载
-  // todo fsy
-}
+          const numStatements = parseInt(row["Num Statements"], 10);
+          const statements = [];
+          for (let i = 1; i <= numStatements; i++) {
+            const statement = row[`Statement ${i}`]?.trim();
+            if (statement) statements.push(statement);
+          }
 
-hideLoading();
+          let front_end = ["front", "end"];
+          if (row["front_end"]) {
+            front_end = row["front_end"]
+              .replace(/^\s*["']?|["']?\s*$/g, "")
+              .split(",")
+              .map((s) => s.trim());
+          }
 
-/***
- * Loading Questions
- */
-const csvFile =
-  getObjCount() === 6
-    ? "six_objects_instructions.csv"
-    : "five_objects_simple.csv";
+          let instruction = row["instruction"];
+          let style = [];
+          if (row["style"]) {
+            try {
+              style = JSON.parse(row["style"].replace(/'/g, '"'));
+            } catch (e) {
+              console.warn("Failed to parse style:", row["style"]);
+              style = Array(answer.length).fill("blank");
+            }
+          }
 
-// console.log("objectCount:", objectCount);
-// console.log(csvFile);
+          const styleMap = {};
+          answer.forEach((name, i) => {
+            styleMap[name] = style[i] || "blank";
+          });
+          const sortedStyle = options.map((name) => styleMap[name]);
 
-Papa.parse(csvFile, {
-  download: true,
-  header: true,
-  complete: async function (results) {
-    const rawData = results.data;
-    const parsedData = rawData.map((row) => {
-      const answer = row["Correct Order"].split(",").map((s) => s.trim());
+          return {
+            answer,
+            options,
+            instruction,
+            style: sortedStyle,
+            statements,
+            front_end,
+          };
+        });
 
-      const options = [...answer].sort(); // 按字母顺序排序
-      const numStatements = parseInt(row["Num Statements"], 10);
-      const statements = [];
-      for (let i = 1; i <= numStatements; i++) {
-        const statement = row[`Statement ${i}`]?.trim();
-        if (statement) statements.push(statement);
-      }
-
-      let front_end = ["front", "end"]; // 默认值
-      if (row["front_end"]) {
-        front_end = row["front_end"]
-          .replace(/^\s*["']?|["']?\s*$/g, "") // 去掉开头和结尾的引号
-          .split(",")
-          .map((s) => s.trim());
-      }
-
-      let instruction = row["instruction"];
-      let style = [];
-      if (row["style"]) {
-        try {
-          // 替换单引号为双引号，合法化为 JSON 字符串
-          style = JSON.parse(row["style"].replace(/'/g, '"'));
-        } catch (e) {
-          console.warn("Failed to parse style:", row["style"]);
-          style = Array(answer.length).fill("blank");
-        }
-      }
-      // map original answer → style, then reassign based on alphabetical option order
-      const styleMap = {};
-      answer.forEach((name, i) => {
-        styleMap[name] = style[i] || "blank"; // fallback to "blank" if mismatch
-      });
-      const sortedStyle = options.map((name) => styleMap[name]);
-
-      return {
-        answer,
-        options,
-        instruction,
-        style: sortedStyle,
-        statements,
-        front_end,
-      };
+        setQuestionsData(parsedData);
+        bindTrialButtons();
+        await loadModal(); // Make sure modal loads before experiment
+        await startExperiment(false, false);
+      },
     });
+  } catch (error) {
+    console.error("❌ Failed to initialize environment:", error);
+  }
+}
+
+async function startExperiment(skipConsent = false, skipComprehension = false) {
+  try {
+    /***
+     * Check Multiple Users
+     */
+    showLoading();
+
+    const userExists = await checkIfUserExists(User.prolific_pid);
+
+    if (userExists) {
+      // multiple attempts, not allowed
+      showMultipleAttempts();
+      hideLoading();
+      return;
+    }
 
     User.create_time = getCurDate();
-    saveOrUpdateUser(getCurDate());
+    const { saveOrUpdateUser } = await import(
+      "./firebase/saveData2Firebase.js"
+    );
+    await saveOrUpdateUser(getCurDate());
 
-    setQuestionsData(parsedData);
-    bindTrialButtons();
-    nextTrial();
+    hideLoading();
 
-    startTimer("global");
-  },
-});
+    if (!skipConsent) {
+      showConsent();
+      return;
+    }
+
+    if (!skipComprehension) {
+      shouldShowComprehensionCheck();
+      showEnterComprehensionTrials();
+    }
+
+    gameContainer.style.display = "flex";
+    startGame();
+  } catch (error) {
+    console.error("❌ Failed to start experiment:", error);
+  }
+}
+
+export function startGame() {
+  startTimer("global");
+  nextTrial();
+}
+
+initExperimentEnvironment();

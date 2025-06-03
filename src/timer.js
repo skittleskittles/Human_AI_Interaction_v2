@@ -1,4 +1,5 @@
 import { globalState } from "./data/variable.js";
+import { showFeedback } from "./feedback.js";
 
 const MAX_TIMER_INTERVAL = 1200;
 
@@ -86,9 +87,11 @@ function handleTimeOut() {
 
   alert("Time is up! Submissions are now closed.");
 
-  //   setTimeout(() => {
-  //     window.location.href = "xxx";
-  //   }, 5000);
+  showFeedback();
+
+  // setTimeout(() => {
+  //   window.location.href = "xxx";
+  // }, 5000);
 
   // todo fsy: update db (set is finished)
 }

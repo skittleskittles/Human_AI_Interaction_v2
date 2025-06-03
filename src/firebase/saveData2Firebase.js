@@ -90,7 +90,8 @@ export async function saveOrUpdateUser(endTime) {
       create_time: User.create_time,
       end_time: endTime,
       is_consent: User.is_consent,
-      is_passed_education: User.is_passed_education,
+      is_passed_comprehension: User.is_passed_comprehension,
+      is_passed_attention_check: User.is_passed_attention_check,
       is_passed_all_experiments: User.is_passed_all_experiments,
     };
     await setDoc(userDocRef, payload, { merge: true });

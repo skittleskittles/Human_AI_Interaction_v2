@@ -1,7 +1,7 @@
 import {
   getCurQuestionData,
   advanceTrial,
-  getCurTrialId,
+  getCurTrialIndex,
   incrementSteps,
   resetTrialSteps,
   updatePerformanceAfterSubmission,
@@ -10,12 +10,16 @@ import {
   decrementSubmissions,
   resetSubmissions,
   shouldShowAttentionCheck,
-  checkEndAttentionCheck,
   isAttentionCheck,
   isComprehensionCheck,
   resetSubmissionPerformance,
   shouldEndAttentionCheck,
-  getObjCount,
+  getSubmissionLimit,
+  shouldShowComprehensionCheck,
+  getComprehensionTrialsNum,
+  resetTrialID,
+  shouldEndComprehensionCheck,
+  getCurQuestionId,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
@@ -41,34 +45,10 @@ import {
   updateExperimentData,
   updateTrialData,
 } from "./collectData.js";
-
-const attentionTrial =
-  getObjCount() === 5
-    ? {
-        answer: ["A", "B", "C", "D", "E"],
-        options: ["A", "B", "C", "D", "E"],
-        statements: [
-          "C is at position 3",
-          "A is at position 1",
-          "D is at position 4",
-          "B is at position 2",
-          "E is at position 5",
-        ],
-        front_end: ["front", "end"],
-      }
-    : {
-        answer: ["A", "B", "C", "D", "E", "F"],
-        options: ["A", "B", "C", "D", "E", "F"],
-        statements: [
-          "C is at position 3",
-          "A is at position 1",
-          "D is at position 4",
-          "B is at position 2",
-          "E is at position 5",
-          "F is at position 6",
-        ],
-        front_end: ["front", "end"],
-      };
+import {
+  showEndGameFailedComprehensionCheck,
+  showEnterMainGame,
+} from "./instructions.js";
 
 export function bindTrialButtons() {
   document.getElementById("submit-btn").addEventListener("click", submitTrial);
@@ -87,15 +67,10 @@ function submitTrial() {
   const userAns = getUserAnswer();
   let correctChoice, score;
 
-  if (isAttentionCheck()) {
-    ({ correctChoice, score } = evaluateAnswer(userAns, attentionTrial.answer));
-  } else {
-    ({ correctChoice, score } = evaluateAnswer(
-      userAns,
-      getCurQuestionData().answer
-    ));
-  }
-
+  ({ correctChoice, score } = evaluateAnswer(
+    userAns,
+    getCurQuestionData().answer
+  ));
   updateAfterSubmission(userAns, correctChoice, score);
 }
 
@@ -111,6 +86,30 @@ function updateAfterSubmission(userAns, correctChoice, score) {
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
+
+  if (isComprehensionCheck()) {
+    if (score !== 100 && remainingSubmissions() == 0) {
+      showEndGameFailedComprehensionCheck();
+      dbRecordTrial(
+        performance,
+        userAns,
+        submissionTimeSec,
+        trialTimeSec,
+        true
+      );
+      pauseTimer("global");
+      pauseTimer("submission");
+      pauseTimer("trial");
+      return;
+    }
+    if (score === 100 && getCurTrialIndex() === getComprehensionTrialsNum()) {
+      // pass comprehension trials
+      // todo fsy: show modal
+      resetTrialID();
+      shouldEndComprehensionCheck();
+      showEnterMainGame();
+    }
+  }
 
   resetSubmissionPerformance();
   resetTimer("submission");
@@ -132,6 +131,7 @@ function updateRemainingSubmissionInfo() {
  */
 function resetTrial() {
   const current = getCurQuestionData();
+
   clearBoxes();
   renderBoxesAndOptions(current.options, current.style);
   initializeAfterReset();
@@ -167,14 +167,14 @@ export function nextTrial() {
   let answer = [];
   if (shouldShowAttentionCheck()) {
     pauseTimer("global");
-    advanceTrial(true);
-    renderTrial(attentionTrial);
-    answer = attentionTrial.answer;
-  } else {
-    if (!advanceTrial()) return;
-    renderTrial(getCurQuestionData());
-    answer = getCurQuestionData().answer;
   }
+
+  console.log("trialId:", getCurTrialIndex());
+  console.log("isSpecialTrials:", isAttentionCheck() || isComprehensionCheck());
+
+  if (!advanceTrial(isAttentionCheck() || isComprehensionCheck())) return;
+  renderTrial(getCurQuestionData());
+  answer = getCurQuestionData().answer;
 
   dbInitTrialData(answer); // Init next trial data
 }
@@ -209,19 +209,27 @@ function renderTrial(trial) {
 
 function renderInstructions(instructionText) {
   let instruction;
+  const submitLimit = getSubmissionLimit();
 
   if (isAttentionCheck()) {
     instruction = `<p>
       This is the attention check trial.<br/>
       The timer is paused for this trial.<br/>
-      You have <span id="submission-count">3</span> submission(s) remaining for this trial.<br/>
+      You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.<br/>
       You need to score 100 to pass this trial.<br/>
       If you fail the attention check, you will not get the bonus payment regardless of your overall performance. 
+    </p>`;
+  } else if (isComprehensionCheck()) {
+    instruction = `<p>
+      This is a comprehension check trial.<br/>
+      You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.<br/>
+      You need to score 100 to pass this trial.<br/>
+      If you fail this trial twice, the experiment ends automatically. 
     </p>`;
   } else {
     instruction = `<p>
         ${instructionText}<br/>
-        You have <span id="submission-count">3</span> submission(s) remaining for this trial.<br/>
+        You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.<br/>
         Maximize your score with minimal time.
       </p>`;
   }
@@ -233,7 +241,9 @@ function renderBoxesAndOptions(options, style = []) {
   if (isAttentionCheck()) {
     document.getElementById("trialID").textContent = "ATTENTION CHECK Trial";
   } else {
-    document.getElementById("trialID").textContent = "Trial " + getCurTrialId();
+    document.getElementById("trialID").textContent =
+      "Trial " +
+      (isComprehensionCheck() ? getCurTrialIndex() : getCurQuestionId());
   }
 
   const optionContainer = document.getElementById("option-container");
@@ -356,10 +366,18 @@ function dbInitTrialData(answer) {
     dbInitExperimentData();
   }
 
-  const trialId = getCurTrialId();
   const isComprehension = isComprehensionCheck();
   const isAttention = isAttentionCheck();
   const curExp = User.experiments[0];
+
+  let trialId;
+  if (isComprehension) {
+    trialId = getCurTrialIndex();
+  } else if (isAttentionCheck) {
+    trialId = "attention check";
+  } else {
+    trialId = getCurQuestionId();
+  }
 
   // Check if trial already exists (for comprehension trials only)
   if (

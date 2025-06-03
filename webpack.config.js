@@ -63,6 +63,7 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
+        { from: "assets", to: "" },
         {
           from: "src/data/five_objects_simple.csv",
           to: "five_objects_simple.csv",
@@ -71,6 +72,11 @@ module.exports = {
           from: "src/data/six_objects_instructions.csv",
           to: "six_objects_instructions.csv",
         },
+        { from: "./pages/consent.html", to: "consent.html" },
+        { from: "./pages/instructions.html", to: "instructions.html" },
+        { from: "./pages/modal.html", to: "modal.html" },
+        { from: "./pages/feedback.html", to: "feedback.html" },
+        { from: "./styles/instruction.css", to: "instruction.css" },
       ],
     }),
   ],

@@ -3,7 +3,7 @@
  *   - https://docs.google.com/document/d/1bmtTgm39KQYB385JB6DSbq2pWNm6omMeQpxw29AaBP0/edit?tab=t.dire4py9pef7#heading=h.yuzh9ft0k3h8
  */
 
-import { getCurTrialId } from "./data/variable.js";
+import { getCurTrialIndex } from "./data/variable.js";
 import { getCurDate } from "./utils.js";
 
 /**
@@ -13,7 +13,7 @@ import { getCurDate } from "./utils.js";
  * @property {Date} create_time
  * @property {Date} end_time
  * @property {boolean} is_consent
- * @property {boolean} is_passed_education
+ * @property {boolean} is_passed_comprehension
  * @property {boolean} is_passed_all_experiments
  * @property {Feedback} feedback
  * @property {Experiment[]} experiments
@@ -24,8 +24,9 @@ export const User = {
   create_time: new Date(),
   end_time: new Date(),
   is_consent: false,
-  is_passed_education: false,
-  is_passed_all_experiments: false,
+  is_passed_comprehension: false,
+  is_passed_attention_check: false,
+  is_passed_all_experiments: false, // pass attention check and finish all 20 minutes
   experiments: [], // Experiment
 };
 
@@ -66,7 +67,7 @@ export function getCurExperimentData() {
 
 /**
  * @typedef {Object} Trial
- * @property {number} trial_id
+ * @property {string} trial_id // 1, 2, attention check, 3, ...
  * @property {Date} create_time
  * @property {Date} end_time
  * @property {boolean} is_attention_check
@@ -122,7 +123,7 @@ export function updateExperimentData(
     return;
   }
 
-  experiment.num_trials = curTrial.trial_id;
+  // experiment.num_trials = curTrial.trial_id;
 
   // todo fsy: update failed_attention_check_count
   // Check if current trial is an attention check trial
@@ -170,12 +171,12 @@ export function getCurTrialData(isComprehensionCheck) {
   if (isComprehensionCheck) {
     // comprehension trials
     if (currentExperiment.comprehension_trials.length > 0) {
-      return currentExperiment?.comprehension_trials[getCurTrialId() - 1];
+      return currentExperiment?.comprehension_trials[getCurTrialIndex() - 1];
     }
   } else {
     // regular trials
     if (currentExperiment.trials.length > 0) {
-      return currentExperiment?.trials[getCurTrialId() - 1];
+      return currentExperiment?.trials[getCurTrialIndex() - 1];
     }
   }
   return null;
