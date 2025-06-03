@@ -1,6 +1,7 @@
-import { gameContainer } from "./data/domElements.js";
+import { gameContainer, timeBox } from "./data/domElements.js";
 import {
   getObjCount,
+  isComprehensionCheck,
   setObjCount,
   setQuestionsData,
   shouldShowComprehensionCheck,
@@ -18,8 +19,8 @@ import {
 import { showLoading, hideLoading } from "./uiState.js";
 import { showConsent } from "./consent.js";
 import {
-  showEnterComprehensionTrials,
-  showMultipleAttempts,
+  showEnterComprehensionTrialsPopUp,
+  showMultipleAttemptsPopUp,
 } from "./instructions.js";
 
 async function initExperimentEnvironment() {
@@ -117,7 +118,7 @@ async function startExperiment(skipConsent = false, skipComprehension = false) {
 
     if (userExists) {
       // multiple attempts, not allowed
-      showMultipleAttempts();
+      showMultipleAttemptsPopUp();
       hideLoading();
       return;
     }
@@ -137,9 +138,8 @@ async function startExperiment(skipConsent = false, skipComprehension = false) {
 
     if (!skipComprehension) {
       shouldShowComprehensionCheck();
-      showEnterComprehensionTrials();
+      showEnterComprehensionTrialsPopUp();
     }
-
     gameContainer.style.display = "flex";
     startGame();
   } catch (error) {
@@ -148,7 +148,6 @@ async function startExperiment(skipConsent = false, skipComprehension = false) {
 }
 
 export function startGame() {
-  startTimer("global");
   nextTrial();
 }
 

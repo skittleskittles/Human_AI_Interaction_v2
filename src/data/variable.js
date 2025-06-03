@@ -159,6 +159,11 @@ export function resetTrialSteps() {
   globalState.performance.totalSteps = 0;
 }
 
+export function resetTrialPerformance() {
+  resetSubmissionPerformance();
+  globalState.performance.submissionCount = 0;
+}
+
 export function resetSubmissionPerformance() {
   globalState.performance.lastSubmission.correctChoice = 0;
   globalState.performance.lastSubmission.score = 0;
@@ -168,7 +173,7 @@ export function resetSubmissionPerformance() {
 export function updatePerformanceAfterSubmission(correctChoice, score) {
   globalState.performance.lastSubmission.correctChoice = correctChoice;
   globalState.performance.lastSubmission.score = score;
-  globalState.performance.submissionCount = getTrialTotalSubmissions();
+  globalState.performance.submissionCount++;
   if (score === 100 && !isAttentionCheck() && !isComprehensionCheck()) {
     globalState.performance.correctTrialCount++;
   }

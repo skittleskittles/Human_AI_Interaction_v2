@@ -149,13 +149,20 @@ export function updateExperimentData(
 /**
  * Updates the end info for the current trial
  */
-export function updateTrialData(trial, performance, trialTimeSec) {
+export function updateTrialData(
+  trial,
+  performance,
+  trialTimeSec,
+  isSubmission
+) {
   trial.end_time = getCurDate();
-  trial.score = performance.lastSubmission.score;
-  trial.correct_num = performance.lastSubmission.correctChoice;
-  trial.total_submissions = performance.submissionCount;
-  trial.total_steps = performance.totalSteps;
-  trial.total_correct_trials = performance.correctTrialCount;
+  if (isSubmission) {
+    trial.score = performance.lastSubmission.score;
+    trial.correct_num = performance.lastSubmission.correctChoice;
+    trial.total_submissions = performance.submissionCount;
+    trial.total_steps = performance.totalSteps;
+    trial.total_correct_trials = performance.correctTrialCount;
+  }
   trial.total_time = trialTimeSec;
 }
 

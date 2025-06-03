@@ -93,7 +93,7 @@ function setupInstructionNavigation() {
       instructionsContainer.style.display = "none";
       gameContainer.style.display = "flex";
       shouldShowComprehensionCheck();
-      showEnterComprehensionTrials();
+      showEnterComprehensionTrialsPopUp();
       startGame();
       // update user data before enter eduation trials
       import("./firebase/saveData2Firebase.js").then((module) => {
@@ -187,7 +187,7 @@ function handleInstructionUnlock(pageIndex) {
 
 --------------------------------------------------------------------------------------
 */
-export function showEnterComprehensionTrials() {
+export function showEnterComprehensionTrialsPopUp() {
   const numTrials = getComprehensionTrialsNum();
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
@@ -198,7 +198,7 @@ export function showEnterComprehensionTrials() {
   document.getElementById("modalOverlay").style.display = "flex";
 }
 
-export function showEnterRetryTrials() {
+export function showEnterRetryTrialsPopUp() {
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
   modalInfo.innerHTML = `<p>
@@ -210,7 +210,7 @@ export function showEnterRetryTrials() {
   document.getElementById("modalOverlay").style.display = "flex";
 }
 
-export function showEndGameFailedComprehensionCheck() {
+export function showEndGameFailedComprehensionCheckPopUp() {
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
   modalInfo.innerHTML = `<p>
@@ -221,7 +221,7 @@ export function showEndGameFailedComprehensionCheck() {
   document.getElementById("modalOverlay").style.display = "flex";
 }
 
-export function showEndGameFailedAllAttentionCheck() {
+export function showEndGameFailedAllAttentionCheckPopUp() {
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
   modalInfo.innerHTML = `<p>
@@ -231,7 +231,7 @@ export function showEndGameFailedAllAttentionCheck() {
   document.getElementById("modalOverlay").style.display = "flex";
 }
 
-export function showFailedAttentionCheck() {
+export function showFailedAttentionCheckPopUp() {
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
 
@@ -253,7 +253,7 @@ export function showFailedAttentionCheck() {
   document.getElementById("modalOverlay").style.display = "flex";
 }
 
-export function showMultipleAttempts() {
+export function showMultipleAttemptsPopUp() {
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
   modalInfo.innerHTML = `<p>
@@ -263,12 +263,22 @@ export function showMultipleAttempts() {
   document.getElementById("modalOverlay").style.display = "flex";
 }
 
-export function showEnterMainGame() {
+export function showEnterMainGamePopUp() {
   console.log("show enter main game");
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
   modalInfo.innerHTML = `<p>
            You’ve passed the comprehension check. You may now begin the main study.
           </p>`;
+  document.getElementById("modalOverlay").style.display = "flex";
+}
+
+export function showEndTimePopUp() {
+  modalContainer.style.display = "block";
+  const modalInfo = document.getElementById("modalInfo");
+  modalInfo.innerHTML = `<p>
+          Time's up! Thank you for your effort.<br/> 
+          Please take a moment to complete a brief survey. 
+        </p>`;
   document.getElementById("modalOverlay").style.display = "flex";
 }

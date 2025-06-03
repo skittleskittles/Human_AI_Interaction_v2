@@ -31,7 +31,6 @@ function bindDragEvents() {
 function bindDropEvents() {
   const boxContainer = document.getElementById("box-container");
 
-  // 确保只绑定一次
   boxContainer.replaceWith(boxContainer.cloneNode(true));
   const newContainer = document.getElementById("box-container");
 

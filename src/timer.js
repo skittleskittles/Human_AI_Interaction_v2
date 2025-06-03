@@ -1,5 +1,8 @@
+import { gameContainer } from "./data/domElements.js";
 import { globalState } from "./data/variable.js";
+import { disableDrag } from "./dragDrop.js";
 import { showFeedback } from "./feedback.js";
+import { showEndTimePopUp } from "./instructions.js";
 
 const MAX_TIMER_INTERVAL = 1200;
 
@@ -76,22 +79,15 @@ function handleTimeOut() {
   document.getElementById("next-btn").disabled = true;
 
   // disable drag
-  document.querySelectorAll(".option").forEach((el) => {
-    el.setAttribute("draggable", "false");
-    el.style.cursor = "not-allowed";
-  });
-  document.querySelectorAll(".box").forEach((box) => {
-    box.removeEventListener("dragover", preventDefaultDragOver);
-    box.removeEventListener("drop", handleDrop);
-  });
+  disableDrag();
 
-  alert("Time is up! Submissions are now closed.");
-
+  // end game and show feedback page
+  showEndTimePopUp();
+  gameContainer.style.display = "none";
   showFeedback();
 
-  // setTimeout(() => {
-  //   window.location.href = "xxx";
-  // }, 5000);
+  pauseTimer("submission");
+  pauseTimer("trial");
 
   // todo fsy: update db (set is finished)
 }

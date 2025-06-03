@@ -20,6 +20,7 @@ import {
   resetTrialID,
   shouldEndComprehensionCheck,
   getCurQuestionId,
+  resetTrialPerformance,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
@@ -46,9 +47,10 @@ import {
   updateTrialData,
 } from "./collectData.js";
 import {
-  showEndGameFailedComprehensionCheck,
-  showEnterMainGame,
+  showEndGameFailedComprehensionCheckPopUp,
+  showEnterMainGamePopUp,
 } from "./instructions.js";
+import { timeBox } from "./data/domElements.js";
 
 export function bindTrialButtons() {
   document.getElementById("submit-btn").addEventListener("click", submitTrial);
@@ -86,10 +88,16 @@ function updateAfterSubmission(userAns, correctChoice, score) {
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
+  console.log(
+    "submissionTimeSec:",
+    submissionTimeSec,
+    "trialTimeSec:",
+    trialTimeSec
+  );
 
   if (isComprehensionCheck()) {
     if (score !== 100 && remainingSubmissions() == 0) {
-      showEndGameFailedComprehensionCheck();
+      showEndGameFailedComprehensionCheckPopUp();
       dbRecordTrial(
         performance,
         userAns,
@@ -104,10 +112,9 @@ function updateAfterSubmission(userAns, correctChoice, score) {
     }
     if (score === 100 && getCurTrialIndex() === getComprehensionTrialsNum()) {
       // pass comprehension trials
-      // todo fsy: show modal
       resetTrialID();
       shouldEndComprehensionCheck();
-      showEnterMainGame();
+      showEnterMainGamePopUp();
     }
   }
 
@@ -152,13 +159,34 @@ function initializeAfterReset() {
  ********************************************
  */
 export function nextTrial() {
+  const performance = JSON.parse(JSON.stringify(getPerformance()));
+  const submissionTimeSec = getTimerValue("submission");
+  const trialTimeSec = getTimerValue("trial");
+  console.log(
+    "submissionTimeSec:",
+    submissionTimeSec,
+    "trialTimeSec:",
+    trialTimeSec
+  );
+
+  dbRecordTrial(performance, [], 0, trialTimeSec, false); // Record last trial total time
+
+  resetTimer("trial");
+  startTimer("trial");
+
+  if (!isComprehensionCheck() && timeBox.style.display === "none") {
+    timeBox.style.display = "block";
+    startTimer("global");
+    console.log("startTimer");
+  } else if (isComprehensionCheck()) {
+    timeBox.style.display = "none";
+  }
+
   /* initial database */
   if (User.experiments.length === 0) {
     // Initialize experiment if it doesn't exist
     dbInitExperimentData();
   }
-
-  dbRecordTrial(getPerformance()); // Record last trial data
 
   if (shouldEndAttentionCheck()) {
     resumeTimer("global");
@@ -168,9 +196,6 @@ export function nextTrial() {
   if (shouldShowAttentionCheck()) {
     pauseTimer("global");
   }
-
-  console.log("trialId:", getCurTrialIndex());
-  console.log("isSpecialTrials:", isAttentionCheck() || isComprehensionCheck());
 
   if (!advanceTrial(isAttentionCheck() || isComprehensionCheck())) return;
   renderTrial(getCurQuestionData());
@@ -183,7 +208,7 @@ function initializeAfterNextTrial() {
   hideResultContent();
   resetTrialSteps();
   resetSubmissions();
-  resetSubmissionPerformance();
+  resetTrialPerformance();
   updateRemainingSubmissionInfo();
 
   refreshInteractionState();
@@ -372,8 +397,8 @@ function dbInitTrialData(answer) {
 
   let trialId;
   if (isComprehension) {
-    trialId = getCurTrialIndex();
-  } else if (isAttentionCheck) {
+    trialId = "comprehension_" + getCurTrialIndex();
+  } else if (isAttention) {
     trialId = "attention check";
   } else {
     trialId = getCurQuestionId();
@@ -420,7 +445,7 @@ function dbRecordTrial(
   }
 
   // Always update trial-level summary
-  updateTrialData(lastTrial, performance, trialTimeSec);
+  updateTrialData(lastTrial, performance, trialTimeSec, isSubmission);
 
   // Update experiment-level tracking
   updateExperimentData(curExperiment, isComprehensionCheck(), lastTrial);
