@@ -4,7 +4,7 @@ import { disableDrag } from "./dragDrop.js";
 import { showFeedback } from "./feedback.js";
 import { showEndTimePopUp } from "./instructions.js";
 
-const MAX_TIMER_INTERVAL = 1200;
+const MAX_TIMER_INTERVAL = 120;
 
 export const timerManager = {
   timers: {
@@ -30,7 +30,7 @@ export function startTimer(mode) {
       }
 
       // todo fsy: 10 min: trigger attention check
-      if (timer.seconds === 1190 && !globalState.attentionCheckShown) {
+      if (timer.seconds === 110 && !globalState.attentionCheckShown) {
         globalState.attentionCheckPending = true;
       }
 

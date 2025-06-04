@@ -99,7 +99,8 @@ async function initExperimentEnvironment() {
         setQuestionsData(parsedData);
         bindTrialButtons();
         await loadModal(); // Make sure modal loads before experiment
-        await startExperiment(false, false);
+        //await startExperiment(false, false);
+        await startExperiment(true, false);
       },
     });
   } catch (error) {

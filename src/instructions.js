@@ -267,7 +267,7 @@ export function showEnterMainGamePopUp() {
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
   modalInfo.innerHTML = `<p>
-           You’ve passed the comprehension check. You may now begin the main study.
+           You’ve passed the comprehension check. You may now begin the main study by clicking <strong> NEXT TRAIL </strong>.
           </p>`;
   document.getElementById("modalOverlay").style.display = "flex";
 }
