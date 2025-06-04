@@ -49,7 +49,7 @@ import {
 import {
   showEndGameFailedComprehensionCheckPopUp,
   showEnterMainGamePopUp,
-} from "./instructions.js";
+} from "./modal.js";
 import { timeBox } from "./data/domElements.js";
 
 export function bindTrialButtons() {
@@ -96,35 +96,28 @@ function updateAfterSubmission(userAns, correctChoice, score) {
   );
   console.log("performance:", performance);
 
-  if (isComprehensionCheck()) {
-    if (score !== 100 && remainingSubmissions() == 0) {
-      showEndGameFailedComprehensionCheckPopUp();
-      dbRecordTrial(
-        performance,
-        userAns,
-        submissionTimeSec,
-        trialTimeSec,
-        true
-      );
-      pauseTimer("global");
-      pauseTimer("submission");
-      pauseTimer("trial");
-      return;
-    }
-    if (score === 100 && getCurTrialIndex() === getComprehensionTrialsNum()) {
-      // pass comprehension trials
-      resetTrialID();
-      shouldEndComprehensionCheck();
-      showEnterMainGamePopUp();
-    }
-  }
-
   resetSubmissionPerformance();
   resetTimer("submission");
   startTimer("submission");
 
   /* database */
   dbRecordTrial(performance, userAns, submissionTimeSec, trialTimeSec, true);
+
+  if (isComprehensionCheck()) {
+    if (score !== 100 && remainingSubmissions() == 0) {
+      showEndGameFailedComprehensionCheckPopUp();
+      pauseTimer("global");
+      pauseTimer("submission");
+      pauseTimer("trial");
+    }
+    if (score === 100 && getCurTrialIndex() === getComprehensionTrialsNum()) {
+      // pass comprehension trials
+      resetTrialID();
+      shouldEndComprehensionCheck();
+      showEnterMainGamePopUp();
+      User.is_passed_comprehension = true;
+    }
+  }
 }
 
 function updateRemainingSubmissionInfo() {
@@ -426,7 +419,7 @@ function dbInitTrialData(answer) {
   }
 }
 
-function dbRecordTrial(
+export function dbRecordTrial(
   performance,
   userAns = [],
   submissionTimeSec = 0,

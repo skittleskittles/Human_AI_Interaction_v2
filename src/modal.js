@@ -1,5 +1,6 @@
 import { modalContainer } from "./data/domElements";
-import { globalState } from "./data/variable";
+import { showFeedback } from "./feedback.js";
+import { getComprehensionTrialsNum } from "./data/variable.js";
 
 // Load Modal
 export async function loadModal() {
@@ -9,5 +10,132 @@ export async function loadModal() {
 
   document.getElementById("closeModal").addEventListener("click", () => {
     document.getElementById("modalOverlay").style.display = "none";
+  });
+}
+
+// showModal
+
+export function showModal({
+  context = null,
+  html,
+  buttonText = "OK",
+  onClose = null,
+}) {
+  modalContainer.style.display = "block";
+  const modalInfo = document.getElementById("modalInfo");
+  modalInfo.innerHTML = html;
+
+  const overlay = document.getElementById("modalOverlay");
+  overlay.style.display = "flex";
+
+  const closeBtn = document.getElementById("closeModal");
+  const newBtn = closeBtn.cloneNode(true);
+  newBtn.textContent = buttonText;
+
+  closeBtn.parentNode.replaceChild(newBtn, closeBtn);
+
+  newBtn.addEventListener("click", () => {
+    overlay.style.display = "none";
+    if (typeof onClose === "function") onClose();
+  });
+}
+
+export function showEnterComprehensionTrialsPopUp() {
+  const numTrials = getComprehensionTrialsNum();
+  showModal({
+    context: "comprehension",
+    html: `<p>
+      Now, you will play ${numTrials} comprehension check trials. Please carefully read the
+      instructions and make your choices.
+    </p>`,
+  });
+}
+
+// export function showEnterRetryTrialsPopUp() {
+//   showModal({
+//     context: "retry",
+//     html: `<p>
+//       You did not select the best answers. <br/>
+//       <strong>The best answers will be shown in blue.</strong><br/>
+//       Please try again.<br/>
+//       Note: You can earn partial score for missed interceptions.
+//     </p>`,
+//   });
+// }
+
+export function showEndGameFailedComprehensionCheckPopUp() {
+  showModal({
+    context: "fail-comprehension",
+    html: `<p>
+      You did not pass this comprehension check trial after two attempts, 
+      so the study has ended, and <strong>no compensation will be provided.</strong><br/><br/>
+      Please <strong>return</strong> your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific.
+    </p>`,
+  });
+}
+
+export function showEndGameFailedAllAttentionCheckPopUp() {
+  showModal({
+    context: "fail-attention-all",
+    html: `<p>
+      Unfortunately, you did not pass the attention check trials. Now the game is over, 
+      and you will be redirected back to Prolific.
+    </p>`,
+  });
+}
+
+export function showFailedAttentionCheckPopUp() {
+  const failedCount = countFailedAttentionCheck();
+  let message = "";
+
+  if (failedCount === 1) {
+    message = `<p>
+      You just failed an attention check.<br/>
+      If you fail another attention check, you won’t get compensated.
+    </p>`;
+  } else if (failedCount === 2) {
+    message = `<p>
+      You’ve failed another attention check.<br/>
+      Since this is your second failure, you may continue the experiment, 
+      but <strong>you will not be compensated</strong>.
+    </p>`;
+  }
+
+  showModal({
+    context: "fail-attention",
+    html: message,
+  });
+}
+
+export function showMultipleAttemptsPopUp() {
+  showModal({
+    context: "multiple-attempts",
+    html: `<p>
+      You have already participated in this study. Participation is limited to one time only.<br/>
+      Please <strong>return</strong> your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific.
+    </p>`,
+  });
+}
+
+export function showEnterMainGamePopUp() {
+  showModal({
+    context: "start-main-game",
+    html: `<p>
+      You’ve passed the comprehension check. You may now begin the main study by clicking <strong>NEXT TRIAL</strong>.
+    </p>`,
+  });
+}
+
+export function showEndTimePopUp() {
+  showModal({
+    context: "end-time",
+    html: `<p>
+      Time's up! Thank you for your effort.<br/>
+      Please take a moment to complete a brief survey.
+    </p>`,
+    onClose: () => {
+      gameContainer.style.display = "none";
+      showFeedback();
+    },
   });
 }

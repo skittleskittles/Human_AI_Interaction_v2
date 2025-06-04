@@ -3,13 +3,11 @@ import {
   modalContainer,
   gameContainer,
 } from "./data/domElements.js";
-import {
-  getComprehensionTrialsNum,
-  shouldShowComprehensionCheck,
-} from "./data/variable";
+import { shouldShowComprehensionCheck } from "./data/variable";
 import { getCurDate } from "./utils.js";
 import { getObjCount } from "./data/variable";
 import { startGame } from "./index.js";
+import { showEnterComprehensionTrialsPopUp } from "./modal.js";
 
 /*
 --------------------------------------------------------------------------------------
@@ -187,97 +185,104 @@ function handleInstructionUnlock(pageIndex) {
 
 --------------------------------------------------------------------------------------
 */
-export function showEnterComprehensionTrialsPopUp() {
-  const numTrials = getComprehensionTrialsNum();
-  modalContainer.style.display = "block";
-  const modalInfo = document.getElementById("modalInfo");
-  modalInfo.innerHTML = `<p>
-      Now, you will play ${numTrials} comprehension check trials. Please carefully read the
-      instructions and make your choices.
-      </p>`;
-  document.getElementById("modalOverlay").style.display = "flex";
-}
+// export function showEnterComprehensionTrialsPopUp() {
+//   const numTrials = getComprehensionTrialsNum();
+//   modalContainer.style.display = "block";
+//   const modalInfo = document.getElementById("modalInfo");
+//   modalInfo.innerHTML = `<p>
+//       Now, you will play ${numTrials} comprehension check trials. Please carefully read the
+//       instructions and make your choices.
+//       </p>`;
+//   document.getElementById("modalOverlay").style.display = "flex";
+// }
 
-export function showEnterRetryTrialsPopUp() {
-  modalContainer.style.display = "block";
-  const modalInfo = document.getElementById("modalInfo");
-  modalInfo.innerHTML = `<p>
-            You did not select the best answers. <br/>
-            <strong>The best answers will be shown in blue. </strong>
-            Please try again.<br/>
-            Note: Your can earn partial score for missed interceptions.
-          </p>`;
-  document.getElementById("modalOverlay").style.display = "flex";
-}
+// export function showEnterRetryTrialsPopUp() {
+//   modalContainer.style.display = "block";
+//   const modalInfo = document.getElementById("modalInfo");
+//   modalInfo.innerHTML = `<p>
+//             You did not select the best answers. <br/>
+//             <strong>The best answers will be shown in blue. </strong>
+//             Please try again.<br/>
+//             Note: Your can earn partial score for missed interceptions.
+//           </p>`;
+//   document.getElementById("modalOverlay").style.display = "flex";
+// }
 
-export function showEndGameFailedComprehensionCheckPopUp() {
-  modalContainer.style.display = "block";
-  const modalInfo = document.getElementById("modalInfo");
-  modalInfo.innerHTML = `<p>
-             You did not pass this comprehension check trial after two attempts, 
-             so the study has ended, and <strong> no compensation will be provided. </strong> <br/><br/>
-             Please <strong> return </strong>  your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific. 
-            </p>`;
-  document.getElementById("modalOverlay").style.display = "flex";
-}
+// export function showEndGameFailedComprehensionCheckPopUp() {
+//   modalContainer.style.display = "block";
+//   const modalInfo = document.getElementById("modalInfo");
+//   modalInfo.innerHTML = `<p>
+//              You did not pass this comprehension check trial after two attempts,
+//              so the study has ended, and <strong> no compensation will be provided. </strong> <br/><br/>
+//              Please <strong> return </strong>  your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific.
+//             </p>`;
+//   document.getElementById("modalOverlay").style.display = "flex";
+// }
 
-export function showEndGameFailedAllAttentionCheckPopUp() {
-  modalContainer.style.display = "block";
-  const modalInfo = document.getElementById("modalInfo");
-  modalInfo.innerHTML = `<p>
-            Unfortunately, you did not pass the attention check trials, now the game is over 
-            and you will be redirected back to Prolific.
-            </p>`;
-  document.getElementById("modalOverlay").style.display = "flex";
-}
+// export function showEndGameFailedAllAttentionCheckPopUp() {
+//   modalContainer.style.display = "block";
+//   const modalInfo = document.getElementById("modalInfo");
+//   modalInfo.innerHTML = `<p>
+//             Unfortunately, you did not pass the attention check trials, now the game is over
+//             and you will be redirected back to Prolific.
+//             </p>`;
+//   document.getElementById("modalOverlay").style.display = "flex";
+// }
 
-export function showFailedAttentionCheckPopUp() {
-  modalContainer.style.display = "block";
-  const modalInfo = document.getElementById("modalInfo");
+// export function showFailedAttentionCheckPopUp() {
+//   modalContainer.style.display = "block";
+//   const modalInfo = document.getElementById("modalInfo");
 
-  const failedCount = countFailedAttentionCheck();
+//   const failedCount = countFailedAttentionCheck();
 
-  if (failedCount === 1) {
-    modalInfo.innerHTML = `<p>
-            You just failed an attention check.<br/>
-            If you fail another attention check, you won’t get compensated. 
-            </p>`;
-  } else if (failedCount === 2) {
-    modalInfo.innerHTML = `<p>
-            You’ve failed another attention check.<br/>
-            Since this is your second failure, you may continue the experiment, 
-            but <strong>you will not be compensated</strong>.
-            </p>`;
-  }
+//   if (failedCount === 1) {
+//     modalInfo.innerHTML = `<p>
+//             You just failed an attention check.<br/>
+//             If you fail another attention check, you won’t get compensated.
+//             </p>`;
+//   } else if (failedCount === 2) {
+//     modalInfo.innerHTML = `<p>
+//             You’ve failed another attention check.<br/>
+//             Since this is your second failure, you may continue the experiment,
+//             but <strong>you will not be compensated</strong>.
+//             </p>`;
+//   }
 
-  document.getElementById("modalOverlay").style.display = "flex";
-}
+//   document.getElementById("modalOverlay").style.display = "flex";
+// }
 
-export function showMultipleAttemptsPopUp() {
-  modalContainer.style.display = "block";
-  const modalInfo = document.getElementById("modalInfo");
-  modalInfo.innerHTML = `<p>
-            You have already participated in this study. Participation is limited to one time only. <br/>
-            Please <strong> return </strong> your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific. 
-            </p>`;
-  document.getElementById("modalOverlay").style.display = "flex";
-}
+// export function showMultipleAttemptsPopUp() {
+//   modalContainer.style.display = "block";
+//   const modalInfo = document.getElementById("modalInfo");
+//   modalInfo.innerHTML = `<p>
+//             You have already participated in this study. Participation is limited to one time only. <br/>
+//             Please <strong> return </strong> your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific.
+//             </p>`;
+//   document.getElementById("modalOverlay").style.display = "flex";
+// }
 
-export function showEnterMainGamePopUp() {
-  modalContainer.style.display = "block";
-  const modalInfo = document.getElementById("modalInfo");
-  modalInfo.innerHTML = `<p>
-           You’ve passed the comprehension check. You may now begin the main study by clicking <strong> NEXT TRAIL </strong>.
-          </p>`;
-  document.getElementById("modalOverlay").style.display = "flex";
-}
+// export function showEnterMainGamePopUp() {
+//   modalContainer.style.display = "block";
+//   const modalInfo = document.getElementById("modalInfo");
+//   modalInfo.innerHTML = `<p>
+//            You’ve passed the comprehension check. You may now begin the main study by clicking <strong> NEXT TRAIL </strong>.
+//           </p>`;
+//   document.getElementById("modalOverlay").style.display = "flex";
+// }
 
-export function showEndTimePopUp() {
-  modalContainer.style.display = "block";
-  const modalInfo = document.getElementById("modalInfo");
-  modalInfo.innerHTML = `<p>
-          Time's up! Thank you for your effort.<br/> 
-          Please take a moment to complete a brief survey. 
-        </p>`;
-  document.getElementById("modalOverlay").style.display = "flex";
-}
+// export function showEndTimePopUp() {
+//   modalContainer.style.display = "block";
+//   const modalInfo = document.getElementById("modalInfo");
+//   modalInfo.innerHTML = `<p>
+//           Time's up! Thank you for your effort.<br/>
+//           Please take a moment to complete a brief survey.
+//         </p>`;
+//   document.getElementById("modalOverlay").style.display = "flex";
+
+//   document.getElementById("closeModal").addEventListener("click", () => {
+//     document.getElementById("modalOverlay").style.display = "none";
+
+//     gameContainer.style.display = "none";
+//     showFeedback();
+//   });
+// }

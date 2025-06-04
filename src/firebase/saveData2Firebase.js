@@ -129,14 +129,15 @@ async function saveOrUpdateExperiment(userDocRef, experiment, endTime) {
         create_time: experiment.create_time,
         end_time: endTime,
         num_trials: experiment.num_trials,
-        failed_attention_check_count: experiment.failed_attention_check_count,
+        is_passed_attention_check: experiment.is_passed_attention_check,
         is_finished: experiment.is_finished,
       });
     } else {
       await updateDoc(expRef, {
         end_time: endTime,
-        failed_attention_check_count: experiment.failed_attention_check_count,
+        is_passed_attention_check: experiment.is_passed_attention_check,
         is_finished: experiment.is_finished,
+        num_trials: experiment.num_trials,
       });
     }
     console.log(

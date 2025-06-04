@@ -1,14 +1,21 @@
-import { globalState, AI_HELP_TYPE } from "./data/variable";
+import {
+  globalState,
+  AI_HELP_TYPE,
+  getTotalCorrectTrials,
+  getObjCount,
+  getBonusThreshold,
+} from "./data/variable";
 import { User } from "./collectData";
 import {
   redirectProlificCompleted,
   redirectProlificBonusPayment,
   redirectProlificFailedAllAttentionCheck,
+  getCurDate,
 } from "./utils";
 import { saveFeedbackData } from "./firebase/saveData2Firebase";
+import { showEndGameFailedAllAttentionCheckPopUp } from "./modal";
 
 export function showFeedback() {
-  // Fetch and insert feedback form dynamically
   fetch("feedback.html")
     .then((response) => response.text())
     .then((html) => {
@@ -17,7 +24,6 @@ export function showFeedback() {
       feedbackContainer.style.display = "block";
 
       const aiFeedback = document.getElementById("aiFeedback");
-      const freeResponse = document.getElementById("freeResponse");
       const submitFeedback = document.getElementById("submitFeedback");
       const radioGroups = document.querySelectorAll("input[type='radio']");
       const thankYouMessage = document.getElementById("thankYouMessage");
@@ -29,22 +35,21 @@ export function showFeedback() {
       function checkFormCompletion() {
         const requiredFields =
           globalState.AI_HELP === AI_HELP_TYPE.NO_AI
-            ? ["1-1", "1-2", "1-3", "1-4", "1-5", "1-6"] // Minimum required fields when AI is not used
-            : [...new Set([...radioGroups].map((r) => r.name))]; // All fields if AI is used
+            ? ["1-1", "1-2", "1-3", "1-4", "1-5", "1-6"]
+            : [...new Set([...radioGroups].map((r) => r.name))];
 
-        // Check if all required fields have a selected value
         const allSelected = requiredFields.every((name) =>
           document.querySelector(`input[name="${name}"]:checked`)
         );
 
-        // Enable or disable the submit button based on completion status
         submitFeedback.disabled = !allSelected;
       }
+
       radioGroups.forEach((radio) => {
         radio.addEventListener("change", checkFormCompletion);
       });
 
-      // free response char count
+      // Free response char count for all three textareas
       ["1", "2", "3"].forEach((num) => {
         const textarea = document.getElementById(`freeResponse${num}`);
         const countDisplay = document.getElementById(`charCount${num}`);
@@ -54,29 +59,35 @@ export function showFeedback() {
         });
       });
 
+      // Bind submit
       if (submitFeedback) {
         submitFeedback.disabled = true;
         submitFeedback.addEventListener("click", () =>
-          submit(freeResponse, submitFeedback, thankYouMessage)
+          submitFeedbackForm(submitFeedback, thankYouMessage)
         );
       }
     });
 }
 
-async function submit(freeResponse, submitButton, thankYouMessage) {
+async function submitFeedbackForm(submitButton, thankYouMessage) {
   const now = getCurDate();
 
-  let freeResponseText = freeResponse.value.trim();
-  let feedbackData = {
+  // Collect all free response values
+  const freeResponses = {};
+  ["1", "2", "3"].forEach((num) => {
+    const textarea = document.getElementById(`freeResponse${num}`);
+    freeResponses[`freeResponse${num}`] = textarea?.value.trim() || "";
+  });
+
+  const feedbackData = {
     choices: {},
-    freeResponse: freeResponseText,
+    ...freeResponses,
     submittedAt: now,
   };
 
-  // Update local user end_time
   User.end_time = now;
 
-  let radioGroups = document.querySelectorAll("input[type='radio']:checked");
+  const radioGroups = document.querySelectorAll("input[type='radio']:checked");
   radioGroups.forEach((radio) => {
     feedbackData.choices[radio.name] = radio.value;
   });
@@ -84,17 +95,17 @@ async function submit(freeResponse, submitButton, thankYouMessage) {
   submitButton.disabled = true;
   thankYouMessage.style.display = "block";
 
-  // Save feedback data
   await saveFeedbackData(feedbackData);
 
-  // redirect to prolific
   if (User.is_passed_attention_check) {
-    // completed (success)
-    redirectProlificCompleted();
-    // todo fsy: bonus payment
+    const totalCorrectTrials = getTotalCorrectTrials();
+    if (totalCorrectTrials >= getBonusThreshold()) {
+      redirectProlificBonusPayment();
+    } else {
+      redirectProlificCompleted();
+    }
   } else {
-    // failed attention check
-    showEndGameFailedAllAttentionCheck();
+    showEndGameFailedAllAttentionCheckPopUp();
     redirectProlificFailedAllAttentionCheck();
   }
 }

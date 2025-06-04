@@ -1,8 +1,9 @@
-import { gameContainer } from "./data/domElements.js";
-import { globalState } from "./data/variable.js";
+import { globalState, getPerformance } from "./data/variable.js";
 import { disableDrag } from "./dragDrop.js";
-import { showFeedback } from "./feedback.js";
-import { showEndTimePopUp } from "./instructions.js";
+import { showEndTimePopUp } from "./modal.js";
+import { User } from "./collectData.js";
+import { dbRecordTrial } from "./trialAction.js";
+import { getCurExperimentData } from "./collectData.js";
 
 const MAX_TIMER_INTERVAL = 1200;
 
@@ -83,11 +84,17 @@ function handleTimeOut() {
 
   // end game and show feedback page
   showEndTimePopUp();
-  gameContainer.style.display = "none";
-  showFeedback();
 
   pauseTimer("submission");
   pauseTimer("trial");
 
-  // todo fsy: update db (set is finished)
+  // update db
+  const curExperiment = getCurExperimentData();
+  curExperiment.is_finished = true;
+  User.is_passed_all_experiments = User.is_passed_attention_check;
+
+  const performance = JSON.parse(JSON.stringify(getPerformance()));
+  const trialTimeSec = getTimerValue("trial");
+
+  dbRecordTrial(performance, [], 0, trialTimeSec, false);
 }

@@ -46,7 +46,7 @@ export function createNewExperimentData(experiment_id = 0) {
     experiment_id,
     create_time: getCurDate(),
     end_time: getCurDate(), // will be updated at the end
-    failed_attention_check_count: 0,
+    is_passed_attention_check: false,
     is_finished: false,
     num_trials: 0,
     trials: [], // will be populated with Trial objects
@@ -123,27 +123,8 @@ export function updateExperimentData(
     return;
   }
 
-  // experiment.num_trials = curTrial.trial_id;
-
-  // todo fsy: update failed_attention_check_count
-  // Check if current trial is an attention check trial
-  // if (isAttentionCheck()) {
-  //   const passed = userChoices.score === 100;
-  //   globalState.ATTENTION_CHECK_TRIALS[curTrial.trial_id] = passed;
-  //   experiment.failed_attention_check_count = countFailedAttentionCheck();
-  // }
-
-  // todo fsy: update is_finished
-  // // Check if this is the last trial of the main experiment
-  // const isLastTrial = curTrial.trial_id === globalState.NUM_MAIN_TRIALS;
-  // if (isLastTrial) {
-  //   experiment.is_finished = true;
-
-  //   // Mark the user's overall experiment pass status
-  //   User.is_passed_all_experiments =
-  //     experiment.is_finished &&
-  //     experiment.failed_attention_check_count < getAttentionCheckTrialCount();
-  // }
+  experiment.num_trials = experiment.trials.length;
+  experiment.is_passed_attention_check = User.is_passed_attention_check;
 }
 
 /**

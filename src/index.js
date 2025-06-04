@@ -1,13 +1,11 @@
-import { gameContainer, timeBox } from "./data/domElements.js";
+import { gameContainer } from "./data/domElements.js";
 import {
   getObjCount,
-  isComprehensionCheck,
   setObjCount,
   setQuestionsData,
   shouldShowComprehensionCheck,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
-import { startTimer } from "./timer.js";
 import { loadModal } from "./modal.js";
 import { nextTrial, bindTrialButtons } from "./trialAction.js";
 import Papa from "papaparse";
@@ -21,7 +19,7 @@ import { showConsent } from "./consent.js";
 import {
   showEnterComprehensionTrialsPopUp,
   showMultipleAttemptsPopUp,
-} from "./instructions.js";
+} from "./modal.js";
 
 async function initExperimentEnvironment() {
   try {
