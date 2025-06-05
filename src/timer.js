@@ -5,7 +5,7 @@ import { User } from "./collectData.js";
 import { dbRecordTrial } from "./trialAction.js";
 import { getCurExperimentData } from "./collectData.js";
 
-const MAX_TIMER_INTERVAL = 120;
+const MAX_TIMER_INTERVAL = 1200;
 
 export const timerManager = {
   timers: {
@@ -31,7 +31,7 @@ export function startTimer(mode) {
       }
 
       // todo fsy: 10 min: trigger attention check
-      if (timer.seconds === 60 && !globalState.attentionCheckShown) {
+      if (timer.seconds === 600 && !globalState.attentionCheckShown) {
         globalState.attentionCheckPending = true;
       }
 
