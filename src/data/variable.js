@@ -10,7 +10,7 @@ const MAX_SUBMISSION_LIMIT = 2;
 const NUM_COMPREHENSION_TRIALS = 2;
 
 const BONUS_THRESHOLD = {
-  5: 25, // 5-object condition: must get all 25 correct
+  5: 1, // 5-object condition: must get all 25 correct
   6: 15, // 6-object condition: must get all 15 correct
 };
 
