@@ -78,7 +78,7 @@ export function showEndGameFailedAllAttentionCheckPopUp() {
   showModal({
     context: "fail-attention-all",
     html: `<p>
-      Unfortunately, you did not pass the attention check trials. Now the game is over, 
+      Unfortunately, you did not pass the attention check trial. Now the game is over, 
       and you will be redirected back to Prolific.
     </p>`,
   });
