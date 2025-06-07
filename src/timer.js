@@ -19,33 +19,38 @@ export function startTimer(mode) {
   const timer = timerManager.timers[mode];
   if (!timer || timer.interval) return;
 
+  let lastUpdateTime = Date.now();
+
   timer.interval = setInterval(() => {
-    // "global" counts down regardless of visibility
-    if (mode === "global") {
-      if (timer.seconds <= 0) {
-        clearInterval(timer.interval);
-        timer.interval = null;
-        document.getElementById("timer").textContent = "00:00";
-        handleTimeOut();
-        return;
-      }
+    const now = Date.now();
+    const elapsedSec = Math.floor((now - lastUpdateTime) / 1000);
 
-      // todo fsy: 10 min: trigger attention check
-      if (timer.seconds === 600 && !globalState.attentionCheckShown) {
-        globalState.attentionCheckPending = true;
-      }
+    if (elapsedSec >= 1) {
+      lastUpdateTime = now;
 
-      timer.seconds--;
-      const min = String(Math.floor(timer.seconds / 60)).padStart(2, "0");
-      const sec = String(timer.seconds % 60).padStart(2, "0");
-      document.getElementById("timer").textContent = `${min}:${sec}`;
-    } else {
-      // For trial/submission, only count if tab is visible
-      if (document.visibilityState === "visible") {
-        timer.seconds++;
+      if (mode === "global") {
+        timer.seconds -= elapsedSec;
+
+        if (timer.seconds <= 0) {
+          clearInterval(timer.interval);
+          timer.interval = null;
+          document.getElementById("timer").textContent = "00:00";
+          handleTimeOut();
+          return;
+        }
+
+        if (timer.seconds <= 600 && !globalState.attentionCheckShown) {
+          globalState.attentionCheckPending = true;
+        }
+
+        const min = String(Math.floor(timer.seconds / 60)).padStart(2, "0");
+        const sec = String(timer.seconds % 60).padStart(2, "0");
+        document.getElementById("timer").textContent = `${min}:${sec}`;
+      } else if (document.visibilityState === "visible") {
+        timer.seconds += elapsedSec;
       }
     }
-  }, 1000);
+  }, 500); // Check frequently for better accuracy
 }
 
 export function pauseTimer(mode) {

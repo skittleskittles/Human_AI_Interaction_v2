@@ -51,18 +51,6 @@ export function showEnterComprehensionTrialsPopUp() {
   });
 }
 
-// export function showEnterRetryTrialsPopUp() {
-//   showModal({
-//     context: "retry",
-//     html: `<p>
-//       You did not select the best answers. <br/>
-//       <strong>The best answers will be shown in blue.</strong><br/>
-//       Please try again.<br/>
-//       Note: You can earn partial score for missed interceptions.
-//     </p>`,
-//   });
-// }
-
 export function showEndGameFailedComprehensionCheckPopUp() {
   showModal({
     context: "fail-comprehension",
@@ -111,7 +99,7 @@ export function showMultipleAttemptsPopUp() {
   showModal({
     context: "multiple-attempts",
     html: `<p>
-      You have already participated in this study. Participation is limited to one time only.<br/>
+      You have already participated in this study. Participation is limited to one time only.<br/><br/>
       Please <strong>return</strong> your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific.
     </p>`,
   });

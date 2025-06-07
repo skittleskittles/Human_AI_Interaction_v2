@@ -29,8 +29,10 @@ async function initExperimentEnvironment() {
     // 2. Set object count based on `v=zeta`
     if (urlParams.v !== undefined && urlParams.v === "zeta") {
       setObjCount(6);
+      User.num_objects = 6;
     } else {
       setObjCount(5);
+      User.num_objects = 5;
     }
 
     // 3. Set Prolific ID (default to random if missing)
@@ -98,7 +100,6 @@ async function initExperimentEnvironment() {
         bindTrialButtons();
         await loadModal(); // Make sure modal loads before experiment
         await startExperiment(false, false);
-        //await startExperiment(true, true);
       },
     });
   } catch (error) {
