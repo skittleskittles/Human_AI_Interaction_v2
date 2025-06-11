@@ -88,7 +88,7 @@ export function showResultContent() {
       additionalMessage.textContent = "You did not score 100.";
       additionalMessage.style.color = "red";
     } else {
-      additionalMessage.textContent = "You pass this trial! ";
+      additionalMessage.textContent = "You passed this trial! ";
       additionalMessage.style.color = "green";
     }
   }
