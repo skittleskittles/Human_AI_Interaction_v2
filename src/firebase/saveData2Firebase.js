@@ -132,6 +132,7 @@ async function saveOrUpdateExperiment(userDocRef, experiment, endTime) {
         num_trials: experiment.num_trials,
         is_passed_attention_check: experiment.is_passed_attention_check,
         is_finished: experiment.is_finished,
+        total_correct_trials: experiment.total_correct_trials,
       });
     } else {
       await updateDoc(expRef, {
@@ -139,6 +140,7 @@ async function saveOrUpdateExperiment(userDocRef, experiment, endTime) {
         is_passed_attention_check: experiment.is_passed_attention_check,
         is_finished: experiment.is_finished,
         num_trials: experiment.num_trials,
+        total_correct_trials: experiment.total_correct_trials,
       });
     }
     console.log(
@@ -177,7 +179,6 @@ async function saveTrialData(expRef, trial) {
       user_choice: trial.user_choice,
       total_submissions: trial.total_submissions,
       total_steps: trial.total_steps,
-      total_correct_trials: trial.total_correct_trials,
       total_time: trial.total_time,
     });
   } catch (error) {

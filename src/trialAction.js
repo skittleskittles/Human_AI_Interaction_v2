@@ -47,6 +47,7 @@ import {
   updateTrialData,
 } from "./collectData.js";
 import {
+  showConfirmReset,
   showEndGameFailedComprehensionCheckPopUp,
   showEnterMainGamePopUp,
 } from "./modal.js";
@@ -54,7 +55,7 @@ import { timeBox } from "./data/domElements.js";
 
 export function bindTrialButtons() {
   document.getElementById("submit-btn").addEventListener("click", submitTrial);
-  document.getElementById("reset-btn").addEventListener("click", resetTrial);
+  document.getElementById("reset-btn").addEventListener("click", resetConfirm);
   document.getElementById("next-btn").addEventListener("click", nextTrial);
 }
 
@@ -130,7 +131,11 @@ function updateRemainingSubmissionInfo() {
  * Reset Trial
  ********************************************
  */
-function resetTrial() {
+function resetConfirm() {
+  showConfirmReset();
+}
+
+export function resetTrial() {
   const current = getCurQuestionData();
 
   clearBoxes();
@@ -331,20 +336,29 @@ function renderBoxesAndOptions(options, style = []) {
 }
 
 function applyPatternStyle(element, pattern) {
+  //   const base = {
+  //     blank: "lightblue",
+  //     "dotted circles":
+  //       "repeating-radial-gradient(circle, lightblue, lightblue 5px, white 5px, white 10px)",
+  //     "horizontal lines":
+  //       "repeating-linear-gradient(to bottom, lightblue, lightblue 5px, white 5px, white 10px)",
+  //     "vertical lines":
+  //       "repeating-linear-gradient(to right, lightblue, lightblue 5px, white 5px, white 10px)",
+  //     "diagonal stripes":
+  //       "repeating-linear-gradient(45deg, lightblue, lightblue 5px, white 5px, white 10px)",
+  //     "horizontal stripes": `
+  //   repeating-linear-gradient(to right, transparent 0 8px, lightblue 8px 16px),
+  //   repeating-linear-gradient(to bottom, transparent 0 8px, lightblue 8px 16px)
+  // `,
+  //   };
+
   const base = {
-    blank: "lightblue",
-    "dotted circles":
-      "repeating-radial-gradient(circle, lightblue, lightblue 5px, white 5px, white 10px)",
-    "horizontal lines":
-      "repeating-linear-gradient(to bottom, lightblue, lightblue 5px, white 5px, white 10px)",
-    "vertical lines":
-      "repeating-linear-gradient(to right, lightblue, lightblue 5px, white 5px, white 10px)",
-    "diagonal stripes":
-      "repeating-linear-gradient(45deg, lightblue, lightblue 5px, white 5px, white 10px)",
-    "horizontal stripes": `
-  repeating-linear-gradient(to right, transparent 0 8px, lightblue 8px 16px),
-  repeating-linear-gradient(to bottom, transparent 0 8px, lightblue 8px 16px)
-`,
+    blank: "lightblue", // 本身的蓝色
+    "dotted circles": "cornsilk", // 浅黄
+    "horizontal lines": "white", // 白色
+    "vertical lines": "lightgreen", // 浅绿
+    "diagonal stripes": "thistle", // 浅紫
+    "horizontal stripes": "lightsalmon", // 浅橙
   };
 
   element.style.background = base[pattern] || base["blank"];
@@ -440,7 +454,7 @@ export function dbRecordTrial(
   updateTrialData(lastTrial, performance, trialTimeSec, isSubmission);
 
   // Update experiment-level tracking
-  updateExperimentData(curExperiment, isComprehensionCheck(), lastTrial);
+  updateExperimentData(curExperiment, performance, isComprehensionCheck());
 
   // Save to Firestore
   import("./firebase/saveData2Firebase.js").then((module) => {

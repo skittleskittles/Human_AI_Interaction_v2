@@ -1,6 +1,7 @@
 import { modalContainer } from "./data/domElements";
 import { showFeedback } from "./feedback.js";
 import { getComprehensionTrialsNum } from "./data/variable.js";
+import { resetTrial } from "./trialAction.js";
 
 // Load Modal
 export async function loadModal() {
@@ -20,6 +21,9 @@ export function showModal({
   html,
   buttonText = "OK",
   onClose = null,
+  confirmButtons = false,
+  onConfirm = null,
+  onCancel = null,
 }) {
   modalContainer.style.display = "block";
   const modalInfo = document.getElementById("modalInfo");
@@ -28,16 +32,40 @@ export function showModal({
   const overlay = document.getElementById("modalOverlay");
   overlay.style.display = "flex";
 
-  const closeBtn = document.getElementById("closeModal");
-  const newBtn = closeBtn.cloneNode(true);
-  newBtn.textContent = buttonText;
+  const buttonWrapper = document.getElementById("modalButtonWrapper");
+  buttonWrapper.innerHTML = ""; // clear old buttons
 
-  closeBtn.parentNode.replaceChild(newBtn, closeBtn);
+  if (confirmButtons) {
+    // Confirm Button
+    const confirmBtn = document.createElement("button");
+    confirmBtn.textContent = "Confirm";
+    confirmBtn.addEventListener("click", () => {
+      overlay.style.display = "none";
+      if (typeof onConfirm === "function") onConfirm();
+    });
 
-  newBtn.addEventListener("click", () => {
-    overlay.style.display = "none";
-    if (typeof onClose === "function") onClose();
-  });
+    // Cancel Button
+    const cancelBtn = document.createElement("button");
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.style.marginLeft = "10px";
+    cancelBtn.addEventListener("click", () => {
+      overlay.style.display = "none";
+      if (typeof onCancel === "function") onCancel();
+    });
+
+    buttonWrapper.appendChild(confirmBtn);
+    buttonWrapper.appendChild(cancelBtn);
+  } else {
+    // OK Button
+    const okBtn = document.createElement("button");
+    okBtn.textContent = buttonText;
+    okBtn.addEventListener("click", () => {
+      overlay.style.display = "none";
+      if (typeof onClose === "function") onClose();
+    });
+
+    buttonWrapper.appendChild(okBtn);
+  }
 }
 
 export function showEnterComprehensionTrialsPopUp() {
@@ -125,5 +153,15 @@ export function showEndTimePopUp() {
       gameContainer.style.display = "none";
       showFeedback();
     },
+  });
+}
+
+export function showConfirmReset() {
+  showModal({
+    context: "confirm-reset",
+    html: `<p>Are you sure you want to reset?</p>`,
+    confirmButtons: true,
+    onConfirm: () => resetTrial(),
+    onCancel: () => console.log("Reset cancelled"),
   });
 }
