@@ -47,7 +47,6 @@ import {
   updateTrialData,
 } from "./collectData.js";
 import {
-  showConfirmReset,
   showEndGameFailedComprehensionCheckPopUp,
   showEnterMainGamePopUp,
 } from "./modal.js";
@@ -55,7 +54,7 @@ import { timeBox } from "./data/domElements.js";
 
 export function bindTrialButtons() {
   document.getElementById("submit-btn").addEventListener("click", submitTrial);
-  document.getElementById("reset-btn").addEventListener("click", resetConfirm);
+  document.getElementById("reset-btn").addEventListener("click", resetTrial);
   document.getElementById("next-btn").addEventListener("click", nextTrial);
 }
 
@@ -89,13 +88,13 @@ function updateAfterSubmission(userAns, correctChoice, score) {
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
-  console.log(
-    "submissionTimeSec:",
-    submissionTimeSec,
-    "trialTimeSec:",
-    trialTimeSec
-  );
-  console.log("performance:", performance);
+  // console.log(
+  //   "submissionTimeSec:",
+  //   submissionTimeSec,
+  //   "trialTimeSec:",
+  //   trialTimeSec
+  // );
+  // console.log("performance:", performance);
 
   resetSubmissionPerformance();
   resetTimer("submission");
@@ -131,11 +130,7 @@ function updateRemainingSubmissionInfo() {
  * Reset Trial
  ********************************************
  */
-function resetConfirm() {
-  showConfirmReset();
-}
-
-export function resetTrial() {
+function resetTrial() {
   const current = getCurQuestionData();
 
   clearBoxes();
@@ -161,17 +156,8 @@ export function nextTrial() {
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
-  console.log(
-    "submissionTimeSec:",
-    submissionTimeSec,
-    "trialTimeSec:",
-    trialTimeSec
-  );
 
   dbRecordTrial(performance, [], 0, trialTimeSec, false); // Record last trial total time
-
-  resetTimer("trial");
-  startTimer("trial");
 
   if (!isComprehensionCheck() && timeBox.style.display === "none") {
     timeBox.style.display = "block";

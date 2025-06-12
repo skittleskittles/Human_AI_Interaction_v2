@@ -179,7 +179,7 @@ async function saveTrialData(expRef, trial) {
       user_choice: trial.user_choice,
       total_submissions: trial.total_submissions,
       total_steps: trial.total_steps,
-      total_correct_trials: trial.total_correct_trials,
+      cur_total_correct_trials: trial.cur_total_correct_trials,
       total_time: trial.total_time,
     });
   } catch (error) {

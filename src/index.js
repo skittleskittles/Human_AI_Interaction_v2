@@ -9,7 +9,12 @@ import { User } from "./collectData.js";
 import { loadModal } from "./modal.js";
 import { nextTrial, bindTrialButtons } from "./trialAction.js";
 import Papa from "papaparse";
-import { getCurDate, getUrlParameters, generateUID } from "./utils.js";
+import {
+  getCurDate,
+  getUrlParameters,
+  generateUID,
+  shuffleArray,
+} from "./utils.js";
 import {
   checkIfUserExists,
   saveOrUpdateUser,
@@ -21,7 +26,7 @@ import {
   showMultipleAttemptsPopUp,
 } from "./modal.js";
 
-async function initExperimentEnvironment() {
+async function initExperimentEnvironment(shouldShuffle = false) {
   try {
     // 1. Parse URL parameters
     const urlParams = getUrlParameters();
@@ -49,7 +54,12 @@ async function initExperimentEnvironment() {
       download: true,
       header: true,
       complete: async function (results) {
-        const rawData = results.data;
+        let rawData = results.data;
+
+        if (shouldShuffle) {
+          rawData = shuffleArray(rawData);
+        }
+
         const parsedData = rawData.map((row) => {
           const answer = row["Correct Order"].split(",").map((s) => s.trim());
           const options = [...answer].sort();
@@ -152,4 +162,4 @@ export function startGame() {
   nextTrial();
 }
 
-initExperimentEnvironment();
+await initExperimentEnvironment();

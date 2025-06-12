@@ -82,7 +82,7 @@ export function getCurExperimentData() {
  * @property {Choice[]} user_choice
  * @property {Number} total_submissions
  * @property {Number} total_steps
- * @property {number} total_correct_trials
+ * @property {number} cur_total_correct_trials
  * @property {Number} total_time // seconds, 每一轮trial总时间
  */
 /**
@@ -108,7 +108,7 @@ export function createNewTrialData(
     user_choice: [], // []Choice
     total_steps: 0,
     total_submissions: 0,
-    total_correct_trials: 0,
+    cur_total_correct_trials: 0,
     total_time: 0,
   };
 }
@@ -147,7 +147,7 @@ export function updateTrialData(
     trial.total_submissions = performance.submissionCount;
     trial.total_steps = performance.totalSteps;
   }
-  trial.total_correct_trials = performance.correctTrialCount;
+  trial.cur_total_correct_trials = performance.correctTrialCount;
   trial.total_time = trialTimeSec;
 }
 

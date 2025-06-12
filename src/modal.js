@@ -156,12 +156,12 @@ export function showEndTimePopUp() {
   });
 }
 
-export function showConfirmReset() {
-  showModal({
-    context: "confirm-reset",
-    html: `<p>Are you sure you want to reset?</p>`,
-    confirmButtons: true,
-    onConfirm: () => resetTrial(),
-    onCancel: () => console.log("Reset cancelled"),
-  });
-}
+// export function showConfirmReset() {
+//   showModal({
+//     context: "confirm-reset",
+//     html: `<p>Are you sure you want to reset?</p>`,
+//     confirmButtons: true,
+//     onConfirm: () => resetTrial(),
+//     onCancel: () => console.log("Reset cancelled"),
+//   });
+// }

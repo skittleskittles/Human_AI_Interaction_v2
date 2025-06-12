@@ -171,7 +171,7 @@
         font-family: "Fira Code", monospace;
       }
 
-      .buttons-container {
+      /* .buttons-container {
         display: flex;
         justify-content: center;
         position: absolute;
@@ -180,6 +180,26 @@
         transform: translateX(-50%);
         gap: 5rem;
         overflow: auto;
+      } */
+
+      .buttons-container {
+        position: absolute;
+        bottom: 5rem;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #reset-btn {
+        margin-right: auto;
+        margin-left: 4rem;
+      }
+
+      .center-buttons {
+        display: flex;
+        gap: 5rem;
+        margin: 0 auto;
       }
 
       button {
@@ -313,9 +333,11 @@
             <div class="option" draggable="true" id="E">E</div>
           </div>
           <div class="buttons-container">
-            <button id="submit-btn" disabled>SUBMIT</button>
-            <button id="reset-btn" disabled>RESET</button>
-            <button id="next-btn" disabled>NEXT TRIAL</button>
+            <button id="reset-btn" disabled class="left-fixed">RESET</button>
+            <div class="center-buttons">
+              <button id="submit-btn" disabled>SUBMIT</button>
+              <button id="next-btn" disabled>NEXT TRIAL</button>
+            </div>
           </div>
         </div>
 
