@@ -5,7 +5,7 @@ import { User } from "./collectData.js";
 import { dbRecordTrial } from "./trialAction.js";
 import { getCurExperimentData } from "./collectData.js";
 
-const MAX_TIMER_INTERVAL = 20;
+const MAX_TIMER_INTERVAL = 1200;
 
 export const timerManager = {
   timers: {
