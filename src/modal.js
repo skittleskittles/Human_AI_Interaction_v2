@@ -156,6 +156,17 @@ export function showEndTimePopUp() {
   });
 }
 
+export function showErrorModal() {
+  showModal({
+    context: "error-modal",
+    html: `<p>
+      <strong>Network error detected.</strong><br/>
+      Please close this page and contact the researcher via Prolific.<br/>
+      Do not refresh or continue the task, as your progress may not be saved.
+    </p>`,
+  });
+}
+
 // export function showConfirmReset() {
 //   showModal({
 //     context: "confirm-reset",

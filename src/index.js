@@ -6,7 +6,7 @@ import {
   shouldShowComprehensionCheck,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
-import { loadModal } from "./modal.js";
+import { loadModal, showErrorModal } from "./modal.js";
 import { nextTrial, bindTrialButtons } from "./trialAction.js";
 import Papa from "papaparse";
 import {
@@ -109,8 +109,8 @@ async function initExperimentEnvironment(shouldShuffle = false) {
         setQuestionsData(parsedData);
         bindTrialButtons();
         await loadModal(); // Make sure modal loads before experiment
-        // await startExperiment(false, false);
-        await startExperiment(true, true);
+        await startExperiment(false, false);
+        // await startExperiment(true, true);
       },
     });
   } catch (error) {
@@ -125,11 +125,16 @@ async function startExperiment(skipConsent = false, skipComprehension = false) {
      */
     showLoading();
 
-    const userExists = await checkIfUserExists(User.prolific_pid);
-
-    if (userExists) {
-      // multiple attempts, not allowed
-      showMultipleAttemptsPopUp();
+    try {
+      const userExists = await checkIfUserExists(User.prolific_pid);
+      if (userExists) {
+        // multiple attempts, not allowed
+        showMultipleAttemptsPopUp();
+        hideLoading();
+        return;
+      }
+    } catch (error) {
+      showErrorModal();
       hideLoading();
       return;
     }
