@@ -1,11 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Task Demonstration</title>
-    <style>
-      body {
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Task Demonstration</title><style>body {
         display: flex;
         justify-content: center;
         font-family: Arial, sans-serif !important;
@@ -245,14 +238,7 @@
         text-align: left;
         line-height: 1.5;
         overflow: auto;
-      }
-    </style>
-  </head>
-  <body>
-    <div
-      id="loading-overlay"
-      style="
-        position: fixed;
+      }</style><script defer="defer" src="main.bundle.js"></script></head><body><div id="loading-overlay" style="position: fixed;
         inset: 0;
         background-color: rgba(255, 255, 255, 0.8);
         display: none;
@@ -260,133 +246,4 @@
         align-items: center;
         font-size: 24px;
         font-weight: bold;
-        z-index: 9999;
-      "
-    >
-      Loading...
-    </div>
-    <div class="container">
-      <div id="consentContainer"></div>
-
-      <div id="instructionsContainer" style="display: none"></div>
-
-      <div id="modalContainer" style="display: none"></div>
-
-      <div id="gameContainer" style="display: none">
-        <div class="left-panel" style="display: none">
-          <h3>AI Instructions</h3>
-          <p id="ai-instructions">(Instructions from AI will go here)</p>
-        </div>
-
-        <div class="center-panel">
-          <div class="trialID-container">
-            <h3 id="trialID">Trial 1</h3>
-          </div>
-          <div class="drop-container">
-            <div
-              class="label-row-wrapper"
-              style="position: relative; display: flex; justify-content: center"
-            >
-              <div id="label-container" class="label-container">
-                <div class="label">1</div>
-                <div class="label">2</div>
-                <div class="label">3</div>
-                <div class="label">4</div>
-                <div class="label">5</div>
-              </div>
-
-              <div class="position-label-fixed">position</div>
-            </div>
-
-            <div class="box-row" id="dropZone">
-              <div id="box-container" class="box-container">
-                <!-- <div class="box-placeholder"></div> -->
-                <div class="box-group">
-                  <div class="box"></div>
-                  <div class="side-label-under" id="front-side-label">
-                    front
-                  </div>
-                </div>
-                <div class="box-group">
-                  <div class="box"></div>
-                </div>
-                <div class="box-group">
-                  <div class="box"></div>
-                </div>
-                <div class="box-group">
-                  <div class="box"></div>
-                </div>
-                <div class="box-group">
-                  <div class="box"></div>
-
-                  <div class="side-label-under" id="end-side-label">end</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div id="option-container">
-            <div class="option" draggable="true" id="A">A</div>
-            <div class="option" draggable="true" id="B">B</div>
-            <div class="option" draggable="true" id="C">C</div>
-            <div class="option" draggable="true" id="D">D</div>
-            <div class="option" draggable="true" id="E">E</div>
-          </div>
-          <div class="buttons-container">
-            <button id="reset-btn" disabled class="left-fixed">RESET</button>
-            <div class="center-buttons">
-              <button id="submit-btn" disabled>SUBMIT</button>
-              <button id="next-btn" disabled>NEXT TRIAL</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="right-panel">
-          <div id="time-box" style="display: none">
-            <strong>TIME REMAINING:</strong> <span id="timer">20:00</span>
-          </div>
-
-          <div class="info-container">
-            <div class="info-box">
-              <h3>Instructions</h3>
-              <div id="instruction-text">
-                <p>
-                  Determine the correct object order using the given statements.
-                  <br />
-                  You have
-                  <span id="submission-count" style="color: brown">2</span>
-                  submission(s) remaining for this trial.
-                </p>
-              </div>
-            </div>
-            <div id="statement-box" class="info-box">
-              <h3>Statement</h3>
-              <ul>
-                <li>...</li>
-                <li>...</li>
-                <li>...</li>
-              </ul>
-            </div>
-            <div id="result-box" class="info-box">
-              <h3>Results</h3>
-              <div id="result-content" style="display: none">
-                <div>
-                  You got <span id="correct-choice">0</span> objects placed
-                  correctly.
-                </div>
-                <div>Score (0–100): <span id="score">--</span></div>
-                <div id="totalPassMessage">
-                  You have got <span id="correct-trials">0</span> trial(s) 100%
-                  correct so far.
-                </div>
-                <div id="additionalMessage" style="display: none"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="feedbackContainer" style="display: none"></div>
-    </div>
-  </body>
-</html>
+        z-index: 9999;">Loading...</div><div class="container"><div id="consentContainer"></div><div id="instructionsContainer" style="display: none"></div><div id="modalContainer" style="display: none"></div><div id="gameContainer" style="display: none"><div class="left-panel" style="display: none"><h3>AI Instructions</h3><p id="ai-instructions">(Instructions from AI will go here)</p></div><div class="center-panel"><div class="trialID-container"><h3 id="trialID">Trial 1</h3></div><div class="drop-container"><div class="label-row-wrapper" style="position: relative; display: flex; justify-content: center"><div id="label-container" class="label-container"><div class="label">1</div><div class="label">2</div><div class="label">3</div><div class="label">4</div><div class="label">5</div></div><div class="position-label-fixed">position</div></div><div class="box-row" id="dropZone"><div id="box-container" class="box-container"><div class="box-group"><div class="box"></div><div class="side-label-under" id="front-side-label">front</div></div><div class="box-group"><div class="box"></div></div><div class="box-group"><div class="box"></div></div><div class="box-group"><div class="box"></div></div><div class="box-group"><div class="box"></div><div class="side-label-under" id="end-side-label">end</div></div></div></div></div><div id="option-container"><div class="option" draggable="true" id="A">A</div><div class="option" draggable="true" id="B">B</div><div class="option" draggable="true" id="C">C</div><div class="option" draggable="true" id="D">D</div><div class="option" draggable="true" id="E">E</div></div><div class="buttons-container"><button id="reset-btn" disabled="disabled" class="left-fixed">RESET</button><div class="center-buttons"><button id="submit-btn" disabled="disabled">SUBMIT</button> <button id="next-btn" disabled="disabled">NEXT TRIAL</button></div></div></div><div class="right-panel"><div id="time-box" style="display: none"><strong>TIME REMAINING:</strong> <span id="timer">20:00</span></div><div class="info-container"><div class="info-box"><h3>Instructions</h3><div id="instruction-text"><p>Determine the correct object order using the given statements.<br/>You have <span id="submission-count" style="color: brown">2</span> submission(s) remaining for this trial.</p></div></div><div id="statement-box" class="info-box"><h3>Statement</h3><ul><li>...</li><li>...</li><li>...</li></ul></div><div id="result-box" class="info-box"><h3>Results</h3><div id="result-content" style="display: none"><div>You got <span id="correct-choice">0</span> objects placed correctly.</div><div>Score (0–100): <span id="score">--</span></div><div id="totalPassMessage">You have got <span id="correct-trials">0</span> trial(s) 100% correct so far.</div><div id="additionalMessage" style="display: none"></div></div></div></div></div></div><div id="feedbackContainer" style="display: none"></div></div></body></html>

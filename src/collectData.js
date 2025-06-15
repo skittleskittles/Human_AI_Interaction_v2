@@ -3,8 +3,10 @@
  *   - https://docs.google.com/document/d/1bmtTgm39KQYB385JB6DSbq2pWNm6omMeQpxw29AaBP0/edit?tab=t.dire4py9pef7#heading=h.yuzh9ft0k3h8
  */
 
-import { getCurTrialIndex, getObjCount } from "./data/variable.js";
+import { getCurTrialIndex } from "./data/variable.js";
 import { getCurDate } from "./utils.js";
+import { checkIfUserExists } from "./firebase/saveData2Firebase.js";
+import { showMultipleAttemptsPopUp, showErrorModal } from "./modal.js";
 
 /**
  * @typedef {Object} User
@@ -30,6 +32,7 @@ export const User = {
   experiments: [], // Experiment
   num_objects: 5,
 };
+
 
 /**
  * @typedef {Object} Experiment

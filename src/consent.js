@@ -2,6 +2,7 @@ import { consentContainer } from "./data/domElements.js";
 import { showInstructions } from "./instructions.js";
 import { getCurDate } from "./utils.js";
 import { User } from "./collectData.js";
+import { checkUserParticipation } from "./checkUserStatus.js";
 
 export function showConsent() {
   fetch("consent.html")
@@ -16,12 +17,18 @@ export function showConsent() {
         proceedButton.disabled = !this.checked;
       });
 
-      proceedButton.addEventListener("click", function () {
+      proceedButton.addEventListener("click", async function () {
+        const shouldBlock = await checkUserParticipation();
+        if (shouldBlock) return;
+
         consentContainer.style.display = "none";
         User.is_consent = true;
+        User.create_time = getCurDate();
+
         import("./firebase/saveData2Firebase.js").then((module) => {
-          module.saveOrUpdateUser(getCurDate()); // update user data
+          module.saveOrUpdateUser(getCurDate());
         });
+
         showInstructions();
       });
     });

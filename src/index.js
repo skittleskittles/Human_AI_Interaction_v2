@@ -15,16 +15,11 @@ import {
   generateUID,
   shuffleArray,
 } from "./utils.js";
-import {
-  checkIfUserExists,
-  saveOrUpdateUser,
-} from "./firebase/saveData2Firebase.js";
+import { saveOrUpdateUser } from "./firebase/saveData2Firebase.js";
 import { showLoading, hideLoading } from "./uiState.js";
 import { showConsent } from "./consent.js";
-import {
-  showEnterComprehensionTrialsPopUp,
-  showMultipleAttemptsPopUp,
-} from "./modal.js";
+import { showEnterComprehensionTrialsPopUp } from "./modal.js";
+import { checkUserParticipation } from "./checkUserStatus.js";
 
 async function initExperimentEnvironment(shouldShuffle = false) {
   try {
@@ -118,49 +113,30 @@ async function initExperimentEnvironment(shouldShuffle = false) {
   }
 }
 
-async function startExperiment(skipConsent = false, skipComprehension = false) {
-  try {
-    /***
-     * Check Multiple Users
-     */
-    showLoading();
-
-    try {
-      const userExists = await checkIfUserExists(User.prolific_pid);
-      if (userExists) {
-        // multiple attempts, not allowed
-        showMultipleAttemptsPopUp();
-        hideLoading();
-        return;
-      }
-    } catch (error) {
-      showErrorModal();
-      hideLoading();
-      return;
-    }
-
-    User.create_time = getCurDate();
-    const { saveOrUpdateUser } = await import(
-      "./firebase/saveData2Firebase.js"
-    );
-    await saveOrUpdateUser(getCurDate());
-
-    hideLoading();
-
-    if (!skipConsent) {
-      showConsent();
-      return;
-    }
-
-    if (!skipComprehension) {
-      shouldShowComprehensionCheck();
-      showEnterComprehensionTrialsPopUp();
-    }
-    gameContainer.style.display = "flex";
-    startGame();
-  } catch (error) {
-    console.error("❌ Failed to start experiment:", error);
+export async function startExperiment(
+  skipConsent = false,
+  skipComprehension = false
+) {
+  if (!skipConsent) {
+    checkUserParticipation();
+    showConsent();
+    return;
   }
+
+  await continueExperiment(skipConsent, skipComprehension);
+}
+
+async function continueExperiment(skipConsent, skipComprehension) {
+  const shouldBlock = await checkUserParticipation();
+  if (shouldBlock) return;
+
+  if (!skipComprehension) {
+    shouldShowComprehensionCheck();
+    showEnterComprehensionTrialsPopUp();
+  }
+
+  gameContainer.style.display = "flex";
+  startGame();
 }
 
 export function startGame() {

@@ -61,6 +61,10 @@ export function pauseTimer(mode) {
   }
 }
 
+export function clearAllTimers() {
+  Object.keys(timerManager.timers).forEach((mode) => pauseTimer(mode));
+}
+
 export function resumeTimer(mode) {
   const timer = timerManager.timers[mode];
   if (!timer || timer.interval) return; // Already running or invalid mode
@@ -72,6 +76,12 @@ export function resumeTimer(mode) {
 export function resetTimer(mode, value = 0) {
   const timer = timerManager.timers[mode];
   if (timer) timer.seconds = value;
+}
+
+export function restartTimer(mode, value = 0) {
+  pauseTimer(mode);
+  resetTimer(mode, value);
+  startTimer(mode);
 }
 
 export function getTimerValue(mode) {

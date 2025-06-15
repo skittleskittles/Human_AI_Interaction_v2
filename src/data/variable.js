@@ -10,8 +10,8 @@ const MAX_SUBMISSION_LIMIT = 2;
 const NUM_COMPREHENSION_TRIALS = 2;
 
 const BONUS_THRESHOLD = {
-  5: 6, // 5-object condition: start to get bonus for at least 6 correct 
-  6: 6, // 6-object condition: start to get bonus for at least 6 correct 
+  5: 6, // 5-object condition: start to get bonus for at least 6 correct
+  6: 6, // 6-object condition: start to get bonus for at least 6 correct
 };
 
 export const globalState = {

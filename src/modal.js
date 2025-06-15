@@ -1,4 +1,4 @@
-import { modalContainer } from "./data/domElements";
+import { clearPageContent, modalContainer } from "./data/domElements";
 import { showFeedback } from "./feedback.js";
 import { getComprehensionTrialsNum } from "./data/variable.js";
 import { resetTrial } from "./trialAction.js";
@@ -131,6 +131,7 @@ export function showMultipleAttemptsPopUp() {
       Please <strong>return</strong> your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific.
     </p>`,
   });
+  clearPageContent();
 }
 
 export function showEnterMainGamePopUp() {

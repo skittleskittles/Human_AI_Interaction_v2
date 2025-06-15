@@ -15,7 +15,6 @@ import {
   resetSubmissionPerformance,
   shouldEndAttentionCheck,
   getSubmissionLimit,
-  shouldShowComprehensionCheck,
   getComprehensionTrialsNum,
   resetTrialID,
   shouldEndComprehensionCheck,
@@ -35,6 +34,7 @@ import {
   pauseTimer,
   resumeTimer,
   getTimerValue,
+  restartTimer,
 } from "./timer.js";
 import { User } from "./collectData.js";
 import {
@@ -66,6 +66,8 @@ export function bindTrialButtons() {
 function submitTrial() {
   if (remainingSubmissions() <= 0) return;
 
+  const submissionTimeSec = getTimerValue("submission"); // once submit, recore submission interval
+
   const userAns = getUserAnswer();
   let correctChoice, score;
 
@@ -73,10 +75,15 @@ function submitTrial() {
     userAns,
     getCurQuestionData().answer
   ));
-  updateAfterSubmission(userAns, correctChoice, score);
+  updateAfterSubmission(userAns, correctChoice, score, submissionTimeSec);
 }
 
-function updateAfterSubmission(userAns, correctChoice, score) {
+function updateAfterSubmission(
+  userAns,
+  correctChoice,
+  score,
+  submissionTimeSec
+) {
   incrementSteps();
   decrementSubmissions(score);
   updatePerformanceAfterSubmission(correctChoice, score);
@@ -86,9 +93,9 @@ function updateAfterSubmission(userAns, correctChoice, score) {
   refreshInteractionState({ forceEnableNext: true });
 
   const performance = JSON.parse(JSON.stringify(getPerformance()));
-  const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
   // console.log(
+  //   "updateAfterSubmission:",
   //   "submissionTimeSec:",
   //   submissionTimeSec,
   //   "trialTimeSec:",
@@ -97,18 +104,16 @@ function updateAfterSubmission(userAns, correctChoice, score) {
   // console.log("performance:", performance);
 
   resetSubmissionPerformance();
-  resetTimer("submission");
-  startTimer("submission");
+  restartTimer("submission"); // restart submission timer
 
   /* database */
   dbRecordTrial(performance, userAns, submissionTimeSec, trialTimeSec, true);
 
+  /* end comprehension check trials */
   if (isComprehensionCheck()) {
     if (score !== 100 && remainingSubmissions() == 0) {
       showEndGameFailedComprehensionCheckPopUp();
-      pauseTimer("global");
-      pauseTimer("submission");
-      pauseTimer("trial");
+      clearAllTimers();
     }
     if (score === 100 && getCurTrialIndex() === getComprehensionTrialsNum()) {
       // pass comprehension trials
@@ -153,12 +158,13 @@ function initializeAfterReset() {
  ********************************************
  */
 export function nextTrial() {
-  const performance = JSON.parse(JSON.stringify(getPerformance()));
-  const submissionTimeSec = getTimerValue("submission");
-  const trialTimeSec = getTimerValue("trial");
+  /* initial database */
+  if (User.experiments.length === 0) {
+    // Initialize experiment if it doesn't exist
+    dbInitExperimentData();
+  }
 
-  dbRecordTrial(performance, [], 0, trialTimeSec, false); // Record last trial total time
-
+  /* start global timer */
   if (!isComprehensionCheck() && timeBox.style.display === "none") {
     timeBox.style.display = "block";
     startTimer("global");
@@ -166,12 +172,17 @@ export function nextTrial() {
     timeBox.style.display = "none";
   }
 
-  /* initial database */
-  if (User.experiments.length === 0) {
-    // Initialize experiment if it doesn't exist
-    dbInitExperimentData();
-  }
+  /* record last trial data */
+  const performance = JSON.parse(JSON.stringify(getPerformance()));
+  const submissionTimeSec = getTimerValue("submission");
+  const trialTimeSec = getTimerValue("trial");
 
+  restartTimer("trial");
+  restartTimer("submission");
+
+  dbRecordTrial(performance, [], 0, trialTimeSec, false); // Record last trial total time
+
+  /* start next trial */
   if (shouldEndAttentionCheck()) {
     resumeTimer("global");
   }
@@ -196,11 +207,6 @@ function initializeAfterNextTrial() {
   updateRemainingSubmissionInfo();
 
   refreshInteractionState();
-
-  resetTimer("trial");
-  resetTimer("submission");
-  startTimer("trial");
-  startTimer("submission");
 }
 
 /*
