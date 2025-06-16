@@ -26,7 +26,7 @@ export function showFeedback() {
       const aiFeedback = document.getElementById("aiFeedback");
       const submitFeedback = document.getElementById("submitFeedback");
       const radioGroups = document.querySelectorAll("input[type='radio']");
-      const thankYouMessage = document.getElementById("thankYouMessage");
+      let thankYouMessage = document.getElementById("thankYouMessage");
 
       if (globalState.AI_HELP !== AI_HELP_TYPE.NO_AI) {
         aiFeedback.style.display = "block";
@@ -92,20 +92,35 @@ async function submitFeedbackForm(submitButton, thankYouMessage) {
     feedbackData.choices[radio.name] = radio.value;
   });
 
-  submitButton.disabled = true;
-  thankYouMessage.style.display = "block";
-
   await saveFeedbackData(feedbackData);
+
+  submitButton.disabled = true;
+  let message = "";
+  let redirectFn = null;
 
   if (User.is_passed_attention_check) {
     const totalCorrectTrials = getTotalCorrectTrials();
     if (totalCorrectTrials >= getBonusThreshold()) {
-      redirectProlificBonusPayment();
+      message = `Thank you for participating in the game! 
+Your bonus payment will be distributed shortly.
+Now you will be redirected back to Prolific.`;
+      redirectFn = redirectProlificBonusPayment;
     } else {
-      redirectProlificCompleted();
+      message = `Thank you for participating in the game!
+Now you will be redirected back to Prolific.`;
+      redirectFn = redirectProlificCompleted;
     }
   } else {
+    message = `Thank you for participating in the game.
+Now you will be redirected back to Prolific.`;
     showEndGameFailedAllAttentionCheckPopUp();
-    redirectProlificFailedAllAttentionCheck();
+    redirectFn = redirectProlificFailedAllAttentionCheck;
   }
+
+  // update UI first
+  thankYouMessage.textContent = message;
+  thankYouMessage.style.display = "block";
+
+  // redirect
+  redirectFn?.();
 }

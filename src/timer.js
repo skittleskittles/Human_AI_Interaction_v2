@@ -39,6 +39,7 @@ export function startTimer(mode) {
           return;
         }
 
+        // attention check count down: 600
         if (timer.seconds == 600 && !globalState.attentionCheckShown) {
           globalState.attentionCheckPending = true;
         }
