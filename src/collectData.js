@@ -5,8 +5,6 @@
 
 import { getCurTrialIndex } from "./data/variable.js";
 import { getCurDate } from "./utils.js";
-import { checkIfUserExists } from "./firebase/saveData2Firebase.js";
-import { showMultipleAttemptsPopUp, showErrorModal } from "./modal.js";
 
 /**
  * @typedef {Object} User
@@ -32,7 +30,6 @@ export const User = {
   experiments: [], // Experiment
   num_objects: 5,
 };
-
 
 /**
  * @typedef {Object} Experiment

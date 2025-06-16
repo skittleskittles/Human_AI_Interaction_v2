@@ -1,8 +1,8 @@
 import { User } from "./collectData";
 import { checkIfUserExists } from "./firebase/saveData2Firebase";
-import { showMultipleAttemptsPopUp, showErrorModal } from "./modal";
+import { showMultipleAttemptsPopUp } from "./modal";
 
-let userCheckStatus = null; // true / false / "error" / null
+let userCheckStatus = null; // true / false / null
 
 /**
  * Checks if the current user has already participated.
@@ -17,21 +17,10 @@ export async function checkUserParticipation() {
     return true;
   }
 
-  if (userCheckStatus === "error") {
-    showErrorModal();
-    return true;
-  }
-
-  try {
-    const exists = await checkIfUserExists(User.prolific_pid);
-    userCheckStatus = exists;
-    if (exists) {
-      showMultipleAttemptsPopUp();
-      return true;
-    }
-  } catch (error) {
-    userCheckStatus = "error";
-    showErrorModal();
+  const exists = await checkIfUserExists(User.prolific_pid);
+  userCheckStatus = exists;
+  if (exists) {
+    showMultipleAttemptsPopUp();
     return true;
   }
 

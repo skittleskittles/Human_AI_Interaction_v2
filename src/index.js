@@ -6,7 +6,7 @@ import {
   shouldShowComprehensionCheck,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
-import { loadModal, showErrorModal } from "./modal.js";
+import { loadModal } from "./modal.js";
 import { nextTrial, bindTrialButtons } from "./trialAction.js";
 import Papa from "papaparse";
 import {
@@ -16,7 +16,6 @@ import {
   shuffleArray,
 } from "./utils.js";
 import { saveOrUpdateUser } from "./firebase/saveData2Firebase.js";
-import { showLoading, hideLoading } from "./uiState.js";
 import { showConsent } from "./consent.js";
 import { showEnterComprehensionTrialsPopUp } from "./modal.js";
 import { checkUserParticipation } from "./checkUserStatus.js";
