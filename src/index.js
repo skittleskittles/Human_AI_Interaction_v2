@@ -20,7 +20,7 @@ import { showConsent } from "./consent.js";
 import { showEnterComprehensionTrialsPopUp } from "./modal.js";
 import { checkUserParticipation } from "./checkUserStatus.js";
 
-async function initExperimentEnvironment(shouldShuffle = false) {
+async function initExperimentEnvironment(shouldShuffle = true) {
   try {
     // 1. Parse URL parameters
     const urlParams = getUrlParameters();
@@ -51,10 +51,21 @@ async function initExperimentEnvironment(shouldShuffle = false) {
         let rawData = results.data;
 
         if (shouldShuffle) {
-          rawData = shuffleArray(rawData);
+          // split: first 35 (id ∈ [0, 34]) and the rest
+          const first35 = rawData.filter(
+            (row) => Number(row.id) >= 0 && Number(row.id) <= 34
+          );
+          const others = rawData.filter((row) => Number(row.id) > 34);
+
+          // shuffle only the first 35
+          const shuffledFirst35 = shuffleArray(first35);
+
+          // combine
+          rawData = [...shuffledFirst35, ...others];
         }
 
         const parsedData = rawData.map((row) => {
+          const question_id = row["id"];
           const answer = row["Correct Order"].split(",").map((s) => s.trim());
           const options = [...answer].sort();
 
@@ -91,6 +102,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
           const sortedStyle = options.map((name) => styleMap[name]);
 
           return {
+            question_id,
             answer,
             options,
             instruction,

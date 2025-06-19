@@ -168,6 +168,7 @@ async function saveTrialData(expRef, trial) {
     }
     await setDoc(trialRef, {
       trial_id: trial.trial_id,
+      question_id: trial.question_id,
       create_time: trial.create_time,
       end_time: trial.end_time,
       is_attention_check: trial.is_attention_check,

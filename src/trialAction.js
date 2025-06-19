@@ -194,9 +194,10 @@ export function nextTrial() {
 
   if (!advanceTrial(isAttentionCheck() || isComprehensionCheck())) return;
   renderTrial(getCurQuestionData());
-  answer = getCurQuestionData().answer;
 
-  dbInitTrialData(answer); // Init next trial data
+  answer = getCurQuestionData().answer;
+  const questionId = getCurQuestionData().question_id;
+  dbInitTrialData(questionId, answer); // Init next trial data
 }
 
 function initializeAfterNextTrial() {
@@ -375,7 +376,7 @@ function dbInitExperimentData() {
   User.experiments.push(newExperiment);
 }
 
-function dbInitTrialData(answer) {
+function dbInitTrialData(questionId, answer) {
   if (User.experiments.length === 0) {
     // Initialize experiment if it doesn't exist
     dbInitExperimentData();
@@ -404,6 +405,7 @@ function dbInitTrialData(answer) {
 
   const newTrial = createNewTrialData(
     trialId,
+    questionId,
     answer,
     isComprehension,
     isAttention

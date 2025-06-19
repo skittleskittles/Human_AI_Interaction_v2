@@ -1,4 +1,5 @@
 export const attentionTrial5 = {
+  question_id: -3,
   answer: ["A", "B", "C", "D", "E"],
   options: ["A", "B", "C", "D", "E"],
   statements: [
@@ -12,6 +13,7 @@ export const attentionTrial5 = {
 };
 
 export const attentionTrial6 = {
+  question_id: -3,
   answer: ["A", "B", "C", "D", "E", "F"],
   options: ["A", "B", "C", "D", "E", "F"],
   statements: [
@@ -27,6 +29,7 @@ export const attentionTrial6 = {
 
 export const comprehensionTrials = [
   {
+    question_id: -1,
     answer: ["B", "A", "C"],
     options: ["A", "B", "C"], // 按字母顺序排序
     statements: [
@@ -37,6 +40,7 @@ export const comprehensionTrials = [
     front_end: ["front", "end"],
   },
   {
+    question_id: -2,
     answer: ["C", "B", "A"],
     options: ["A", "B", "C"],
     statements: [

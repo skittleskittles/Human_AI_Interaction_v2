@@ -71,6 +71,7 @@ export function getCurExperimentData() {
 /**
  * @typedef {Object} Trial
  * @property {string} trial_id // 1, 2, attention check, 3, ...
+ * @property {number} question_id // 0, 1, 2, 3, ... (comprehension check: -2, -3; attention check: -3)
  * @property {Date} create_time
  * @property {Date} end_time
  * @property {boolean} is_attention_check
@@ -91,12 +92,14 @@ export function getCurExperimentData() {
  */
 export function createNewTrialData(
   trial_id,
+  question_id,
   answer,
   is_comprehension_check,
   is_attention_check
 ) {
   return {
     trial_id,
+    question_id,
     create_time: getCurDate(),
     end_time: getCurDate(),
     is_comprehension_check: is_comprehension_check,
