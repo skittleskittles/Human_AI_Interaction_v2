@@ -46,17 +46,17 @@ async function initExperimentEnvironment(shouldShuffle = true) {
         let rawData = results.data;
 
         if (shouldShuffle) {
-          // split: first 35 (id ∈ [0, 34]) and the rest
-          const first35 = rawData.filter(
-            (row) => Number(row.id) >= 0 && Number(row.id) <= 34
+          // split: first 20 (id ∈ [0, 19]) and the rest
+          const first20 = rawData.filter(
+            (row) => Number(row.id) >= 0 && Number(row.id) <= 19
           );
-          const others = rawData.filter((row) => Number(row.id) > 34);
+          const others = rawData.filter((row) => Number(row.id) > 19);
 
-          // shuffle only the first 35
-          const shuffledFirst35 = shuffleArray(first35);
+          // shuffle only the first 20
+          const shuffledFirst20 = shuffleArray(first20);
 
           // combine
-          rawData = [...shuffledFirst35, ...others];
+          rawData = [...shuffledFirst20, ...others];
         }
 
         const parsedData = rawData.map((row) => {
