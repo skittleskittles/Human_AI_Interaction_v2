@@ -14,6 +14,7 @@ const BONUS_THRESHOLD = {
   6: 6, // 6-object condition: start to get bonus for at least 6 correct
 };
 
+
 export const globalState = {
   AI_HELP: 0,
 

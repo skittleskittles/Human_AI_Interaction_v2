@@ -9,12 +9,7 @@ import { User } from "./collectData.js";
 import { loadModal } from "./modal.js";
 import { nextTrial, bindTrialButtons } from "./trialAction.js";
 import Papa from "papaparse";
-import {
-  getCurDate,
-  getUrlParameters,
-  generateUID,
-  shuffleArray,
-} from "./utils.js";
+import { getUrlParameters, generateUID, shuffleArray } from "./utils.js";
 import { saveOrUpdateUser } from "./firebase/saveData2Firebase.js";
 import { showConsent } from "./consent.js";
 import { showEnterComprehensionTrialsPopUp } from "./modal.js";
