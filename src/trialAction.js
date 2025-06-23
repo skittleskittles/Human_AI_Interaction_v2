@@ -198,7 +198,6 @@ export function nextTrial() {
   answer = getCurQuestionData().answer;
   const questionId = getCurQuestionData().question_id;
 
-  console.log("question_id:", questionId);
   dbInitTrialData(questionId, answer); // Init next trial data
 }
 
