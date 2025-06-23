@@ -2,6 +2,7 @@ import { gameContainer } from "./data/domElements.js";
 import {
   getObjCount,
   setObjCount,
+  getShuffleMaxId,
   setQuestionsData,
   shouldShowComprehensionCheck,
 } from "./data/variable.js";
@@ -46,17 +47,19 @@ async function initExperimentEnvironment(shouldShuffle = true) {
         let rawData = results.data;
 
         if (shouldShuffle) {
-          // split: first 20 (id ∈ [0, 19]) and the rest
-          const first20 = rawData.filter(
-            (row) => Number(row.id) >= 0 && Number(row.id) <= 19
+          const shuffleMaxId = getShuffleMaxId();
+
+          const trialsToShuffle = rawData.filter(
+            (row) => Number(row.id) >= 0 && Number(row.id) <= shuffleMaxId
           );
-          const others = rawData.filter((row) => Number(row.id) > 19);
 
-          // shuffle only the first 20
-          const shuffledFirst20 = shuffleArray(first20);
+          const trialsToKeep = rawData.filter(
+            (row) => Number(row.id) > shuffleMaxId
+          );
 
-          // combine
-          rawData = [...shuffledFirst20, ...others];
+          const shuffledTrials = shuffleArray(trialsToShuffle);
+
+          rawData = [...shuffledTrials, ...trialsToKeep];
         }
 
         const parsedData = rawData.map((row) => {

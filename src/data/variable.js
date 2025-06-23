@@ -1,6 +1,4 @@
-import { pauseTimer, resumeTimer } from "../timer";
 import {
-  attentionTrial,
   attentionTrial5,
   attentionTrial6,
   comprehensionTrials,
@@ -14,6 +12,10 @@ const BONUS_THRESHOLD = {
   6: 6, // 6-object condition: start to get bonus for at least 6 correct
 };
 
+const SHUFFLE_MAX_ID_BY_OBJECT_COUNT = {
+  5: 34, // shuffle trials with id 0–34 (i.e., first 35 trials)
+  6: 19, // shuffle trials with id 0–19 (i.e., first 20 trials)
+};
 
 export const globalState = {
   AI_HELP: 0,
@@ -64,6 +66,13 @@ export function getObjCount() {
   return globalState.objectCount;
 }
 
+/**
+ *
+ */
+export function getShuffleMaxId() {
+  const objCount = getObjCount();
+  return SHUFFLE_MAX_ID_BY_OBJECT_COUNT[objCount] ?? 20;
+}
 /**
  * Trials
  */
