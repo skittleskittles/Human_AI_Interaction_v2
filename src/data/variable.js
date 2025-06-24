@@ -24,7 +24,7 @@ export const globalState = {
 
   questions: [],
   curTrialIndex: 0,
-  curQuestionId: 0,
+  curQuestionIndex: 0,
 
   performance: {
     lastSubmission: {
@@ -42,6 +42,7 @@ export const globalState = {
   /* attention check */
   attentionCheckPending: false,
   attentionCheckShown: false,
+  isAttentionCheckVisible: false,
 
   /* comprehension check */
   comprehensionCheckShown: false,
@@ -87,7 +88,7 @@ export function getCurQuestionData() {
   } else if (isComprehensionCheck()) {
     cur = comprehensionTrials[getCurTrialIndex() - 1];
   } else {
-    cur = globalState.questions[globalState.curQuestionId - 1];
+    cur = globalState.questions[globalState.curQuestionIndex - 1];
   }
   return cur;
 }
@@ -97,9 +98,9 @@ export function getCurTrialIndex() {
   return globalState.curTrialIndex;
 }
 
-export function getCurQuestionId() {
+export function getCurQuestionIndex() {
   // attention check does not count
-  return globalState.curQuestionId;
+  return globalState.curQuestionIndex;
 }
 
 export function advanceTrial(shouldShowSpecialTrials) {
@@ -110,8 +111,8 @@ export function advanceTrial(shouldShowSpecialTrials) {
   }
 
   // normal trial, use questions from questions list
-  globalState.curQuestionId++;
-  if (globalState.curQuestionId > globalState.questions.length) {
+  globalState.curQuestionIndex++;
+  if (globalState.curQuestionIndex > globalState.questions.length) {
     alert("All trials completed!");
     return false;
   }
@@ -218,18 +219,19 @@ export function shouldShowAttentionCheck() {
   ) {
     globalState.attentionCheckPending = false;
     globalState.attentionCheckShown = true;
+    globalState.isAttentionCheckVisible = true;
     return true;
   }
   return false;
 }
 
 export function isAttentionCheck() {
-  return globalState.attentionCheckShown;
+  return globalState.isAttentionCheckVisible;
 }
 
 export function shouldEndAttentionCheck() {
-  if (globalState.attentionCheckShown) {
-    globalState.attentionCheckShown = false;
+  if (globalState.attentionCheckShown && globalState.isAttentionCheckVisible) {
+    globalState.isAttentionCheckVisible = false;
     return true;
   }
   return false;

@@ -18,7 +18,7 @@ import {
   getComprehensionTrialsNum,
   resetTrialID,
   shouldEndComprehensionCheck,
-  getCurQuestionId,
+  getCurQuestionIndex,
   resetTrialPerformance,
 } from "./data/variable.js";
 import {
@@ -260,7 +260,7 @@ function renderBoxesAndOptions(options, style = []) {
   } else {
     document.getElementById("trialID").textContent =
       "Trial " +
-      (isComprehensionCheck() ? getCurTrialIndex() : getCurQuestionId());
+      (isComprehensionCheck() ? getCurTrialIndex() : getCurQuestionIndex());
   }
 
   const optionContainer = document.getElementById("option-container");
@@ -393,7 +393,7 @@ function dbInitTrialData(questionId, answer) {
   } else if (isAttention) {
     trialId = "attention check";
   } else {
-    trialId = getCurQuestionId();
+    trialId = getCurQuestionIndex();
   }
 
   // Check if trial already exists (for comprehension trials only)
