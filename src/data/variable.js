@@ -127,7 +127,7 @@ export function resetTrialID() {
  * Submissions Count
  */
 export function getSubmissionLimit() {
-  if (globalState.attentionCheckShown) {
+  if (globalState.attentionCheckShown && globalState.isAttentionCheckVisible) {
     return 1;
   }
   return MAX_SUBMISSION_LIMIT;
