@@ -41,20 +41,20 @@
         overflow: auto;
       }
       .left-panel {
-        width: 20%;
+        width: 18%;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
       }
       .center-panel {
-        width: 55%;
+        width: 50%;
         font-size: 80%;
         display: flex;
         flex-direction: column;
         position: relative;
       }
       .right-panel {
-        width: 25%;
+        width: 32%;
         display: flex;
         flex-direction: column;
         padding: 1.25rem;
@@ -83,7 +83,7 @@
       }
 
       .label {
-        width: 5.5rem;
+        width: 5.2rem;
         text-align: center;
         font-weight: bold;
         font-size: 0.9rem;
@@ -96,11 +96,11 @@
 
       .position-label {
         position: absolute;
-        left: -5rem;
+        left: -3.8rem;
         top: 0;
         font-weight: bold;
-        font-size: 0.85rem;
-        width: 5.5rem;
+        font-size: 0.8rem;
+        width: 5.2rem;
         text-align: center;
       }
 
@@ -116,7 +116,7 @@
       }
 
       .box {
-        width: 5.5rem;
+        width: 5.2rem;
         min-height: 3.5rem;
         border: 0.1rem solid #000;
         box-sizing: border-box;
@@ -129,10 +129,6 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-      }
-      .box-placeholder {
-        width: 5.5rem;
-        text-align: center;
       }
 
       .side-label-under {
@@ -152,7 +148,7 @@
         padding: 0.625rem;
       }
       .option {
-        width: 4.5rem;
+        width: 4.2rem;
         min-height: 2rem;
         padding: 0.5rem 0.5rem;
         background: lightblue;
@@ -188,7 +184,6 @@
       }
 
       button {
-        margin-right: 0.625rem;
         padding: 0.625rem 1.25rem;
         font-size: 1.1rem;
         background-color: #007bff;
@@ -228,8 +223,12 @@
         font-size: 0.9rem;
         font-weight: bold;
         text-align: left;
-        line-height: 1.3;
+        line-height: 1.5;
         overflow: auto;
+      }
+
+      .info-box p {
+        margin-top: -0.4rem;
       }
 
       .info-box ul {
@@ -359,7 +358,11 @@
                 </p>
               </div>
             </div>
-            <div id="statement-box" class="info-box">
+            <div
+              id="statement-box"
+              class="info-box"
+              style="font-weight: normal"
+            >
               <h3>Statement</h3>
               <ul>
                 <li>...</li>
@@ -378,6 +381,11 @@
                 <div id="totalPassMessage">
                   You have got <span id="correct-trials">0</span> trial(s) 100%
                   correct so far.
+                </div>
+                <div id="askAIMessage" style="display: none">
+                  You’ve used AI
+                  <span id="askAI-count" style="color: blue">0</span> time(s) so
+                  far.
                 </div>
                 <div id="additionalMessage" style="display: none"></div>
               </div>

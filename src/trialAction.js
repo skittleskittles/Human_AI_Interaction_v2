@@ -24,14 +24,32 @@ import {
   decrementAskAICount,
   remainingAskAICount,
   resetAskAICount,
+  PHASE_NAME,
+  getCurPhase,
+  incrementCurrentPhaseTrialCount,
+  phaseTimerEnded,
+  getCurrentPhaseTrialCount,
+  getNoAIPhaseTrialsLimit,
+  canEndPhase,
+  setCurPhase,
+  resetCurrentPhaseTrialCount,
+  setPhaseTimerEnded,
+  isAllowedAskAITrials,
+  incrementAskAICount,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
   showResultContent,
   hideResultContent,
+  updateUseAIMessage,
 } from "./uiState.js";
 import { bindDragDropEvents } from "./dragDrop.js";
-import { getUserAnswer, evaluateAnswer, addPxAndRem } from "./utils.js";
+import {
+  getUserAnswer,
+  evaluateAnswer,
+  addPxAndRem,
+  escapeRegExp,
+} from "./utils.js";
 import {
   startTimer,
   resetTimer,
@@ -53,8 +71,12 @@ import {
 import {
   showEndGameFailedComprehensionCheckPopUp,
   showEnterMainGamePopUp,
+  showEndTimePopUp,
+  showEnterPhase2,
+  showEnterPhase3,
 } from "./modal.js";
 import { timeBox } from "./data/domElements.js";
+import { disableDrag } from "./dragDrop.js";
 
 export function bindTrialButtons() {
   document.getElementById("submit-btn").addEventListener("click", submitTrial);
@@ -164,7 +186,7 @@ function initializeAfterReset() {
  * Next Trial
  ********************************************
  */
-export function nextTrial() {
+export async function nextTrial() {
   /* initial database */
   if (User.experiments.length === 0) {
     // Initialize experiment if it doesn't exist
@@ -174,29 +196,40 @@ export function nextTrial() {
   /* start global timer */
   if (!isComprehensionCheck() && timeBox.style.display === "none") {
     timeBox.style.display = "block";
-    startTimer("global");
+    startTimer(PHASE_NAME.PHASE1);
   } else if (isComprehensionCheck()) {
     timeBox.style.display = "none";
   }
 
-  /* record last trial data */
-  const performance = JSON.parse(JSON.stringify(getPerformance()));
-  const submissionTimeSec = getTimerValue("submission");
-  const trialTimeSec = getTimerValue("trial");
+  /* complete last trial */
+  if (getCurTrialIndex() > 0) {
+    /* record last trial data */
+    const performance = JSON.parse(JSON.stringify(getPerformance()));
+    const submissionTimeSec = getTimerValue("submission");
+    const trialTimeSec = getTimerValue("trial");
 
-  restartTimer("trial");
-  restartTimer("submission");
+    incrementCurrentPhaseTrialCount();
+    restartTimer("trial");
+    restartTimer("submission");
 
-  dbRecordTrial(performance, [], 0, trialTimeSec, false); // Record last trial total time
+    dbRecordTrial(performance, [], 0, trialTimeSec, false); // Record last trial total time
+
+    if (canEndPhase()) {
+      await proceedToNextPhase();
+      if (getCurPhase() == PHASE_NAME.PHASE3) {
+        return;
+      }
+    }
+  }
 
   /* start next trial */
   if (shouldEndAttentionCheck()) {
-    resumeTimer("global");
+    resumeTimer(getCurPhase());
   }
 
   let answer = [];
   if (shouldShowAttentionCheck()) {
-    pauseTimer("global");
+    pauseTimer(getCurPhase());
   }
 
   if (!advanceTrial(isAttentionCheck() || isComprehensionCheck())) return;
@@ -217,6 +250,64 @@ function initializeAfterNextTrial() {
   updateRemainingSubmissionInfo();
 
   refreshInteractionState();
+}
+
+/*
+ ********************************************
+ * Phase switch
+ ********************************************
+ */
+export function proceedToNextPhase() {
+  return new Promise((resolve) => {
+    if (getCurPhase() === PHASE_NAME.PHASE1) {
+      showEnterPhase2(() => {
+        setCurPhase(PHASE_NAME.PHASE2);
+        resetCurrentPhaseTrialCount();
+        setPhaseTimerEnded(false);
+        startTimer(PHASE_NAME.PHASE2);
+        resolve();
+      });
+    } else if (getCurPhase() === PHASE_NAME.PHASE2) {
+      showEnterPhase3(() => {
+        setCurPhase(PHASE_NAME.PHASE3);
+        resetCurrentPhaseTrialCount();
+        setPhaseTimerEnded(false);
+        startTimer(PHASE_NAME.PHASE3);
+        resolve();
+      });
+    } else if (getCurPhase() === PHASE_NAME.PHASE3) {
+      handleTimeOut(); // todo fsy: after submit feedback
+      resolve();
+    } else {
+      resolve(); // fallback
+    }
+  });
+}
+
+function handleTimeOut() {
+  // disbale all buttons
+  document.getElementById("submit-btn").disabled = true;
+  document.getElementById("reset-btn").disabled = true;
+  document.getElementById("next-btn").disabled = true;
+
+  // disable drag
+  disableDrag();
+
+  // end game and show feedback page
+  showEndTimePopUp();
+
+  pauseTimer("submission");
+  pauseTimer("trial");
+
+  // update db
+  const curExperiment = getCurExperimentData();
+  curExperiment.is_finished = true;
+  User.is_passed_all_experiments = User.is_passed_attention_check;
+
+  const performance = JSON.parse(JSON.stringify(getPerformance()));
+  const trialTimeSec = getTimerValue("trial");
+
+  dbRecordTrial(performance, [], 0, trialTimeSec, false);
 }
 
 /*
@@ -257,15 +348,18 @@ function appendChat(sender, message) {
 function showAskAIAnswers() {
   const askAIBtn = document.getElementById("askAI-btn");
   if (askAIBtn.dataset.locked === "true") {
-    const tooltipText =
+    let tooltipText =
       remainingAskAICount() <= 0
         ? "You’ve reached the hint limit for this trial."
         : "Please place all objects first.";
+    if (!isAllowedAskAITrials()) {
+      tooltipText = "AI help is not available for this trial.";
+    }
     showAskAITooltip(tooltipText);
     return;
   }
 
-  decrementAskAICount();
+  incrementAskAICount();
   refreshInteractionState({ forceDisableAskAI: true });
   appendChat("User", "Randomly revealed 2 objects location");
   const [obj1, obj2] = getRandomTwoFromCorrectOrder();
@@ -277,6 +371,7 @@ function showAskAIAnswers() {
     );
     refreshInteractionState();
   }, 500);
+  updateUseAIMessage();
 }
 
 function showAskAITooltip(message) {
@@ -302,7 +397,7 @@ function renderTrial(trial) {
   renderInstructions(trial.instruction);
   renderAIChat();
   renderBoxesAndOptions(trial.options, trial.style);
-  renderStatements(trial.statements);
+  renderStatements(trial.statements, trial.answer);
   updateSideLabels(trial.front_end);
   initializeAfterNextTrial();
 }
@@ -313,25 +408,20 @@ function renderInstructions(instructionText) {
 
   if (isAttentionCheck()) {
     instruction = `<p>
-      This is the attention check trial.<br/>
-      The timer is paused for this trial.<br/>
-      You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.<br/>
-      You need to score 100 to pass this trial.<br/>
-      If you fail the attention check, you will not get the bonus payment regardless of your overall performance. 
-    </p>`;
+      This is the attention check trial.</p>
+      <p>The timer is paused for this trial.</p>
+      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.</p>
+      <p>You need to score 100 to pass this trial.</p>
+      <p>If you fail the attention check, you will not get the bonus payment regardless of your overall performance.</p>`;
   } else if (isComprehensionCheck()) {
-    instruction = `<p>
-      This is a comprehension check trial.<br/>
-      You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.<br/>
-      You need to score 100 to pass this trial.<br/>
-      If you fail this trial twice, the experiment ends automatically. 
-    </p>`;
+    instruction = `<p>This is a comprehension check trial.</p>
+      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.</p>
+      <p>You need to score 100 to pass this trial.</p>
+      <p>If you fail this trial twice, the experiment ends automatically.</p>`;
   } else {
-    instruction = `<p>
-        ${instructionText}<br/>
-        You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.<br/>
-        Maximize your score with minimal time.
-      </p>`;
+    instruction = `<p>${instructionText}</p>
+      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.</p>
+      <p>Maximize your score with minimal time.</p>`;
   }
 
   document.getElementById("instruction-text").innerHTML = instruction;
@@ -453,9 +543,22 @@ function applyPatternStyle(element, pattern) {
   element.style.background = base[pattern] || base["blank"];
 }
 
-function renderStatements(statements) {
+function renderStatements(statements, answers) {
   const list = document.querySelector("#statement-box ul");
-  list.innerHTML = statements.map((s) => `<li>${s}</li>`).join("");
+
+  const rendered = statements.map((s) => {
+    let highlighted = s;
+    answers.forEach((answer) => {
+      const regex = new RegExp(`\\b${escapeRegExp(answer)}\\b`, "gi");
+      highlighted = highlighted.replace(
+        regex,
+        (match) => `<strong>${match}</strong>`
+      );
+    });
+    return `<li>${highlighted}</li>`;
+  });
+
+  list.innerHTML = rendered.join("");
 }
 
 function updateSideLabels(front_end) {

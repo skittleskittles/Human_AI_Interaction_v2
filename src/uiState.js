@@ -1,5 +1,6 @@
 import {
   getPerformance,
+  getTrialTotalAskAICount,
   hasSubmittedThisTrial,
   isAllowedAskAITrials,
   isAttentionCheck,
@@ -35,7 +36,9 @@ export function refreshInteractionState({
   const canReset =
     !allInStartZone && remainingSubmissions() > 0 && score !== 100;
   const canNext = isComprehensionCheck() ? score === 100 : forceEnableNext;
-  const canAskAI = forceDisableAskAI ? false : allFilled && remainingAskAICount() > 0 && isAllowedAskAITrials();
+  const canAskAI = forceDisableAskAI
+    ? false
+    : allFilled && remainingAskAICount() > 0 && isAllowedAskAITrials();
 
   updateButtons({
     submit: canSubmit,
@@ -107,6 +110,16 @@ export function showResultContent() {
       additionalMessage.style.color = "green";
     }
   }
+
+  updateUseAIMessage();
+}
+
+export function updateUseAIMessage() {
+  document.getElementById("askAIMessage").style.display = isAllowedAskAITrials()
+    ? "block"
+    : "none";
+  document.getElementById("askAI-count").textContent =
+    getTrialTotalAskAICount();
 }
 
 export function hideResultContent() {

@@ -9,6 +9,8 @@ const MAX_ASK_AI_LIMIT = 2;
 const NUM_COMPREHENSION_TRIALS = 2;
 const NUM_REVEAL_OBJECTS = 2;
 
+const NO_AI_PHASE_TRIALS_LIMIT = 1; // todo fsy
+
 const BONUS_THRESHOLD = {
   5: 6, // 5-object condition: start to get bonus for at least 6 correct
   6: 6, // 6-object condition: start to get bonus for at least 6 correct
@@ -19,9 +21,10 @@ const SHUFFLE_MAX_ID_BY_OBJECT_COUNT = {
   6: 19, // shuffle trials with id 0–19 (i.e., first 20 trials)
 };
 
-const PHASE_2_THRESHOLD = {
-  minTrials: 4,
-  maxMinutes: 20
+export const PHASE_NAME = {
+  PHASE1: "phase1",
+  PHASE2: "phase2",
+  PHASE3: "phase3",
 };
 
 export const globalState = {
@@ -33,6 +36,11 @@ export const globalState = {
   curTrialIndex: 0, // 1 based
   curQuestionIndex: 0, // 1 based
 
+  /* phase */
+  curPhase: PHASE_NAME.PHASE1, // phase1 | phase2 | phase3
+  phaseTimerEnded: false,
+  currentPhaseTrialCount: 0,
+
   performance: {
     lastSubmission: {
       correctChoice: 0, // Number of correctly placed objects in the most recent submission
@@ -42,6 +50,7 @@ export const globalState = {
     submissionCount: 0, // Total number of submissions in the current trial
     totalSteps: 0, // Total number of drag steps across all submissions in the current trial
     correctTrialCount: 0, // Total number of 100% correct trials
+    totalAskAICount: 0,
   },
 
   remainingAskAICount: MAX_ASK_AI_LIMIT,
@@ -81,6 +90,52 @@ export function getObjCount() {
 export function getShuffleMaxId() {
   const objCount = getObjCount();
   return SHUFFLE_MAX_ID_BY_OBJECT_COUNT[objCount] ?? 20;
+}
+
+/**
+ * Phase
+ */
+export function getCurPhase() {
+  return globalState.curPhase;
+}
+
+export function setCurPhase(phaseName) {
+  globalState.curPhase = phaseName;
+}
+
+export function phaseTimerEnded() {
+  return globalState.phaseTimerEnded;
+}
+
+export function setPhaseTimerEnded(phaseEnded) {
+  globalState.phaseTimerEnded = phaseEnded;
+}
+
+export function getNoAIPhaseTrialsLimit() {
+  return NO_AI_PHASE_TRIALS_LIMIT;
+}
+
+export function incrementCurrentPhaseTrialCount() {
+  globalState.currentPhaseTrialCount++;
+}
+
+export function resetCurrentPhaseTrialCount() {
+  globalState.currentPhaseTrialCount = 0;
+}
+
+export function getCurrentPhaseTrialCount() {
+  return globalState.currentPhaseTrialCount;
+}
+
+export function canEndPhase() {
+  // NoAI Phase
+  if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE3].includes(getCurPhase())) {
+    return (
+      phaseTimerEnded() &&
+      getCurrentPhaseTrialCount() >= getNoAIPhaseTrialsLimit()
+    );
+  }
+  return phaseTimerEnded();
 }
 
 /**
@@ -139,12 +194,15 @@ export function getRevealCounts() {
   return NUM_REVEAL_OBJECTS;
 }
 
-// todo fsy: comprehensionCheck allowed ask ai
+// todo fsy: comprehensionCheck allowed ask ai?
 export function isAllowedAskAITrials() {
   return (
-    !isComprehensionCheck() && !isAttentionCheck() && getCurQuestionIndex() >= 1
+    !isComprehensionCheck() &&
+    !isAttentionCheck() &&
+    getCurPhase() === PHASE_NAME.PHASE2
   );
 }
+
 export function getAskAILimit() {
   return MAX_ASK_AI_LIMIT;
 }
@@ -157,10 +215,15 @@ export function resetAskAICount() {
   globalState.remainingAskAICount = getAskAILimit();
 }
 
-export function decrementAskAICount() {
+export function incrementAskAICount() {
   if (globalState.remainingAskAICount > 0) {
     globalState.remainingAskAICount--;
   }
+  globalState.performance.totalAskAICount++;
+}
+
+export function getTrialTotalAskAICount() {
+  return globalState.performance.totalAskAICount;
 }
 
 /**
@@ -246,6 +309,14 @@ export function getBonusThreshold() {
 /**
  * Attention Check
  */
+export function enableAttentionCheckPending() {
+  globalState.attentionCheckPending = true;
+}
+
+export function attentionCheckShown() {
+  return globalState.attentionCheckShown;
+}
+
 export function shouldShowAttentionCheck() {
   if (
     globalState.attentionCheckPending &&

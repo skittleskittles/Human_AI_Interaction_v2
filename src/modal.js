@@ -138,8 +138,32 @@ export function showEnterMainGamePopUp() {
   showModal({
     context: "start-main-game",
     html: `<p>
-      You’ve passed the comprehension check. You may now begin the main study by clicking <strong>NEXT TRIAL</strong>.
+      You’ve passed the comprehension check. 
+      You may now begin the main study <strong>Phase 1</strong> by clicking <strong>NEXT TRIAL</strong>.
     </p>`,
+  });
+}
+
+export function showEnterPhase2(onCloseFunc) {
+  showModal({
+    context: "enter-phase2",
+    html: `<p>
+      Now you will move to <strong>Phase 2</strong>.<br/>
+      You will have <strong>20 minutes</strong> for this phase.
+    </p>`,
+    onClose: onCloseFunc,
+  });
+}
+
+export function showEnterPhase3(onCloseFunc) {
+  showModal({
+    context: "enter-phase3",
+    html: `<p>
+      You're entering <strong>Phase 3</strong>.<br/>
+      This final stage lasts around 8 minute with <em>no AI help</em>.<br/>
+      Do your best!
+    </p>`,
+    onClose: onCloseFunc,
   });
 }
 

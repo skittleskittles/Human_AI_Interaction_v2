@@ -1,18 +1,21 @@
-import { globalState, getPerformance } from "./data/variable.js";
-import { disableDrag } from "./dragDrop.js";
-import { showEndTimePopUp } from "./modal.js";
-import { User } from "./collectData.js";
-import { dbRecordTrial } from "./trialAction.js";
-import { getCurExperimentData } from "./collectData.js";
+import {
+  PHASE_NAME,
+  attentionCheckShown,
+  enableAttentionCheckPending,
+  setPhaseTimerEnded,
+} from "./data/variable.js";
 
-const MAX_TIMER_INTERVAL = 1200;
-const PHASE1_DURATION = 8 * 60;
+// const PHASE1_DURATION = 8 * 60;
+// const PHASE2_DURATION = 20 * 60;
+// const PHASE3_DURATION = 8 * 60;
+
+// todo fsy
+const PHASE1_DURATION = 10;
 const PHASE2_DURATION = 20 * 60;
-const PHASE3_DURATION = 8 * 60;
+const PHASE3_DURATION = 10;
 
 export const timerManager = {
   timers: {
-    global: { seconds: MAX_TIMER_INTERVAL, interval: null },
     phase1: { seconds: PHASE1_DURATION, interval: null },
     phase2: { seconds: PHASE2_DURATION, interval: null },
     phase3: { seconds: PHASE3_DURATION, interval: null },
@@ -34,30 +37,43 @@ export function startTimer(mode) {
     if (elapsedSec >= 1) {
       lastUpdateTime = now;
 
-      if (mode === "global") {
+      // Phase 1/2/3 countdown
+      if (
+        [PHASE_NAME.PHASE1, PHASE_NAME.PHASE2, PHASE_NAME.PHASE3].includes(mode)
+      ) {
         timer.seconds -= elapsedSec;
 
         if (timer.seconds <= 0) {
+          timer.seconds = 0;
           clearInterval(timer.interval);
           timer.interval = null;
-          document.getElementById("timer").textContent = "00:00";
-          handleTimeOut();
+
+          setPhaseTimerEnded(true);
+
           return;
         }
 
-        // attention check count down: 600
-        if (timer.seconds <= 600 && !globalState.attentionCheckShown) {
-          globalState.attentionCheckPending = true;
+        // attention check count down: 600 // todo fsy
+        if (
+          mode == PHASE_NAME.PHASE2 &&
+          timer.seconds <= 600 &&
+          !attentionCheckShown()
+        ) {
+          enableAttentionCheckPending();
         }
 
+        // update UI
         const min = String(Math.floor(timer.seconds / 60)).padStart(2, "0");
         const sec = String(timer.seconds % 60).padStart(2, "0");
         document.getElementById("timer").textContent = `${min}:${sec}`;
-      } else if (document.visibilityState === "visible") {
+      }
+
+      // Accumulative timers (e.g. trial, submission)
+      else if (document.visibilityState === "visible") {
         timer.seconds += elapsedSec;
       }
     }
-  }, 500); // Check frequently for better accuracy
+  }, 500);
 }
 
 export function pauseTimer(mode) {
@@ -93,30 +109,4 @@ export function restartTimer(mode, value = 0) {
 
 export function getTimerValue(mode) {
   return timerManager.timers[mode]?.seconds ?? 0;
-}
-
-function handleTimeOut() {
-  // disbale all buttons
-  document.getElementById("submit-btn").disabled = true;
-  document.getElementById("reset-btn").disabled = true;
-  document.getElementById("next-btn").disabled = true;
-
-  // disable drag
-  disableDrag();
-
-  // end game and show feedback page
-  showEndTimePopUp();
-
-  pauseTimer("submission");
-  pauseTimer("trial");
-
-  // update db
-  const curExperiment = getCurExperimentData();
-  curExperiment.is_finished = true;
-  User.is_passed_all_experiments = User.is_passed_attention_check;
-
-  const performance = JSON.parse(JSON.stringify(getPerformance()));
-  const trialTimeSec = getTimerValue("trial");
-
-  dbRecordTrial(performance, [], 0, trialTimeSec, false);
 }

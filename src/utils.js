@@ -53,6 +53,10 @@ export function generateUID(length = 16) {
   return "test_" + uid;
 }
 
+export function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 /**
  * Adds a pixel value and rem value together and returns the result in px.
  * @param {number} px - The base pixel value.
