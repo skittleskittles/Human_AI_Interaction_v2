@@ -77,6 +77,7 @@ module.exports = {
         { from: "./pages/modal.html", to: "modal.html" },
         { from: "./pages/feedback.html", to: "feedback.html" },
         { from: "./styles/instruction.css", to: "instruction.css" },
+        { from: "./styles/askAI.css", to: "askAI.css" },
       ],
     }),
   ],

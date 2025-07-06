@@ -5,7 +5,9 @@ import {
 } from "./specialTrials";
 
 const MAX_SUBMISSION_LIMIT = 2;
+const MAX_ASK_AI_LIMIT = 2;
 const NUM_COMPREHENSION_TRIALS = 2;
+const NUM_REVEAL_OBJECTS = 2;
 
 const BONUS_THRESHOLD = {
   5: 6, // 5-object condition: start to get bonus for at least 6 correct
@@ -17,14 +19,19 @@ const SHUFFLE_MAX_ID_BY_OBJECT_COUNT = {
   6: 19, // shuffle trials with id 0–19 (i.e., first 20 trials)
 };
 
+const PHASE_2_THRESHOLD = {
+  minTrials: 4,
+  maxMinutes: 20
+};
+
 export const globalState = {
   AI_HELP: 0,
 
   objectCount: 5,
 
   questions: [],
-  curTrialIndex: 0,
-  curQuestionIndex: 0,
+  curTrialIndex: 0, // 1 based
+  curQuestionIndex: 0, // 1 based
 
   performance: {
     lastSubmission: {
@@ -37,6 +44,7 @@ export const globalState = {
     correctTrialCount: 0, // Total number of 100% correct trials
   },
 
+  remainingAskAICount: MAX_ASK_AI_LIMIT,
   remainingSubmissions: MAX_SUBMISSION_LIMIT,
 
   /* attention check */
@@ -68,12 +76,13 @@ export function getObjCount() {
 }
 
 /**
- *
+ * Shuffle Count
  */
 export function getShuffleMaxId() {
   const objCount = getObjCount();
   return SHUFFLE_MAX_ID_BY_OBJECT_COUNT[objCount] ?? 20;
 }
+
 /**
  * Trials
  */
@@ -121,6 +130,37 @@ export function advanceTrial(shouldShowSpecialTrials) {
 
 export function resetTrialID() {
   globalState.curTrialIndex = 0;
+}
+
+/**
+ * Ask AI
+ */
+export function getRevealCounts() {
+  return NUM_REVEAL_OBJECTS;
+}
+
+// todo fsy: comprehensionCheck allowed ask ai
+export function isAllowedAskAITrials() {
+  return (
+    !isComprehensionCheck() && !isAttentionCheck() && getCurQuestionIndex() >= 1
+  );
+}
+export function getAskAILimit() {
+  return MAX_ASK_AI_LIMIT;
+}
+
+export function remainingAskAICount() {
+  return globalState.remainingAskAICount;
+}
+
+export function resetAskAICount() {
+  globalState.remainingAskAICount = getAskAILimit();
+}
+
+export function decrementAskAICount() {
+  if (globalState.remainingAskAICount > 0) {
+    globalState.remainingAskAICount--;
+  }
 }
 
 /**

@@ -4,12 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Task Demonstration</title>
+    <link rel="stylesheet" href="askAI.css" />
     <style>
       body {
         display: flex;
         justify-content: center;
         font-family: Arial, sans-serif !important;
-        font-size: 1.125rem !important;
+        font-size: 1rem !important;
         line-height: normal !important;
         text-align: center;
         margin: 0;
@@ -32,25 +33,28 @@
       .left-panel,
       .center-panel,
       .right-panel {
-        margin: 1rem;
+        margin: 0.5rem;
         border: 0.0625rem solid #ccc;
         background: #f9f9f9;
-        height: calc(100vh - 2.5rem);
+        height: calc(100vh - 1rem);
         box-sizing: border-box;
         overflow: auto;
       }
       .left-panel {
         width: 20%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
       }
       .center-panel {
-        width: 65%;
+        width: 55%;
         font-size: 80%;
         display: flex;
         flex-direction: column;
         position: relative;
       }
       .right-panel {
-        width: 35%;
+        width: 25%;
         display: flex;
         flex-direction: column;
         padding: 1.25rem;
@@ -58,7 +62,7 @@
 
       .trialID-container {
         margin: 3%;
-        font-size: 1.125rem;
+        font-size: 1.1rem;
         font-weight: bold;
         line-height: 1.6;
       }
@@ -82,7 +86,7 @@
         width: 5.5rem;
         text-align: center;
         font-weight: bold;
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin-bottom: 0.3125rem;
       }
 
@@ -90,12 +94,12 @@
         position: relative;
       }
 
-      .position-label-fixed {
+      .position-label {
         position: absolute;
-        left: -5.5rem;
+        left: -5rem;
         top: 0;
         font-weight: bold;
-        font-size: 1rem;
+        font-size: 0.85rem;
         width: 5.5rem;
         text-align: center;
       }
@@ -133,15 +137,7 @@
 
       .side-label-under {
         margin-top: 0.25rem;
-        font-size: 1rem;
-        font-weight: bold;
-        color: #333;
-      }
-
-      #position-label {
-        width: 5.5rem;
-        text-align: right;
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: bold;
         color: #333;
       }
@@ -170,17 +166,6 @@
         font-weight: bold;
         font-family: "Fira Code", monospace;
       }
-
-      /* .buttons-container {
-        display: flex;
-        justify-content: center;
-        position: absolute;
-        bottom: 5rem;
-        left: 50%;
-        transform: translateX(-50%);
-        gap: 5rem;
-        overflow: auto;
-      } */
 
       .buttons-container {
         position: absolute;
@@ -221,7 +206,7 @@
       }
 
       #time-box {
-        font-size: 1.125rem;
+        font-size: 1.1rem;
         font-weight: bold;
         color: #333;
         margin: 2%;
@@ -236,15 +221,20 @@
       }
 
       .info-box {
-        padding: 0 1.25rem 0.625rem 1.25rem;
+        padding: 0 1rem 0.625rem 1rem;
         background-color: #fff;
         border: 0.125rem solid #171717;
         box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: bold;
         text-align: left;
-        line-height: 1.5;
+        line-height: 1.3;
         overflow: auto;
+      }
+
+      .info-box ul {
+        padding-left: 0.8rem;
+        margin: 0;
       }
     </style>
   </head>
@@ -273,9 +263,19 @@
       <div id="modalContainer" style="display: none"></div>
 
       <div id="gameContainer" style="display: none">
-        <div class="left-panel" style="display: none">
-          <h3>AI Instructions</h3>
-          <p id="ai-instructions">(Instructions from AI will go here)</p>
+        <div class="left-panel">
+          <div id="ai-chat">
+            <div class="chat-bubble ai">
+              <div class="avatar">🤖</div>
+              <div class="message"><strong>AI:</strong> How can I help?</div>
+            </div>
+          </div>
+          <div class="askAI-container">
+            <button id="askAI-btn" data-locked="false">
+              Reveal <span id="reveal-objects">2</span> Objects' Locations
+            </button>
+            <div id="askAITooltip" style="display: none"></div>
+          </div>
         </div>
 
         <div class="center-panel">
@@ -295,7 +295,7 @@
                 <div class="label">5</div>
               </div>
 
-              <div class="position-label-fixed">position</div>
+              <div class="position-label">position</div>
             </div>
 
             <div class="box-row" id="dropZone">

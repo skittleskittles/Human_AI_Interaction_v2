@@ -1,8 +1,10 @@
 import {
   getPerformance,
   hasSubmittedThisTrial,
+  isAllowedAskAITrials,
   isAttentionCheck,
   isComprehensionCheck,
+  remainingAskAICount,
   remainingSubmissions,
 } from "./data/variable.js";
 import { disableDrag, enableDrag } from "./dragDrop.js";
@@ -13,6 +15,7 @@ import { User } from "./collectData.js";
  */
 export function refreshInteractionState({
   forceEnableNext = hasSubmittedThisTrial(),
+  forceDisableAskAI = false,
 } = {}) {
   // check if all boxes are filled
   const boxes = document.querySelectorAll(".box");
@@ -32,11 +35,13 @@ export function refreshInteractionState({
   const canReset =
     !allInStartZone && remainingSubmissions() > 0 && score !== 100;
   const canNext = isComprehensionCheck() ? score === 100 : forceEnableNext;
+  const canAskAI = forceDisableAskAI ? false : allFilled && remainingAskAICount() > 0 && isAllowedAskAITrials();
 
   updateButtons({
     submit: canSubmit,
     reset: canReset,
     next: canNext,
+    askAI: canAskAI,
   });
 
   if (remainingSubmissions() === 0) {
@@ -46,10 +51,20 @@ export function refreshInteractionState({
   }
 }
 
-export function updateButtons({ submit, reset, next }) {
+export function updateButtons({ submit, reset, next, askAI }) {
   document.getElementById("submit-btn").disabled = !submit;
   document.getElementById("reset-btn").disabled = !reset;
   document.getElementById("next-btn").disabled = !next;
+
+  const askAIBtn = document.getElementById("askAI-btn");
+  if (askAI) {
+    askAIBtn.classList.remove("disabled-visual");
+    askAIBtn.dataset.locked = "false";
+  } else {
+    askAIBtn.classList.add("disabled-visual");
+    askAIBtn.dataset.locked = "true";
+  }
+  // document.getElementById("askAI-btn").disabled = !askAI;
 }
 
 /***

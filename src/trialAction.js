@@ -20,6 +20,10 @@ import {
   shouldEndComprehensionCheck,
   getCurQuestionIndex,
   resetTrialPerformance,
+  getRevealCounts,
+  decrementAskAICount,
+  remainingAskAICount,
+  resetAskAICount,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
@@ -56,6 +60,9 @@ export function bindTrialButtons() {
   document.getElementById("submit-btn").addEventListener("click", submitTrial);
   document.getElementById("reset-btn").addEventListener("click", resetTrial);
   document.getElementById("next-btn").addEventListener("click", nextTrial);
+  document
+    .getElementById("askAI-btn")
+    .addEventListener("click", showAskAIAnswers);
 }
 
 /*
@@ -204,6 +211,7 @@ export function nextTrial() {
 function initializeAfterNextTrial() {
   hideResultContent();
   resetTrialSteps();
+  resetAskAICount();
   resetSubmissions();
   resetTrialPerformance();
   updateRemainingSubmissionInfo();
@@ -213,11 +221,86 @@ function initializeAfterNextTrial() {
 
 /*
  ********************************************
+ * AI Answers
+ ********************************************
+ */
+function getRandomTwoFromCorrectOrder() {
+  const answers = getCurQuestionData().answer;
+  const indices = [...Array(answers.length).keys()];
+  const shuffled = indices.sort(() => 0.5 - Math.random()).slice(0, 2);
+  return shuffled.map((i) => ({
+    name: answers[i],
+    pos: i + 1,
+  }));
+}
+
+function appendChat(sender, message) {
+  const chatBox = document.getElementById("ai-chat");
+  const bubble = document.createElement("div");
+  bubble.classList.add("chat-bubble");
+  bubble.classList.add(sender.toLowerCase()); // 'ai' or 'user'
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = sender === "AI" ? "🤖" : "😃";
+
+  const msg = document.createElement("div");
+  msg.className = "message";
+  msg.innerHTML = `${message}`;
+
+  bubble.appendChild(avatar);
+  bubble.appendChild(msg);
+  chatBox.appendChild(bubble);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function showAskAIAnswers() {
+  const askAIBtn = document.getElementById("askAI-btn");
+  if (askAIBtn.dataset.locked === "true") {
+    const tooltipText =
+      remainingAskAICount() <= 0
+        ? "You’ve reached the hint limit for this trial."
+        : "Please place all objects first.";
+    showAskAITooltip(tooltipText);
+    return;
+  }
+
+  decrementAskAICount();
+  refreshInteractionState({ forceDisableAskAI: true });
+  appendChat("User", "Randomly revealed 2 objects location");
+  const [obj1, obj2] = getRandomTwoFromCorrectOrder();
+  setTimeout(() => {
+    appendChat(
+      "AI",
+      `<strong>${obj1.name}</strong> is at position <strong>${obj1.pos}</strong>.<br/>
+      <strong>${obj2.name}</strong> is at position <strong>${obj2.pos}</strong>.`
+    );
+    refreshInteractionState();
+  }, 500);
+}
+
+function showAskAITooltip(message) {
+  const tooltip = document.getElementById("askAITooltip");
+  tooltip.textContent = message;
+  tooltip.style.display = "block";
+  tooltip.style.opacity = "1";
+
+  setTimeout(() => {
+    tooltip.style.opacity = "0";
+    setTimeout(() => {
+      tooltip.style.display = "none";
+    }, 300);
+  }, 1000);
+}
+
+/*
+ ********************************************
  * Render
  ********************************************
  */
 function renderTrial(trial) {
   renderInstructions(trial.instruction);
+  renderAIChat();
   renderBoxesAndOptions(trial.options, trial.style);
   renderStatements(trial.statements);
   updateSideLabels(trial.front_end);
@@ -252,6 +335,27 @@ function renderInstructions(instructionText) {
   }
 
   document.getElementById("instruction-text").innerHTML = instruction;
+}
+
+function renderAIChat() {
+  document.getElementById("reveal-objects").textContent = getRevealCounts();
+
+  const chatBox = document.getElementById("ai-chat");
+  chatBox.innerHTML = "";
+  const initialBubble = document.createElement("div");
+  initialBubble.classList.add("chat-bubble", "ai");
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar";
+  avatar.textContent = "🤖";
+
+  const msg = document.createElement("div");
+  msg.className = "message";
+  msg.innerHTML = `<strong>AI:</strong> How can I help?`;
+
+  initialBubble.appendChild(avatar);
+  initialBubble.appendChild(msg);
+  chatBox.appendChild(initialBubble);
 }
 
 function renderBoxesAndOptions(options, style = []) {

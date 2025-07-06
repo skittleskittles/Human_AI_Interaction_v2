@@ -6,10 +6,16 @@ import { dbRecordTrial } from "./trialAction.js";
 import { getCurExperimentData } from "./collectData.js";
 
 const MAX_TIMER_INTERVAL = 1200;
+const PHASE1_DURATION = 8 * 60;
+const PHASE2_DURATION = 20 * 60;
+const PHASE3_DURATION = 8 * 60;
 
 export const timerManager = {
   timers: {
     global: { seconds: MAX_TIMER_INTERVAL, interval: null },
+    phase1: { seconds: PHASE1_DURATION, interval: null },
+    phase2: { seconds: PHASE2_DURATION, interval: null },
+    phase3: { seconds: PHASE3_DURATION, interval: null },
     trial: { seconds: 0, interval: null },
     submission: { seconds: 0, interval: null },
   },
