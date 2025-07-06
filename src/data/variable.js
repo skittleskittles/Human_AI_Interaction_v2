@@ -138,12 +138,7 @@ export function remainingSubmissions() {
 }
 
 export function resetSubmissions() {
-  if (globalState.attentionCheckShown) {
-    // attention check only allows submit once
-    globalState.remainingSubmissions = getSubmissionLimit();
-  } else {
-    globalState.remainingSubmissions = getSubmissionLimit();
-  }
+  globalState.remainingSubmissions = getSubmissionLimit();
 }
 
 export function hasSubmittedThisTrial() {
