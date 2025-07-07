@@ -1,8 +1,8 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Task Demonstration</title><style>body {
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Task Demonstration</title><link rel="stylesheet" href="askAI.css"/><style>body {
         display: flex;
         justify-content: center;
         font-family: Arial, sans-serif !important;
-        font-size: 1.125rem !important;
+        font-size: 1rem !important;
         line-height: normal !important;
         text-align: center;
         margin: 0;
@@ -25,25 +25,28 @@
       .left-panel,
       .center-panel,
       .right-panel {
-        margin: 1rem;
+        margin: 0.5rem;
         border: 0.0625rem solid #ccc;
         background: #f9f9f9;
-        height: calc(100vh - 2.5rem);
+        height: calc(100vh - 1rem);
         box-sizing: border-box;
         overflow: auto;
       }
       .left-panel {
         width: 20%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
       }
       .center-panel {
-        width: 65%;
+        width: 55%;
         font-size: 80%;
         display: flex;
         flex-direction: column;
         position: relative;
       }
       .right-panel {
-        width: 35%;
+        width: 25%;
         display: flex;
         flex-direction: column;
         padding: 1.25rem;
@@ -51,7 +54,7 @@
 
       .trialID-container {
         margin: 3%;
-        font-size: 1.125rem;
+        font-size: 1.1rem;
         font-weight: bold;
         line-height: 1.6;
       }
@@ -75,7 +78,7 @@
         width: 5.5rem;
         text-align: center;
         font-weight: bold;
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin-bottom: 0.3125rem;
       }
 
@@ -83,12 +86,12 @@
         position: relative;
       }
 
-      .position-label-fixed {
+      .position-label {
         position: absolute;
-        left: -5.5rem;
+        left: -5rem;
         top: 0;
         font-weight: bold;
-        font-size: 1rem;
+        font-size: 0.85rem;
         width: 5.5rem;
         text-align: center;
       }
@@ -126,15 +129,7 @@
 
       .side-label-under {
         margin-top: 0.25rem;
-        font-size: 1rem;
-        font-weight: bold;
-        color: #333;
-      }
-
-      #position-label {
-        width: 5.5rem;
-        text-align: right;
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: bold;
         color: #333;
       }
@@ -163,17 +158,6 @@
         font-weight: bold;
         font-family: "Fira Code", monospace;
       }
-
-      /* .buttons-container {
-        display: flex;
-        justify-content: center;
-        position: absolute;
-        bottom: 5rem;
-        left: 50%;
-        transform: translateX(-50%);
-        gap: 5rem;
-        overflow: auto;
-      } */
 
       .buttons-container {
         position: absolute;
@@ -214,7 +198,7 @@
       }
 
       #time-box {
-        font-size: 1.125rem;
+        font-size: 1.1rem;
         font-weight: bold;
         color: #333;
         margin: 2%;
@@ -229,15 +213,20 @@
       }
 
       .info-box {
-        padding: 0 1.25rem 0.625rem 1.25rem;
+        padding: 0 1rem 0.625rem 1rem;
         background-color: #fff;
         border: 0.125rem solid #171717;
         box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.1);
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: bold;
         text-align: left;
         line-height: 1.5;
         overflow: auto;
+      }
+
+      .info-box ul {
+        padding-left: 0.8rem;
+        margin: 0;
       }</style><script defer="defer" src="main.bundle.js"></script></head><body><div id="loading-overlay" style="position: fixed;
         inset: 0;
         background-color: rgba(255, 255, 255, 0.8);
@@ -246,4 +235,4 @@
         align-items: center;
         font-size: 24px;
         font-weight: bold;
-        z-index: 9999;">Loading...</div><div class="container"><div id="consentContainer"></div><div id="instructionsContainer" style="display: none"></div><div id="modalContainer" style="display: none"></div><div id="gameContainer" style="display: none"><div class="left-panel" style="display: none"><h3>AI Instructions</h3><p id="ai-instructions">(Instructions from AI will go here)</p></div><div class="center-panel"><div class="trialID-container"><h3 id="trialID">Trial 1</h3></div><div class="drop-container"><div class="label-row-wrapper" style="position: relative; display: flex; justify-content: center"><div id="label-container" class="label-container"><div class="label">1</div><div class="label">2</div><div class="label">3</div><div class="label">4</div><div class="label">5</div></div><div class="position-label-fixed">position</div></div><div class="box-row" id="dropZone"><div id="box-container" class="box-container"><div class="box-group"><div class="box"></div><div class="side-label-under" id="front-side-label">front</div></div><div class="box-group"><div class="box"></div></div><div class="box-group"><div class="box"></div></div><div class="box-group"><div class="box"></div></div><div class="box-group"><div class="box"></div><div class="side-label-under" id="end-side-label">end</div></div></div></div></div><div id="option-container"><div class="option" draggable="true" id="A">A</div><div class="option" draggable="true" id="B">B</div><div class="option" draggable="true" id="C">C</div><div class="option" draggable="true" id="D">D</div><div class="option" draggable="true" id="E">E</div></div><div class="buttons-container"><button id="reset-btn" disabled="disabled" class="left-fixed">RESET</button><div class="center-buttons"><button id="submit-btn" disabled="disabled">SUBMIT</button> <button id="next-btn" disabled="disabled">NEXT TRIAL</button></div></div></div><div class="right-panel"><div id="time-box" style="display: none"><strong>TIME REMAINING:</strong> <span id="timer">20:00</span></div><div class="info-container"><div class="info-box"><h3>Instructions</h3><div id="instruction-text"><p>Determine the correct object order using the given statements.<br/>You have <span id="submission-count" style="color: brown">2</span> submission(s) remaining for this trial.</p></div></div><div id="statement-box" class="info-box"><h3>Statement</h3><ul><li>...</li><li>...</li><li>...</li></ul></div><div id="result-box" class="info-box"><h3>Results</h3><div id="result-content" style="display: none"><div>You got <span id="correct-choice">0</span> objects placed correctly.</div><div>Score (0–100): <span id="score">--</span></div><div id="totalPassMessage">You have got <span id="correct-trials">0</span> trial(s) 100% correct so far.</div><div id="additionalMessage" style="display: none"></div></div></div></div></div></div><div id="feedbackContainer" style="display: none"></div></div></body></html>
+        z-index: 9999;">Loading...</div><div class="container"><div id="consentContainer"></div><div id="instructionsContainer" style="display: none"></div><div id="modalContainer" style="display: none"></div><div id="gameContainer" style="display: none"><div class="left-panel"><div id="ai-chat"><div class="chat-bubble ai"><div class="avatar">🤖</div><div class="message"><strong>AI:</strong> How can I help?</div></div></div><div class="askAI-container"><button id="askAI-btn" data-locked="false">Reveal <span id="reveal-objects">2</span> Objects' Locations</button><div id="askAITooltip" style="display: none"></div></div></div><div class="center-panel"><div class="trialID-container"><h3 id="trialID">Trial 1</h3></div><div class="drop-container"><div class="label-row-wrapper" style="position: relative; display: flex; justify-content: center"><div id="label-container" class="label-container"><div class="label">1</div><div class="label">2</div><div class="label">3</div><div class="label">4</div><div class="label">5</div></div><div class="position-label">position</div></div><div class="box-row" id="dropZone"><div id="box-container" class="box-container"><div class="box-group"><div class="box"></div><div class="side-label-under" id="front-side-label">front</div></div><div class="box-group"><div class="box"></div></div><div class="box-group"><div class="box"></div></div><div class="box-group"><div class="box"></div></div><div class="box-group"><div class="box"></div><div class="side-label-under" id="end-side-label">end</div></div></div></div></div><div id="option-container"><div class="option" draggable="true" id="A">A</div><div class="option" draggable="true" id="B">B</div><div class="option" draggable="true" id="C">C</div><div class="option" draggable="true" id="D">D</div><div class="option" draggable="true" id="E">E</div></div><div class="buttons-container"><button id="reset-btn" disabled="disabled" class="left-fixed">RESET</button><div class="center-buttons"><button id="submit-btn" disabled="disabled">SUBMIT</button> <button id="next-btn" disabled="disabled">NEXT TRIAL</button></div></div></div><div class="right-panel"><div id="time-box" style="display: none"><strong>TIME REMAINING:</strong> <span id="timer">20:00</span></div><div class="info-container"><div class="info-box"><h3>Instructions</h3><div id="instruction-text"><p>Determine the correct object order using the given statements.<br/>You have <span id="submission-count" style="color: brown">2</span> submission(s) remaining for this trial.</p></div></div><div id="statement-box" class="info-box"><h3>Statement</h3><ul><li>...</li><li>...</li><li>...</li></ul></div><div id="result-box" class="info-box"><h3>Results</h3><div id="result-content" style="display: none"><div>You got <span id="correct-choice">0</span> objects placed correctly.</div><div>Score (0–100): <span id="score">--</span></div><div id="totalPassMessage">You have got <span id="correct-trials">0</span> trial(s) 100% correct so far.</div><div id="askAIMessage" style="display: none;">You’ve used AI <span id="askAI-count" style="color: blueviolet">0</span> times so far.</div><div id="additionalMessage" style="display: none"></div></div></div></div></div></div><div id="feedbackContainer" style="display: none"></div></div></body></html>
