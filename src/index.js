@@ -5,6 +5,7 @@ import {
   getShuffleMaxId,
   setQuestionsData,
   shouldShowComprehensionCheck,
+  setAIRevealCounts,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
 import { loadModal } from "./modal.js";
@@ -32,6 +33,9 @@ async function initExperimentEnvironment(shouldShuffle = false) {
     //   setObjCount(5);
     //   User.num_objects = 5;
     // }
+
+    // Load Exp Params
+    setAIRevealCounts(1);
 
     // 3. Set Prolific ID (default to random if missing)
     User.prolific_pid = urlParams.PROLIFIC_PID || generateUID();
@@ -86,28 +90,29 @@ async function initExperimentEnvironment(shouldShuffle = false) {
           }
 
           let instruction = row["instruction"];
-          let style = [];
+          let originalStyle = [];
           if (row["style"]) {
             try {
-              style = JSON.parse(row["style"].replace(/'/g, '"'));
+              originalStyle = JSON.parse(row["style"].replace(/'/g, '"'));
             } catch (e) {
               console.warn("Failed to parse style:", row["style"]);
-              style = Array(answer.length).fill("blank");
+              originalStyle = Array(answer.length).fill("blank");
             }
           }
 
           const styleMap = {};
           answer.forEach((name, i) => {
-            styleMap[name] = style[i] || "blank";
+            styleMap[name] = originalStyle[i] || "blank";
           });
-          const sortedStyle = options.map((name) => styleMap[name]);
+          const style = options.map((name) => styleMap[name]);
 
           return {
             question_id,
             answer,
             options,
             instruction,
-            style: sortedStyle,
+            style,
+            sortedStyle: originalStyle,
             statements,
             front_end,
           };

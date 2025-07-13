@@ -78,6 +78,7 @@ module.exports = {
         { from: "./pages/feedback.html", to: "feedback.html" },
         { from: "./styles/instruction.css", to: "instruction.css" },
         { from: "./styles/askAI.css", to: "askAI.css" },
+        { from: "./styles/boxOptions.css", to: "boxOptions.css" },
       ],
     }),
   ],

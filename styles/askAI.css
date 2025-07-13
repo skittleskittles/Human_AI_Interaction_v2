@@ -22,7 +22,7 @@
 .chat-bubble.user {
   flex-direction: row-reverse;
   justify-content: flex-end;
-  margin-left: auto;
+  margin: auto;
 }
 
 .chat-bubble .avatar {

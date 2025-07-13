@@ -5,11 +5,13 @@ import {
 } from "./specialTrials";
 
 const MAX_SUBMISSION_LIMIT = 2;
-const MAX_ASK_AI_LIMIT = 2;
 const NUM_COMPREHENSION_TRIALS = 2;
-const NUM_REVEAL_OBJECTS = 2;
 
-const NO_AI_PHASE_TRIALS_LIMIT = 1; // todo fsy
+const NO_AI_PHASE_TRIALS_LIMIT = 4; // todo fsy: default 4
+
+// if CAN_ASK_AI_UNLIMITES == false, MAX_ASK_AI_LIMIT takes effect
+const MAX_ASK_AI_LIMIT = 5;
+const CAN_ASK_AI_UNLIMITES = true;
 
 const BONUS_THRESHOLD = {
   5: 6, // 5-object condition: start to get bonus for at least 6 correct
@@ -28,10 +30,7 @@ export const PHASE_NAME = {
 };
 
 export const globalState = {
-  AI_HELP: 0,
-
   objectCount: 5,
-
   questions: [],
   curTrialIndex: 0, // 1 based
   curQuestionIndex: 0, // 1 based
@@ -52,9 +51,13 @@ export const globalState = {
     correctTrialCount: 0, // Total number of 100% correct trials
     totalAskAICount: 0,
   },
-
-  remainingAskAICount: MAX_ASK_AI_LIMIT,
   remainingSubmissions: MAX_SUBMISSION_LIMIT,
+
+  /* AI */
+  AI_HELP: 0,
+  NUM_REVEAL_OBJECTS: 1,
+  remainingAskAICount: MAX_ASK_AI_LIMIT,
+  revealedIndicesThisTrial: new Set(), // 记录这一轮AI返回的idx
 
   /* attention check */
   attentionCheckPending: false,
@@ -190,8 +193,12 @@ export function resetTrialID() {
 /**
  * Ask AI
  */
-export function getRevealCounts() {
-  return NUM_REVEAL_OBJECTS;
+export function setAIRevealCounts(count) {
+  globalState.NUM_REVEAL_OBJECTS = count;
+}
+
+export function getAIRevealCounts() {
+  return globalState.NUM_REVEAL_OBJECTS;
 }
 
 // todo fsy: comprehensionCheck allowed ask ai?
@@ -211,15 +218,28 @@ export function remainingAskAICount() {
   return globalState.remainingAskAICount;
 }
 
-export function resetAskAICount() {
+export function resetAskAI() {
   globalState.remainingAskAICount = getAskAILimit();
+  globalState.revealedIndicesThisTrial.clear();
 }
 
 export function incrementAskAICount() {
-  if (globalState.remainingAskAICount > 0) {
+  if (!CAN_ASK_AI_UNLIMITES && globalState.remainingAskAICount > 0) {
     globalState.remainingAskAICount--;
   }
   globalState.performance.totalAskAICount++;
+}
+
+export function getRevealedIndicesThisTrial() {
+  return globalState.revealedIndicesThisTrial;
+}
+
+// if all objects have been revealed, reset the record
+export function recordRevealedIndicesThisTrial(idx) {
+  globalState.revealedIndicesThisTrial.add(idx);
+  if (globalState.revealedIndicesThisTrial.size >= getObjCount()) {
+    globalState.revealedIndicesThisTrial.clear();
+  }
 }
 
 export function getTrialTotalAskAICount() {

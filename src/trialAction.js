@@ -20,10 +20,10 @@ import {
   shouldEndComprehensionCheck,
   getCurQuestionIndex,
   resetTrialPerformance,
-  getRevealCounts,
+  getAIRevealCounts,
   decrementAskAICount,
   remainingAskAICount,
-  resetAskAICount,
+  resetAskAI,
   PHASE_NAME,
   getCurPhase,
   incrementCurrentPhaseTrialCount,
@@ -36,6 +36,8 @@ import {
   setPhaseTimerEnded,
   isAllowedAskAITrials,
   incrementAskAICount,
+  getRevealedIndicesThisTrial,
+  recordRevealedIndicesThisTrial,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
@@ -165,10 +167,8 @@ function updateRemainingSubmissionInfo() {
  ********************************************
  */
 function resetTrial() {
-  const current = getCurQuestionData();
-
   clearBoxes();
-  renderBoxesAndOptions(current.options, current.style);
+  renderBoxesAndOptions(getCurQuestionData());
   initializeAfterReset();
 }
 
@@ -244,7 +244,7 @@ export async function nextTrial() {
 function initializeAfterNextTrial() {
   hideResultContent();
   resetTrialSteps();
-  resetAskAICount();
+  resetAskAI();
   resetSubmissions();
   resetTrialPerformance();
   updateRemainingSubmissionInfo();
@@ -315,10 +315,37 @@ function handleTimeOut() {
  * AI Answers
  ********************************************
  */
-function getRandomTwoFromCorrectOrder() {
+function getRandomAnsFromCorrectOrder(count) {
   const answers = getCurQuestionData().answer;
-  const indices = [...Array(answers.length).keys()];
-  const shuffled = indices.sort(() => 0.5 - Math.random()).slice(0, 2);
+  const totalCount = answers.length;
+
+  if (count === 1) {
+    // ensure no repeats until all have been revealed
+    const availableIndices = [...Array(totalCount).keys()].filter(
+      (i) => !getRevealedIndicesThisTrial().has(i)
+    );
+
+    const chosenIndex =
+      availableIndices[Math.floor(Math.random() * availableIndices.length)];
+
+    recordRevealedIndicesThisTrial(chosenIndex);
+
+    return [
+      {
+        name: answers[chosenIndex],
+        pos: chosenIndex + 1,
+      },
+    ];
+  }
+
+  // count > 1: allow repeats, but still track them
+  const shuffled = [...Array(totalCount).keys()]
+    .sort(() => 0.5 - Math.random())
+    .slice(0, count);
+
+  // record revealed indices
+  shuffled.forEach((i) => recordRevealedIndicesThisTrial(i));
+
   return shuffled.map((i) => ({
     name: answers[i],
     pos: i + 1,
@@ -359,18 +386,44 @@ function showAskAIAnswers() {
     return;
   }
 
+  const revealCount = getAIRevealCounts();
+  const revealedObjects = getRandomAnsFromCorrectOrder(revealCount);
+
   incrementAskAICount();
   refreshInteractionState({ forceDisableAskAI: true });
-  appendChat("User", "Randomly revealed 2 objects location");
-  const [obj1, obj2] = getRandomTwoFromCorrectOrder();
+
+  const userMsg =
+    `Randomly revealed ${revealCount} ` +
+    (revealCount === 1 ? "object's location" : "objects' locations");
+  appendChat("User", userMsg);
+
   setTimeout(() => {
-    appendChat(
-      "AI",
-      `<strong>${obj1.name}</strong> is at position <strong>${obj1.pos}</strong>.<br/>
-      <strong>${obj2.name}</strong> is at position <strong>${obj2.pos}</strong>.`
-    );
+    // 1. Hide all AI suggestions first
+    const allSuggestions = document.querySelectorAll("[id^='ai-suggestion-']");
+    allSuggestions.forEach((el) => {
+      el.style.visibility = "hidden";
+    });
+
+    // 2. Show only the revealed ones
+    revealedObjects.forEach((obj) => {
+      const el = document.getElementById(`ai-suggestion-${obj.name}`);
+      if (el) {
+        el.style.visibility = "visible";
+      }
+    });
+
+    // 3. Append chat
+    const aiResponse = revealedObjects
+      .map(
+        (obj) =>
+          `<strong>${obj.name}</strong> is at <strong>${obj.pos}</strong>.`
+      )
+      .join("<br/>");
+    appendChat("AI", aiResponse);
+
     refreshInteractionState();
   }, 500);
+
   updateUseAIMessage();
 }
 
@@ -396,7 +449,7 @@ function showAskAITooltip(message) {
 function renderTrial(trial) {
   renderInstructions(trial.instruction);
   renderAIChat();
-  renderBoxesAndOptions(trial.options, trial.style);
+  renderBoxesAndOptions(trial);
   renderStatements(trial.statements, trial.answer);
   updateSideLabels(trial.front_end);
   initializeAfterNextTrial();
@@ -428,7 +481,9 @@ function renderInstructions(instructionText) {
 }
 
 function renderAIChat() {
-  document.getElementById("reveal-objects").textContent = getRevealCounts();
+  document.getElementById("askAI-btn").textContent =
+    `Reveal ${getAIRevealCounts()} ` +
+    (getAIRevealCounts() === 1 ? "object's location" : "objects' locations");
 
   const chatBox = document.getElementById("ai-chat");
   chatBox.innerHTML = "";
@@ -448,7 +503,10 @@ function renderAIChat() {
   chatBox.appendChild(initialBubble);
 }
 
-function renderBoxesAndOptions(options, style = []) {
+function renderBoxesAndOptions(questionData) {
+  const options = questionData.options;
+  const style = questionData.style;
+
   if (isAttentionCheck()) {
     document.getElementById("trialID").textContent = "ATTENTION CHECK Trial";
   } else {
@@ -482,7 +540,7 @@ function renderBoxesAndOptions(options, style = []) {
   tempOptions.forEach((el) => el.remove());
 
   // Step 2: Render options and boxes
-  options.forEach((id, i) => {
+  options.forEach((optionText, i) => {
     // Top label: 1, 2, ...
     const label = document.createElement("div");
     label.className = "label";
@@ -492,10 +550,8 @@ function renderBoxesAndOptions(options, style = []) {
     // Option
     const option = document.createElement("div");
     option.className = "option";
-    option.draggable = true;
-    option.id = id;
-    option.textContent = id;
-    option.dataset.pattern = style[i] || "blank";
+    option.id = optionText;
+    option.textContent = optionText;
     applyPatternStyle(option, style[i] || "blank");
     option.style.height = `${maxHeight}px`;
     optionContainer.appendChild(option);
@@ -519,6 +575,26 @@ function renderBoxesAndOptions(options, style = []) {
 
     boxContainer.appendChild(boxGroup);
   });
+
+  if (isAllowedAskAITrials()) {
+    const answer = questionData.answer;
+    const sortedStyle = questionData.sortedStyle;
+
+    const aiSuggestionsContainer = document.getElementById(
+      "ai-suggestion-container"
+    );
+    aiSuggestionsContainer.innerHTML = "";
+    answer.forEach((ans, i) => {
+      const aiAns = document.createElement("div");
+      aiAns.className = "ai-suggestion";
+      aiAns.id = `ai-suggestion-${ans}`;
+      aiAns.textContent = ans;
+      aiAns.style.visibility = "hidden";
+      applyPatternStyle(aiAns, sortedStyle[i] || "blank");
+      aiAns.style.height = `${maxHeight}px`;
+      aiSuggestionsContainer.appendChild(aiAns);
+    });
+  }
 
   bindDragDropEvents();
 }

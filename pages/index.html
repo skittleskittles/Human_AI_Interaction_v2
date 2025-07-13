@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Task Demonstration</title>
     <link rel="stylesheet" href="askAI.css" />
+    <link rel="stylesheet" href="boxOptions.css" />
     <style>
       body {
         display: flex;
@@ -65,102 +66,6 @@
         font-size: 1.1rem;
         font-weight: bold;
         line-height: 1.6;
-      }
-      .drop-container {
-        margin: 6rem auto 0rem auto;
-        width: max-content;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .label-row,
-      .box-row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1.25rem;
-      }
-
-      .label {
-        width: 5.2rem;
-        text-align: center;
-        font-weight: bold;
-        font-size: 0.9rem;
-        margin-bottom: 0.3125rem;
-      }
-
-      .label-row-wrapper {
-        position: relative;
-      }
-
-      .position-label {
-        position: absolute;
-        left: -3.8rem;
-        top: 0;
-        font-weight: bold;
-        font-size: 0.8rem;
-        width: 5.2rem;
-        text-align: center;
-      }
-
-      .box-container {
-        display: flex;
-        gap: 20px;
-      }
-
-      .label-container {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-      }
-
-      .box {
-        width: 5.2rem;
-        min-height: 3.5rem;
-        border: 0.1rem solid #000;
-        box-sizing: border-box;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .box-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .side-label-under {
-        margin-top: 0.25rem;
-        font-size: 0.9rem;
-        font-weight: bold;
-        color: #333;
-      }
-
-      #option-container {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start; /* 靠上对齐 */
-        margin: 5rem auto auto auto;
-        gap: 1.25rem;
-        padding: 0.625rem;
-      }
-      .option {
-        width: 4.2rem;
-        min-height: 2rem;
-        padding: 0.5rem 0.5rem;
-        background: lightblue;
-        border: 0.05rem solid #000;
-        box-sizing: border-box;
-        cursor: move;
-        text-align: center;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-weight: bold;
-        font-family: "Fira Code", monospace;
       }
 
       .buttons-container {
@@ -271,7 +176,7 @@
           </div>
           <div class="askAI-container">
             <button id="askAI-btn" data-locked="false">
-              Reveal <span id="reveal-objects">2</span> Objects' Locations
+              Reveal 2 objects' locations
             </button>
             <div id="askAITooltip" style="display: none"></div>
           </div>
@@ -322,6 +227,14 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <div id="ai-suggestion-container">
+            <div class="ai-suggestion" id="ai-suggestion-A">A</div>
+            <div class="ai-suggestion" id="ai-suggestion-B">B</div>
+            <div class="ai-suggestion" id="ai-suggestion-C">C</div>
+            <div class="ai-suggestion" id="ai-suggestion-D">D</div>
+            <div class="ai-suggestion" id="ai-suggestion-E">E</div>
           </div>
 
           <div id="option-container">
