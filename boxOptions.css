@@ -36,6 +36,17 @@
   text-align: center;
 }
 
+#ai-suggestion-label {
+  margin-left: 1rem;
+  margin-top: 1rem;
+  font-weight: bold;
+  font-size: 0.78rem;
+  width: 6rem;
+  text-align: center;
+  visibility: hidden;
+  opacity: 0.7;
+}
+
 .box-container {
   display: flex;
   gap: 1.25rem;
@@ -96,11 +107,10 @@
 }
 
 #ai-suggestion-container {
-  /* flex: 1; */
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* 靠上对齐 */
-  margin-top: 2rem;
+  align-items: flex-start;
+  margin-top: 0.4rem;
   gap: 2.25rem;
 }
 .ai-suggestion {
