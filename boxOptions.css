@@ -122,6 +122,7 @@
   border: 0.05rem solid #000;
   box-sizing: border-box;
   text-align: center;
+  cursor: not-allowed;
   display: flex;
   justify-content: center;
   align-items: center;
