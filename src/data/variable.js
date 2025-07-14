@@ -7,7 +7,7 @@ import {
 const MAX_SUBMISSION_LIMIT = 2;
 const NUM_COMPREHENSION_TRIALS = 2;
 
-const NO_AI_PHASE_TRIALS_LIMIT = 4; // todo fsy: default 4
+const NO_AI_PHASE_TRIALS_LIMIT = 1; // todo fsy: default 4
 
 // if CAN_ASK_AI_UNLIMITES == false, MAX_ASK_AI_LIMIT takes effect
 const MAX_ASK_AI_LIMIT = 5;
@@ -44,9 +44,20 @@ export const phaseState = {
   },
 };
 
+export const AI_HELP_TYPE = {
+  NO_AI: 0,
+  LOW_COST_AI: 1,
+  HIGH_COST_AI: 2,
+  AI_QUESTION_A: 3,
+  AI_QUESTION_B: 4,
+};
+
 export const globalState = {
   objectCount: 5,
   curTrialIndex: 0, // 1 based
+
+  curQuestionIndex: 0, // 1 based, for NO AI group
+  questions: [], //  for NO AI group
 
   /* phase */
   curPhase: PHASE_NAME.PHASE1, // phase1 | phase2 | phase3
@@ -67,7 +78,7 @@ export const globalState = {
   remainingSubmissions: MAX_SUBMISSION_LIMIT,
 
   /* AI */
-  AI_HELP: 0,
+  AI_HELP: AI_HELP_TYPE.NO_AI,
   NUM_REVEAL_OBJECTS: 1,
   remainingAskAICount: MAX_ASK_AI_LIMIT,
   revealedIndicesThisTrial: new Set(), // 记录这一轮AI返回的idx
@@ -79,14 +90,6 @@ export const globalState = {
 
   /* comprehension check */
   comprehensionCheckShown: false,
-};
-
-export const AI_HELP_TYPE = {
-  NO_AI: 0,
-  OPTIMAL_AI_BEFORE: 1,
-  OPTIMAL_AI_AFTER: 2,
-  SUB_AI_AFTER: 3,
-  SUBAI_REQUEST: 4,
 };
 
 /**
@@ -157,6 +160,11 @@ export function canEndPhase() {
 /**
  * Trials
  */
+export function setQuestionsData(data) {
+  // for NO AI group
+  globalState.questions = data;
+}
+
 export function advanceTrial(shouldShowSpecialTrials) {
   globalState.curTrialIndex++;
 
@@ -164,8 +172,21 @@ export function advanceTrial(shouldShowSpecialTrials) {
     return true;
   }
 
+  if (isNoAIExpGroup()) {
+    // normal trial, use questions from questions list
+    globalState.curQuestionIndex++;
+    if (globalState.curQuestionIndex > globalState.questions.length) {
+      alert("All trials completed!");
+      return false;
+    }
+    return true;
+  }
+
   const phase = getCurPhase();
-  if (phaseState.phaseIndexMap[phase] < phaseState.PHASE_QUESTIONS[phase].length - 1) {
+  if (
+    phaseState.phaseIndexMap[phase] <
+    phaseState.PHASE_QUESTIONS[phase].length - 1
+  ) {
     phaseState.phaseIndexMap[phase]++;
   } else {
     phaseState.phaseIndexMap[phase] = phaseState.PHASE_QUESTIONS[phase].length;
@@ -190,6 +211,9 @@ export function getCurQuestionData() {
     return comprehensionTrials[getCurTrialIndex() - 1];
   }
 
+  if (isNoAIExpGroup()) {
+    return globalState.questions[globalState.curQuestionIndex - 1];
+  }
   const phase = getCurPhase();
   const index = phaseState.phaseIndexMap[phase];
   if (index < phaseState.PHASE_QUESTIONS[phase].length) {
@@ -207,6 +231,10 @@ export function getCurTrialIndex() {
 }
 
 export function getCurQuestionIndex() {
+  if (isNoAIExpGroup()) {
+    return globalState.curQuestionIndex;
+  }
+
   // attention check does not count
   const phase = getCurPhase();
   const index = phaseState.phaseIndexMap[phase];
@@ -214,7 +242,9 @@ export function getCurQuestionIndex() {
     return index + 1; // 1-based index
   } else {
     return (
-      phaseState.PHASE_QUESTIONS[phase].length + phaseState.phaseIndexMap.extra + 1
+      phaseState.PHASE_QUESTIONS[phase].length +
+      phaseState.phaseIndexMap.extra +
+      1
     );
   }
 }
@@ -226,6 +256,14 @@ export function resetTrialID() {
 /**
  * Ask AI
  */
+export function isNoAIExpGroup() {
+  return globalState.AI_HELP === AI_HELP_TYPE.NO_AI;
+}
+
+export function setAIHelpType(type) {
+  globalState.AI_HELP = type;
+}
+
 export function setAIRevealCounts(count) {
   globalState.NUM_REVEAL_OBJECTS = count;
 }
@@ -236,6 +274,7 @@ export function getAIRevealCounts() {
 
 export function isAllowedAskAITrials() {
   return (
+    !isNoAIExpGroup() &&
     !isComprehensionCheck() &&
     !isAttentionCheck() &&
     getCurPhase() === PHASE_NAME.PHASE2

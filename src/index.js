@@ -5,6 +5,11 @@ import {
   shouldShowComprehensionCheck,
   setAIRevealCounts,
   phaseState,
+  setAIHelpType,
+  AI_HELP_TYPE,
+  getShuffleMaxId,
+  isNoAIExpGroup,
+  setQuestionsData,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
 import { loadModal } from "./modal.js";
@@ -35,6 +40,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
 
     // Load Exp Params
     setAIRevealCounts(1);
+    setAIHelpType(AI_HELP_TYPE.HIGH_COST_AI);
 
     // 3. Set Prolific ID (default to random if missing)
     User.prolific_pid = urlParams.PROLIFIC_PID || generateUID();
@@ -50,7 +56,25 @@ async function initExperimentEnvironment(shouldShuffle = false) {
       download: true,
       header: true,
       complete: async function (results) {
-        const parsedData = results.data.map((row) => {
+        let rawData = results.data;
+
+        if (isNoAIExpGroup() && shouldShuffle) {
+          const shuffleMaxId = getShuffleMaxId();
+
+          const trialsToShuffle = rawData.filter(
+            (row) => Number(row.id) >= 0 && Number(row.id) <= shuffleMaxId
+          );
+
+          const trialsToKeep = rawData.filter(
+            (row) => Number(row.id) > shuffleMaxId
+          );
+
+          const shuffledTrials = shuffleArray(trialsToShuffle);
+
+          rawData = [...shuffledTrials, ...trialsToKeep];
+        }
+
+        const parsedData = rawData.map((row) => {
           const question_id = Number(row["id"]);
           const answer = row["Correct Order"].split(",").map((s) => s.trim());
           const options = [...answer].sort();
@@ -99,7 +123,9 @@ async function initExperimentEnvironment(shouldShuffle = false) {
           };
         });
 
-        // shuffle questions by phase
+        setQuestionsData(parsedData); // for NO AI version
+
+        // for AI version: shuffle questions by phase
         phaseState.PHASE_QUESTIONS.phase1 = shuffleArray(
           parsedData.filter(
             (row) => row.question_id >= 0 && row.question_id <= 9

@@ -31,9 +31,9 @@
         box-sizing: border-box;
       }
 
-      .left-panel,
-      .center-panel,
-      .right-panel {
+      #left-panel,
+      #center-panel,
+      #right-panel {
         margin: 0.5rem;
         border: 0.0625rem solid #ccc;
         background: #f9f9f9;
@@ -41,24 +41,26 @@
         box-sizing: border-box;
         overflow: auto;
       }
-      .left-panel {
+      #left-panel {
         width: 18%;
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
       }
-      .center-panel {
+      #center-panel {
         width: 50%;
         font-size: 80%;
         display: flex;
         flex-direction: column;
         position: relative;
+        margin-left: auto;
       }
-      .right-panel {
+      #right-panel {
         width: 32%;
         display: flex;
         flex-direction: column;
         padding: 1.25rem;
+        margin-right: auto;
       }
 
       .trialID-container {
@@ -167,7 +169,7 @@
       <div id="modalContainer" style="display: none"></div>
 
       <div id="gameContainer" style="display: none">
-        <div class="left-panel">
+        <div id="left-panel">
           <div id="ai-chat">
             <div class="chat-bubble ai">
               <div class="avatar">🤖</div>
@@ -187,7 +189,7 @@
           </div>
         </div>
 
-        <div class="center-panel">
+        <div id="center-panel">
           <div class="trialID-container">
             <h3 id="trialID">Trial 1</h3>
           </div>
@@ -258,7 +260,7 @@
           </div>
         </div>
 
-        <div class="right-panel">
+        <div id="right-panel">
           <div id="time-box" style="display: none">
             <strong>TIME REMAINING:</strong> <span id="timer">20:00</span>
           </div>

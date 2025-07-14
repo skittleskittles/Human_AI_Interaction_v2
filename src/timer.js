@@ -9,15 +9,16 @@ import {
 } from "./data/variable.js";
 import { showNeedMoreTrialsPopUp } from "./modal.js";
 
-const PHASE1_DURATION = 8 * 60;
-const PHASE2_DURATION = 20 * 60;
-const PHASE3_DURATION = 8 * 60;
+// const PHASE1_DURATION = 8 * 60;
+// const PHASE2_DURATION = 20 * 60;
+// const PHASE3_DURATION = 8 * 60;
 
 // todo fsy
-// const PHASE1_DURATION = 10;
-// const PHASE2_DURATION = 20 * 60;
-// const PHASE3_DURATION = 10;
+const PHASE1_DURATION = 10;
+const PHASE2_DURATION = 20 * 60;
+const PHASE3_DURATION = 10;
 
+// todo fsy: NO AI version
 export const timerManager = {
   timers: {
     phase1: { seconds: PHASE1_DURATION, interval: null },

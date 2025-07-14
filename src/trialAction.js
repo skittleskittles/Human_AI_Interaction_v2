@@ -74,7 +74,12 @@ import {
   showEnterPhase2,
   showEnterPhase3,
 } from "./modal.js";
-import { timeBox } from "./data/domElements.js";
+import {
+  centerPanel,
+  leftPanel,
+  rightPanel,
+  timeBox,
+} from "./data/domElements.js";
 import { disableDrag } from "./dragDrop.js";
 
 export function bindTrialButtons() {
@@ -485,6 +490,12 @@ function renderInstructions(instructionText) {
 }
 
 function renderAIChat() {
+  if (!isAllowedAskAITrials()) {
+    leftPanel.style.display = "none";
+    return;
+  }
+
+  leftPanel.style.display = "flex";
   document.getElementById("askAI-btn").textContent =
     `Reveal ${getAIRevealCounts()} ` +
     (getAIRevealCounts() === 1 ? "object's location" : "objects' locations");

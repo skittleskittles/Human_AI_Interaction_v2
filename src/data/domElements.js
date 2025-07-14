@@ -7,6 +7,10 @@ export const timeBox = document.getElementById("time-box");
 export const modalContainer = document.getElementById("modalContainer");
 export const feedbackContainer = document.getElementById("feedbackContainer");
 
+export const leftPanel = document.getElementById("left-panel");
+export const centerPanel = document.getElementById("center-panel");
+export const rightPanel = document.getElementById("right-panel");
+
 export function clearPageContent() {
   const sections = [
     "consentContainer",
