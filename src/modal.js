@@ -1,6 +1,9 @@
 import { clearPageContent, modalContainer } from "./data/domElements";
 import { showFeedback } from "./feedback.js";
-import { getComprehensionTrialsNum } from "./data/variable.js";
+import {
+  getComprehensionTrialsNum,
+  getNoAIPhaseTrialsLimit,
+} from "./data/variable.js";
 import { resetTrial } from "./trialAction.js";
 
 // Load Modal
@@ -140,6 +143,17 @@ export function showEnterMainGamePopUp() {
     html: `<p>
       You’ve passed the comprehension check. 
       You may now begin the main study <strong>Phase 1</strong> by clicking <strong>NEXT TRIAL</strong>.
+    </p>`,
+  });
+}
+
+export function showNeedMoreTrialsPopUp() {
+  showModal({
+    context: "need-more-trials",
+    html: `<p>
+      The timer for this phase has ended.<br/>
+      However, to proceed to the next phase, you must complete at least <strong>${getNoAIPhaseTrialsLimit()} trials</strong>.<br/><br/>
+      Please continue until you reach the minimum requirement.
     </p>`,
   });
 }

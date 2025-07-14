@@ -2,10 +2,9 @@ import { gameContainer } from "./data/domElements.js";
 import {
   getObjCount,
   setObjCount,
-  getShuffleMaxId,
-  setQuestionsData,
   shouldShowComprehensionCheck,
   setAIRevealCounts,
+  phaseState,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
 import { loadModal } from "./modal.js";
@@ -51,26 +50,8 @@ async function initExperimentEnvironment(shouldShuffle = false) {
       download: true,
       header: true,
       complete: async function (results) {
-        let rawData = results.data;
-
-        if (shouldShuffle) {
-          const shuffleMaxId = getShuffleMaxId();
-
-          const trialsToShuffle = rawData.filter(
-            (row) => Number(row.id) >= 0 && Number(row.id) <= shuffleMaxId
-          );
-
-          const trialsToKeep = rawData.filter(
-            (row) => Number(row.id) > shuffleMaxId
-          );
-
-          const shuffledTrials = shuffleArray(trialsToShuffle);
-
-          rawData = [...shuffledTrials, ...trialsToKeep];
-        }
-
-        const parsedData = rawData.map((row) => {
-          const question_id = row["id"];
+        const parsedData = results.data.map((row) => {
+          const question_id = Number(row["id"]);
           const answer = row["Correct Order"].split(",").map((s) => s.trim());
           const options = [...answer].sort();
 
@@ -118,7 +99,26 @@ async function initExperimentEnvironment(shouldShuffle = false) {
           };
         });
 
-        setQuestionsData(parsedData);
+        // shuffle questions by phase
+        phaseState.PHASE_QUESTIONS.phase1 = shuffleArray(
+          parsedData.filter(
+            (row) => row.question_id >= 0 && row.question_id <= 9
+          )
+        );
+        phaseState.PHASE_QUESTIONS.phase2 = shuffleArray(
+          parsedData.filter(
+            (row) => row.question_id >= 10 && row.question_id <= 39
+          )
+        );
+        phaseState.PHASE_QUESTIONS.phase3 = shuffleArray(
+          parsedData.filter(
+            (row) => row.question_id >= 40 && row.question_id <= 49
+          )
+        );
+        phaseState.PHASE_QUESTIONS.extra = parsedData
+          .filter((row) => row.question_id >= 50)
+          .sort((a, b) => a.id - b.id);
+
         bindTrialButtons();
         await loadModal(); // Make sure modal loads before experiment
         // await startExperiment(false, false);

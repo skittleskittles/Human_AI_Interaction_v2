@@ -29,11 +29,24 @@ export const PHASE_NAME = {
   PHASE3: "phase3",
 };
 
+export const phaseState = {
+  PHASE_QUESTIONS: {
+    phase1: [],
+    phase2: [],
+    phase3: [],
+    extra: [], // not shuffled
+  },
+  phaseIndexMap: {
+    phase1: -1, // [-1, PHASE_QUESTIONS.length]
+    phase2: -1,
+    phase3: -1,
+    extra: -1,
+  },
+};
+
 export const globalState = {
   objectCount: 5,
-  questions: [],
   curTrialIndex: 0, // 1 based
-  curQuestionIndex: 0, // 1 based
 
   /* phase */
   curPhase: PHASE_NAME.PHASE1, // phase1 | phase2 | phase3
@@ -144,20 +157,48 @@ export function canEndPhase() {
 /**
  * Trials
  */
-export function setQuestionsData(data) {
-  globalState.questions = data;
+export function advanceTrial(shouldShowSpecialTrials) {
+  globalState.curTrialIndex++;
+
+  if (shouldShowSpecialTrials) {
+    return true;
+  }
+
+  const phase = getCurPhase();
+  if (phaseState.phaseIndexMap[phase] < phaseState.PHASE_QUESTIONS[phase].length - 1) {
+    phaseState.phaseIndexMap[phase]++;
+  } else {
+    phaseState.phaseIndexMap[phase] = phaseState.PHASE_QUESTIONS[phase].length;
+    phaseState.phaseIndexMap.extra++;
+    if (
+      phaseState.phaseIndexMap.extra >= phaseState.PHASE_QUESTIONS.extra.length
+    ) {
+      alert("All trials completed!");
+      return false;
+    }
+  }
+
+  return true;
 }
 
+// Get current question data based on trial phase and index
 export function getCurQuestionData() {
-  let cur;
   if (isAttentionCheck()) {
-    cur = getObjCount() === 5 ? attentionTrial5 : attentionTrial6;
-  } else if (isComprehensionCheck()) {
-    cur = comprehensionTrials[getCurTrialIndex() - 1];
-  } else {
-    cur = globalState.questions[globalState.curQuestionIndex - 1];
+    return getObjCount() === 5 ? attentionTrial5 : attentionTrial6;
   }
-  return cur;
+  if (isComprehensionCheck()) {
+    return comprehensionTrials[getCurTrialIndex() - 1];
+  }
+
+  const phase = getCurPhase();
+  const index = phaseState.phaseIndexMap[phase];
+  if (index < phaseState.PHASE_QUESTIONS[phase].length) {
+    return phaseState.PHASE_QUESTIONS[phase][index];
+  } else {
+    // fallback to extra pool
+    const extraIndex = phaseState.phaseIndexMap.extra;
+    return phaseState.PHASE_QUESTIONS.extra[extraIndex];
+  }
 }
 
 export function getCurTrialIndex() {
@@ -167,23 +208,15 @@ export function getCurTrialIndex() {
 
 export function getCurQuestionIndex() {
   // attention check does not count
-  return globalState.curQuestionIndex;
-}
-
-export function advanceTrial(shouldShowSpecialTrials) {
-  globalState.curTrialIndex++;
-
-  if (shouldShowSpecialTrials) {
-    return true;
+  const phase = getCurPhase();
+  const index = phaseState.phaseIndexMap[phase];
+  if (index < phaseState.PHASE_QUESTIONS[phase].length) {
+    return index + 1; // 1-based index
+  } else {
+    return (
+      phaseState.PHASE_QUESTIONS[phase].length + phaseState.phaseIndexMap.extra + 1
+    );
   }
-
-  // normal trial, use questions from questions list
-  globalState.curQuestionIndex++;
-  if (globalState.curQuestionIndex > globalState.questions.length) {
-    alert("All trials completed!");
-    return false;
-  }
-  return true;
 }
 
 export function resetTrialID() {
@@ -201,7 +234,6 @@ export function getAIRevealCounts() {
   return globalState.NUM_REVEAL_OBJECTS;
 }
 
-// todo fsy: comprehensionCheck allowed ask ai?
 export function isAllowedAskAITrials() {
   return (
     !isComprehensionCheck() &&

@@ -21,15 +21,11 @@ import {
   getCurQuestionIndex,
   resetTrialPerformance,
   getAIRevealCounts,
-  decrementAskAICount,
   remainingAskAICount,
   resetAskAI,
   PHASE_NAME,
   getCurPhase,
   incrementCurrentPhaseTrialCount,
-  phaseTimerEnded,
-  getCurrentPhaseTrialCount,
-  getNoAIPhaseTrialsLimit,
   canEndPhase,
   setCurPhase,
   resetCurrentPhaseTrialCount,
@@ -38,6 +34,7 @@ import {
   incrementAskAICount,
   getRevealedIndicesThisTrial,
   recordRevealedIndicesThisTrial,
+  phaseState,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
@@ -233,6 +230,13 @@ export async function nextTrial() {
   }
 
   if (!advanceTrial(isAttentionCheck() || isComprehensionCheck())) return;
+  console.log(
+    `--Trail idx ${getCurTrialIndex()}--Question idx ${getCurQuestionIndex()}--Question id ${
+      getCurQuestionData().question_id
+    }--`
+  );
+  console.log("phaseIndexMap", phaseState.phaseIndexMap);
+
   renderTrial(getCurQuestionData());
 
   answer = getCurQuestionData().answer;
