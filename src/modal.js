@@ -141,7 +141,7 @@ export function showEnterMainGamePopUp() {
   showModal({
     context: "start-main-game",
     html: `<p>
-      You’ve passed the comprehension check. 
+      You’ve passed the comprehension check.<br/><br/> 
       You may now begin the main study <strong>Phase 1</strong> by clicking <strong>NEXT TRIAL</strong>.
     </p>`,
   });

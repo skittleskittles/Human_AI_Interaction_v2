@@ -241,7 +241,6 @@ export async function nextTrial() {
       getCurQuestionData().question_id
     }--`
   );
-  console.log("phaseIndexMap", phaseState.phaseIndexMap);
 
   renderTrial(getCurQuestionData());
 
@@ -522,7 +521,7 @@ function renderAIChat() {
 
 function renderBoxesAndOptions(questionData) {
   const options = questionData.options;
-  const style = questionData.style;
+  const style = questionData.style || [];
 
   if (isAttentionCheck()) {
     document.getElementById("trialID").textContent = "ATTENTION CHECK Trial";
@@ -595,7 +594,7 @@ function renderBoxesAndOptions(questionData) {
 
   if (isAllowedAskAITrials()) {
     const answer = questionData.answer;
-    const sortedStyle = questionData.sortedStyle;
+    const sortedStyle = questionData.sortedStyle || [];
 
     const aiSuggestionsContainer = document.getElementById(
       "ai-suggestion-container"

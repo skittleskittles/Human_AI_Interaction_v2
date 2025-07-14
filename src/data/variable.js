@@ -274,13 +274,12 @@ export function getAIRevealCounts() {
 }
 
 export function isAllowedAskAITrials() {
-  // return (
-  //   !isNoAIExpGroup() &&
-  //   !isComprehensionCheck() &&
-  //   !isAttentionCheck() &&
-  //   getCurPhase() === PHASE_NAME.PHASE2
-  // );
-  return true;
+  return (
+    !isNoAIExpGroup() &&
+    !isComprehensionCheck() &&
+    !isAttentionCheck() &&
+    getCurPhase() === PHASE_NAME.PHASE2
+  );
 }
 
 export function getAskAILimit() {

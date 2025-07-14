@@ -214,7 +214,29 @@
       <div id="aiFeedback" style="display: none">
         <table>
           <tr>
-            <td>I was aware of the AI assistance during the game.</td>
+            <td>How helpful was the AI assistant on a scale from 0 to 100?</td>
+            <td>
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                "
+              >
+                <input
+                  type="range"
+                  id="aiHelpfulnessSlider"
+                  min="0"
+                  max="100"
+                  value="50"
+                  style="width: 80%"
+                />
+                <span id="sliderValue" style="font-size: 14px">50</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>The AI assistant was helpful during the experiment.</td>
             <td>
               <div class="radio-group">
                 <input type="radio" name="2-1" value="1" />
@@ -222,59 +244,6 @@
                 <input type="radio" name="2-1" value="3" />
                 <input type="radio" name="2-1" value="4" />
                 <input type="radio" name="2-1" value="5" />
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>I trusted the AI’s recommendations.</td>
-            <td>
-              <div class="radio-group">
-                <input type="radio" name="trust" value="1" />
-                <input type="radio" name="trust" value="2" />
-                <input type="radio" name="trust" value="3" />
-                <input type="radio" name="trust" value="4" />
-                <input type="radio" name="trust" value="5" />
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>The AI assistance was useful in improving my performance.</td>
-            <td>
-              <div class="radio-group">
-                <input type="radio" name="2-2" value="1" />
-                <input type="radio" name="2-2" value="2" />
-                <input type="radio" name="2-2" value="3" />
-                <input type="radio" name="2-2" value="4" />
-                <input type="radio" name="2-2" value="5" />
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              I felt more confident in my decisions when AI assistance was
-              available.
-            </td>
-            <td>
-              <div class="radio-group">
-                <input type="radio" name="2-3" value="1" />
-                <input type="radio" name="2-3" value="2" />
-                <input type="radio" name="2-3" value="3" />
-                <input type="radio" name="2-3" value="4" />
-                <input type="radio" name="2-3" value="5" />
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              I put in considerable effort to achieve my level of performance.
-            </td>
-            <td>
-              <div class="radio-group">
-                <input type="radio" name="2-4" value="1" />
-                <input type="radio" name="2-4" value="2" />
-                <input type="radio" name="2-4" value="3" />
-                <input type="radio" name="2-4" value="4" />
-                <input type="radio" name="2-4" value="5" />
               </div>
             </td>
           </tr>
@@ -297,12 +266,17 @@
         <p id="charCount1" class="char-count">0 / 500</p>
       </div>
 
-      <div class="free-response-group">
+      <div
+        class="free-response-group"
+        id="aiFreeResponse"
+        style="display: none"
+      >
         <label for="freeResponse2" class="question-label">
-          If you had the opportunity to ask for help during the task (excluding
-          directly asking for the correct solution), what question would you
-          ask? <br />
-          <em>For example: “Is A in position 1?” or “Is A after B?”</em>
+          When did you typically use the AI assistant during the experiment?<br />
+          <em
+            >For example: Right after seeing the problem, after attempting a
+            submission, to check your answer, etc.</em
+          >
         </label>
         <textarea
           id="freeResponse2"
@@ -314,8 +288,8 @@
 
       <div class="free-response-group">
         <label for="freeResponse3" class="question-label">
-          If there was anything confusing or unclear during the game, please
-          describe it here.
+          Please share your overall experience with the game and any suggestions
+          for improvement.
         </label>
         <textarea
           id="freeResponse3"

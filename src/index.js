@@ -20,6 +20,7 @@ import { saveOrUpdateUser } from "./firebase/saveData2Firebase.js";
 import { showConsent } from "./consent.js";
 import { showEnterComprehensionTrialsPopUp } from "./modal.js";
 import { checkUserParticipation } from "./checkUserStatus.js";
+import { showFeedback } from "./feedback.js";
 
 async function initExperimentEnvironment(shouldShuffle = false) {
   try {
@@ -148,7 +149,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
         bindTrialButtons();
         await loadModal(); // Make sure modal loads before experiment
         // await startExperiment(false, false);
-        await startExperiment(true, true);
+        await startExperiment(true, false);
       },
     });
   } catch (error) {

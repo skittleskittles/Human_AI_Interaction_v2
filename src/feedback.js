@@ -4,6 +4,7 @@ import {
   getTotalCorrectTrials,
   getObjCount,
   getBonusThreshold,
+  isNoAIExpGroup,
 } from "./data/variable";
 import { User } from "./collectData";
 import {
@@ -24,12 +25,21 @@ export function showFeedback() {
       feedbackContainer.style.display = "block";
 
       const aiFeedback = document.getElementById("aiFeedback");
+      const aiFreeResponse = document.getElementById("aiFreeResponse");
       const submitFeedback = document.getElementById("submitFeedback");
       const radioGroups = document.querySelectorAll("input[type='radio']");
       let thankYouMessage = document.getElementById("thankYouMessage");
 
-      if (globalState.AI_HELP !== AI_HELP_TYPE.NO_AI) {
+      if (!isNoAIExpGroup()) {
         aiFeedback.style.display = "block";
+        aiFreeResponse.style.display = "flex";
+        const slider = document.getElementById("aiHelpfulnessSlider");
+        const sliderValue = document.getElementById("sliderValue");
+        if (slider) {
+          slider.addEventListener("input", () => {
+            sliderValue.textContent = slider.value;
+          });
+        }
       }
 
       function checkFormCompletion() {
@@ -72,6 +82,10 @@ export function showFeedback() {
 async function submitFeedbackForm(submitButton, thankYouMessage) {
   const now = getCurDate();
 
+  // Get AI helpfulness slider value (if visible)
+  const sliderEl = document.getElementById("aiHelpfulnessSlider");
+  const sliderValue = sliderEl?.value;
+
   // Collect all free response values
   const freeResponses = {};
   ["1", "2", "3"].forEach((num) => {
@@ -82,6 +96,7 @@ async function submitFeedbackForm(submitButton, thankYouMessage) {
   const feedbackData = {
     choices: {},
     ...freeResponses,
+    aiHelpfulness: sliderValue ? Number(sliderValue) : null,
     submittedAt: now,
   };
 
