@@ -206,6 +206,7 @@ export async function nextTrial() {
 
   /* complete last trial */
   if (getCurTrialIndex() > 0) {
+    // cur trial is not the first trial
     /* record last trial data */
     const performance = JSON.parse(JSON.stringify(getPerformance()));
     const submissionTimeSec = getTimerValue("submission");
@@ -223,6 +224,9 @@ export async function nextTrial() {
         return;
       }
     }
+  } else {
+    restartTimer("trial");
+    restartTimer("submission");
   }
 
   /* start next trial */
@@ -435,6 +439,13 @@ function showAskAIAnswers() {
   }, 500);
 
   updateUseAIMessage();
+
+  /* update db */
+  const performance = JSON.parse(JSON.stringify(getPerformance()));
+  const submissionTimeSec = getTimerValue("submission");
+  const trialTimeSec = getTimerValue("trial");
+
+  dbRecordTrial(performance, [], 0, trialTimeSec, false); // todo fsy
 }
 
 function showAskAITooltip(message) {
@@ -729,6 +740,12 @@ export function dbRecordTrial(
 
   if (!lastTrial) return;
 
+  console.log(
+    "userAns.length:",
+    userAns.length,
+    "submissionTimeSec:",
+    submissionTimeSec
+  );
   if (isSubmission && userAns.length > 0 && submissionTimeSec != 0) {
     // Add submission-level user choice if provided
     recordUserChoiceData(lastTrial, userAns, performance, submissionTimeSec);

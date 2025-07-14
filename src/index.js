@@ -10,6 +10,8 @@ import {
   getShuffleMaxId,
   isNoAIExpGroup,
   setQuestionsData,
+  GROUP_TYPE_MAP,
+  getAIHelpType,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
 import { loadModal } from "./modal.js";
@@ -29,7 +31,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
 
     // 2. Set object count
     setObjCount(6);
-    User.num_objects = 6;
+    User.num_objects = getObjCount();
     // set based on `v=zeta`
     // if (urlParams.v !== undefined && urlParams.v === "zeta") {
     //   setObjCount(6);
@@ -42,6 +44,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
     // Load Exp Params
     setAIRevealCounts(1);
     setAIHelpType(AI_HELP_TYPE.HIGH_COST_AI);
+    User.exp_group = GROUP_TYPE_MAP[getAIHelpType()];
 
     // 3. Set Prolific ID (default to random if missing)
     User.prolific_pid = urlParams.PROLIFIC_PID || generateUID();
@@ -149,7 +152,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
         bindTrialButtons();
         await loadModal(); // Make sure modal loads before experiment
         // await startExperiment(false, false);
-        await startExperiment(true, false);
+        await startExperiment(true, true);
       },
     });
   } catch (error) {

@@ -3,13 +3,19 @@
  *   - https://docs.google.com/document/d/1bmtTgm39KQYB385JB6DSbq2pWNm6omMeQpxw29AaBP0/edit?tab=t.dire4py9pef7#heading=h.yuzh9ft0k3h8
  */
 
-import { getCurTrialIndex } from "./data/variable.js";
+import {
+  GROUP_TYPE_MAP,
+  getAIHelpType,
+  getCurTrialIndex,
+  getObjCount,
+} from "./data/variable.js";
 import { getCurDate } from "./utils.js";
 
 /**
  * @typedef {Object} User
  * @property {string} prolific_pid
  * @property {string} firebase_uid
+ * @property {number} exp_group
  * @property {Date} create_time
  * @property {Date} end_time
  * @property {boolean} is_consent
@@ -28,7 +34,8 @@ export const User = {
   is_passed_attention_check: false,
   is_passed_all_experiments: false, // pass attention check and finish all 20 minutes
   experiments: [], // Experiment
-  num_objects: 5,
+  num_objects: getObjCount(),
+  exp_group: GROUP_TYPE_MAP[getAIHelpType()],
 };
 
 /**
@@ -40,6 +47,7 @@ export const User = {
  * @property {boolean} is_finished
  * @property {number} num_trials
  * @property {number} total_correct_trials
+ * @property {number} total_ask_ai_count
  * @property {Trial[]} trials
  * @property {Trial[]} comprehension_trials
  */
@@ -52,6 +60,7 @@ export function createNewExperimentData(experiment_id = 0) {
     is_finished: false,
     num_trials: 0,
     total_correct_trials: 0,
+    total_ask_ai_count: 0,
     trials: [], // will be populated with Trial objects
     comprehension_trials: [],
   };
@@ -81,9 +90,11 @@ export function getCurExperimentData() {
  * @property {Choice[]} ai_choice
  * @property {Choice[]} best_choice
  * @property {Choice[]} user_choice
+ * @property {Number} ask_ai_count
  * @property {Number} total_submissions
  * @property {Number} total_steps
  * @property {number} cur_total_correct_trials
+ * @property {number} cur_total_ask_ai_count
  * @property {Number} total_time // seconds, 每一轮trial总时间
  */
 /**
@@ -109,9 +120,11 @@ export function createNewTrialData(
     ai_choice: [], // []Choice
     best_choice: [{ choices: answer, score: 100 }], // []Choice
     user_choice: [], // []Choice
+    ask_ai_count: 0,
     total_steps: 0,
     total_submissions: 0,
     cur_total_correct_trials: 0,
+    cur_total_ask_ai_count: 0,
     total_time: 0,
   };
 }
@@ -132,6 +145,7 @@ export function updateExperimentData(
   experiment.num_trials = experiment.trials.length;
   experiment.is_passed_attention_check = User.is_passed_attention_check;
   experiment.total_correct_trials = performance.correctTrialCount;
+  experiment.total_ask_ai_count = performance.totalAskAICount;
 }
 
 /**
@@ -150,7 +164,9 @@ export function updateTrialData(
     trial.total_submissions = performance.submissionCount;
     trial.total_steps = performance.totalSteps;
   }
+  trial.ask_ai_count = performance.curTrialAskAICount;
   trial.cur_total_correct_trials = performance.correctTrialCount;
+  trial.cur_total_ask_ai_count = performance.totalAskAICount;
   trial.total_time = trialTimeSec;
 }
 
@@ -181,7 +197,6 @@ export function getCurTrialData(isComprehensionCheck) {
  * @typedef {Object} Choice
  * @property {string[]} choices
  * @property {number} score
- * @property {'no_ai' | 'before_ai_show' | 'after_ai_show'} ai_assisted_flag
  * @property {number} correct_num
  * @property {number} steps
  * @property {number} time_spent
@@ -193,18 +208,10 @@ export function recordUserChoiceData(
   performance,
   submissionTimeSec
 ) {
-  let ai_assisted_flag = "no_ai";
-  // if (globalState.AI_HELP > 0) {
-  //   ai_assisted_flag = globalState.canShowAIAnswer
-  //     ? "after_ai_show"
-  //     : "before_ai_show";
-  // }
-
   const userChoice = createChoice(
     userAns,
     performance,
     submissionTimeSec,
-    ai_assisted_flag
   );
   trial.user_choice.push(userChoice);
 }
@@ -212,8 +219,7 @@ export function recordUserChoiceData(
 export function createChoice(
   userAns,
   performance,
-  submissionTimeSec,
-  ai_assisted_flag = "no_ai"
+  submissionTimeSec
 ) {
   const userChoice = {
     choices: userAns,
@@ -221,7 +227,7 @@ export function createChoice(
     score: performance.lastSubmission.score,
     steps: performance.lastSubmission.steps,
     time_spent: submissionTimeSec,
-    ai_assisted_flag: ai_assisted_flag,
+    ask_ai_count: performance.lastSubmission.askAICount,
   };
 
   return userChoice;

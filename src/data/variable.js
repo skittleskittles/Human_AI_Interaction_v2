@@ -52,6 +52,13 @@ export const AI_HELP_TYPE = {
   AI_QUESTION_A: 3,
   AI_QUESTION_B: 4,
 };
+export const GROUP_TYPE_MAP = {
+  [AI_HELP_TYPE.NO_AI]: "no_ai",
+  [AI_HELP_TYPE.LOW_COST_AI]: "low_cost_ai",
+  [AI_HELP_TYPE.HIGH_COST_AI]: "high_cost_ai",
+  [AI_HELP_TYPE.AI_QUESTION_A]: "ai_question_a",
+  [AI_HELP_TYPE.AI_QUESTION_B]: "ai_question_b",
+};
 
 export const globalState = {
   objectCount: 5,
@@ -70,7 +77,9 @@ export const globalState = {
       correctChoice: 0, // Number of correctly placed objects in the most recent submission
       score: 0, // Accuracy score of the most recent submission (0–100)
       steps: 0, // Number of drag steps made in the most recent submission
+      askAICount: 0,
     },
+    curTrialAskAICount: 0, // Number of ask ai count in this trial
     submissionCount: 0, // Total number of submissions in the current trial
     totalSteps: 0, // Total number of drag steps across all submissions in the current trial
     correctTrialCount: 0, // Total number of 100% correct trials
@@ -232,24 +241,28 @@ export function getCurTrialIndex() {
 }
 
 export function getCurQuestionIndex() {
-  // if (isNoAIExpGroup()) {
-  //   return globalState.curQuestionIndex;
-  // }
+  const phaseMap = phaseState.phaseIndexMap;
+  const questionMap = phaseState.PHASE_QUESTIONS;
 
-  // attention check does not count
-  const phase = getCurPhase();
-  const index = phaseState.phaseIndexMap[phase];
-  if (index < phaseState.PHASE_QUESTIONS[phase].length) {
-    return index + 1; // 1-based index
-  } else {
-    return (
-      phaseState.PHASE_QUESTIONS[phase].length +
-      phaseState.phaseIndexMap.extra +
-      1
-    );
+  let total = 0;
+
+  for (const phase in phaseMap) {
+    const idx = phaseMap[phase];
+    const length = questionMap[phase]?.length || 0;
+
+    if (idx === -1) continue; // Phase not started
+
+    if (idx < length) {
+      // In-progress phase
+      total += idx + 1;
+    } else {
+      // Exhausted this phase, count full length
+      total += length;
+    }
   }
-}
 
+  return total;
+}
 export function resetTrialID() {
   globalState.curTrialIndex = 0;
 }
@@ -265,6 +278,10 @@ export function setAIHelpType(type) {
   globalState.AI_HELP = type;
 }
 
+export function getAIHelpType() {
+  return globalState.AI_HELP;
+}
+
 export function setAIRevealCounts(count) {
   globalState.NUM_REVEAL_OBJECTS = count;
 }
@@ -273,6 +290,7 @@ export function getAIRevealCounts() {
   return globalState.NUM_REVEAL_OBJECTS;
 }
 
+// todo fsy
 export function isAllowedAskAITrials() {
   return (
     !isNoAIExpGroup() &&
@@ -280,6 +298,7 @@ export function isAllowedAskAITrials() {
     !isAttentionCheck() &&
     getCurPhase() === PHASE_NAME.PHASE2
   );
+  // return true;
 }
 
 export function getAskAILimit() {
@@ -300,6 +319,8 @@ export function incrementAskAICount() {
   if (!CAN_ASK_AI_UNLIMITES && globalState.remainingAskAICount > 0) {
     globalState.remainingAskAICount--;
   }
+  globalState.performance.lastSubmission.askAICount++;
+  globalState.performance.curTrialAskAICount++;
   globalState.performance.totalAskAICount++;
 }
 
@@ -368,6 +389,7 @@ export function resetTrialSteps() {
 
 export function resetTrialPerformance() {
   resetSubmissionPerformance();
+  globalState.performance.curTrialAskAICount = 0;
   globalState.performance.submissionCount = 0;
 }
 
@@ -375,6 +397,7 @@ export function resetSubmissionPerformance() {
   globalState.performance.lastSubmission.correctChoice = 0;
   globalState.performance.lastSubmission.score = 0;
   globalState.performance.lastSubmission.steps = 0;
+  globalState.performance.lastSubmission.askAICount = 0;
 }
 
 export function updatePerformanceAfterSubmission(correctChoice, score) {

@@ -94,6 +94,7 @@ export async function saveOrUpdateUser(endTime) {
       is_passed_attention_check: User.is_passed_attention_check,
       is_passed_all_experiments: User.is_passed_all_experiments,
       num_objects: User.num_objects,
+      exp_group: User.exp_group,
     };
     await setDoc(userDocRef, payload, { merge: true });
 
@@ -133,6 +134,7 @@ async function saveOrUpdateExperiment(userDocRef, experiment, endTime) {
         is_passed_attention_check: experiment.is_passed_attention_check,
         is_finished: experiment.is_finished,
         total_correct_trials: experiment.total_correct_trials,
+        total_ask_ai_count: experiment.total_ask_ai_count,
       });
     } else {
       await updateDoc(expRef, {
@@ -141,6 +143,7 @@ async function saveOrUpdateExperiment(userDocRef, experiment, endTime) {
         is_finished: experiment.is_finished,
         num_trials: experiment.num_trials,
         total_correct_trials: experiment.total_correct_trials,
+        total_ask_ai_count: experiment.total_ask_ai_count,
       });
     }
     console.log(
@@ -180,7 +183,9 @@ async function saveTrialData(expRef, trial) {
       user_choice: trial.user_choice,
       total_submissions: trial.total_submissions,
       total_steps: trial.total_steps,
+      ask_ai_count: trial.ask_ai_count,
       cur_total_correct_trials: trial.cur_total_correct_trials,
+      cur_total_ask_ai_count: trial.cur_total_ask_ai_count,
       total_time: trial.total_time,
     });
   } catch (error) {
