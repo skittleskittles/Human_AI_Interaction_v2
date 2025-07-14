@@ -75,6 +75,7 @@ import {
   showEnterPhase3,
 } from "./modal.js";
 import {
+  aiSuggestionsLabel,
   centerPanel,
   leftPanel,
   rightPanel,
@@ -412,6 +413,7 @@ function showAskAIAnswers() {
     allSuggestions.forEach((el) => {
       el.style.visibility = "hidden";
     });
+    aiSuggestionsLabel.style.visibility = "visible";
 
     // 2. Show only the revealed ones
     revealedObjects.forEach((obj) => {
@@ -604,7 +606,6 @@ function renderBoxesAndOptions(questionData) {
       aiAns.className = "ai-suggestion";
       aiAns.id = `ai-suggestion-${ans}`;
       aiAns.textContent = ans;
-      aiAns.style.visibility = "hidden";
       applyPatternStyle(aiAns, sortedStyle[i] || "blank");
       aiAns.style.height = `${maxHeight}px`;
       aiSuggestionsContainer.appendChild(aiAns);

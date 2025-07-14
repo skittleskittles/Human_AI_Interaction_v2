@@ -11,6 +11,8 @@ export const leftPanel = document.getElementById("left-panel");
 export const centerPanel = document.getElementById("center-panel");
 export const rightPanel = document.getElementById("right-panel");
 
+export const aiSuggestionsLabel = document.getElementById("ai-suggestion-label")
+
 export function clearPageContent() {
   const sections = [
     "consentContainer",

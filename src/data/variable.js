@@ -1,3 +1,4 @@
+import { aiSuggestionsLabel } from "./domElements";
 import {
   attentionTrial5,
   attentionTrial6,
@@ -172,15 +173,15 @@ export function advanceTrial(shouldShowSpecialTrials) {
     return true;
   }
 
-  if (isNoAIExpGroup()) {
-    // normal trial, use questions from questions list
-    globalState.curQuestionIndex++;
-    if (globalState.curQuestionIndex > globalState.questions.length) {
-      alert("All trials completed!");
-      return false;
-    }
-    return true;
-  }
+  // if (isNoAIExpGroup()) {
+  //   // normal trial, use questions from questions list
+  //   globalState.curQuestionIndex++;
+  //   if (globalState.curQuestionIndex > globalState.questions.length) {
+  //     alert("All trials completed!");
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
   const phase = getCurPhase();
   if (
@@ -211,9 +212,9 @@ export function getCurQuestionData() {
     return comprehensionTrials[getCurTrialIndex() - 1];
   }
 
-  if (isNoAIExpGroup()) {
-    return globalState.questions[globalState.curQuestionIndex - 1];
-  }
+  // if (isNoAIExpGroup()) {
+  //   return globalState.questions[globalState.curQuestionIndex - 1];
+  // }
   const phase = getCurPhase();
   const index = phaseState.phaseIndexMap[phase];
   if (index < phaseState.PHASE_QUESTIONS[phase].length) {
@@ -231,9 +232,9 @@ export function getCurTrialIndex() {
 }
 
 export function getCurQuestionIndex() {
-  if (isNoAIExpGroup()) {
-    return globalState.curQuestionIndex;
-  }
+  // if (isNoAIExpGroup()) {
+  //   return globalState.curQuestionIndex;
+  // }
 
   // attention check does not count
   const phase = getCurPhase();
@@ -273,12 +274,13 @@ export function getAIRevealCounts() {
 }
 
 export function isAllowedAskAITrials() {
-  return (
-    !isNoAIExpGroup() &&
-    !isComprehensionCheck() &&
-    !isAttentionCheck() &&
-    getCurPhase() === PHASE_NAME.PHASE2
-  );
+  // return (
+  //   !isNoAIExpGroup() &&
+  //   !isComprehensionCheck() &&
+  //   !isAttentionCheck() &&
+  //   getCurPhase() === PHASE_NAME.PHASE2
+  // );
+  return true;
 }
 
 export function getAskAILimit() {
@@ -292,6 +294,7 @@ export function remainingAskAICount() {
 export function resetAskAI() {
   globalState.remainingAskAICount = getAskAILimit();
   globalState.revealedIndicesThisTrial.clear();
+  aiSuggestionsLabel.style.visibility = "hidden";
 }
 
 export function incrementAskAICount() {
