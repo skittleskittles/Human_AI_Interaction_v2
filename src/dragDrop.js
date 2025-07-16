@@ -1,5 +1,8 @@
 import { incrementSteps } from "./data/variable.js";
-import { hideResultContent, refreshInteractionState } from "./uiState.js";
+import {
+  hideSubmissionResultContent,
+  refreshInteractionState,
+} from "./uiState.js";
 
 export function bindDragDropEvents() {
   bindDragEvents();
@@ -63,7 +66,7 @@ function bindDropEvents() {
 
     incrementSteps();
     refreshInteractionState();
-    hideResultContent();
+    hideSubmissionResultContent();
   });
 }
 

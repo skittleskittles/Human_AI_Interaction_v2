@@ -1,4 +1,4 @@
-import { aiSuggestionsLabel } from "./domElements";
+import { solutionLabel } from "./domElements";
 import {
   attentionTrial5,
   attentionTrial6,
@@ -312,7 +312,7 @@ export function remainingAskAICount() {
 export function resetAskAI() {
   globalState.remainingAskAICount = getAskAILimit();
   globalState.revealedIndicesThisTrial.clear();
-  aiSuggestionsLabel.style.visibility = "hidden";
+  solutionLabel.style.visibility = "hidden";
 }
 
 export function incrementAskAICount() {

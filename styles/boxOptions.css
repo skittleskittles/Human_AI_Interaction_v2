@@ -36,7 +36,7 @@
   text-align: center;
 }
 
-#ai-suggestion-label {
+#solution-label {
   margin-left: 1rem;
   margin-top: 1rem;
   font-weight: bold;
@@ -106,14 +106,14 @@
   font-family: "Fira Code", monospace;
 }
 
-#ai-suggestion-container {
+#solution-container {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   margin-top: 0.4rem;
   gap: 2.25rem;
 }
-.ai-suggestion {
+.solution {
   visibility: hidden;
   width: 4.2rem;
   min-height: 2rem;

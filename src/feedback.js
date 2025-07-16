@@ -137,5 +137,5 @@ Now you will be redirected back to Prolific.`;
   thankYouMessage.style.display = "block";
 
   // redirect
-  redirectFn?.();
+  // redirectFn?.(); // todo fsy: enable redirect
 }

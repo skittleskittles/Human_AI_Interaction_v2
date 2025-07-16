@@ -1,4 +1,5 @@
 import {
+  getCurPhase,
   getPerformance,
   getTrialTotalAskAICount,
   hasSubmittedThisTrial,
@@ -76,7 +77,7 @@ export function updateButtons({ submit, reset, next, askAI }) {
 export function showResultContent() {
   const performance = getPerformance();
 
-  const content = document.getElementById("result-content");
+  const content = document.getElementById("submission-result-content");
   content.style.display = "block";
 
   document.getElementById("correct-choice").textContent =
@@ -84,14 +85,12 @@ export function showResultContent() {
   document.getElementById(
     "score"
   ).textContent = `${performance.lastSubmission.score}`;
-  document.getElementById("correct-trials").textContent =
-    performance.correctTrialCount;
-  document.getElementById("totalPassMessage").style.display = "block";
+
+  updateTotalPassMessage();
 
   const additionalMessage = document.getElementById("additionalMessage");
   additionalMessage.style.display = "none";
   if (isAttentionCheck()) {
-    document.getElementById("totalPassMessage").style.display = "none";
     if (performance.lastSubmission.score !== 100) {
       additionalMessage.style.display = "block";
       additionalMessage.textContent = "You have failed this attention check.";
@@ -100,7 +99,6 @@ export function showResultContent() {
       User.is_passed_attention_check = true;
     }
   } else if (isComprehensionCheck()) {
-    document.getElementById("totalPassMessage").style.display = "none";
     additionalMessage.style.display = "block";
     if (performance.lastSubmission.score !== 100) {
       additionalMessage.textContent = "You did not score 100.";
@@ -110,20 +108,36 @@ export function showResultContent() {
       additionalMessage.style.color = "green";
     }
   }
+}
 
-  updateUseAIMessage();
+export function updateTotalPassMessage() {
+  document.getElementById("correct-trials").textContent =
+    getPerformance().correctTrialCount;
+  document.getElementById("totalPassMessage").style.display = "block";
+  if (isAttentionCheck() || isComprehensionCheck()) {
+    document.getElementById("totalPassMessage").style.display = "none";
+  }
 }
 
 export function updateUseAIMessage() {
   document.getElementById("askAIMessage").style.display = isAllowedAskAITrials()
     ? "block"
     : "none";
+  console.log(
+    "curPhase",
+    getCurPhase(),
+    "isAllowedAskAITrials",
+    isAllowedAskAITrials()
+  );
   document.getElementById("askAI-count").textContent =
     getTrialTotalAskAICount();
+  if (isAttentionCheck() || isComprehensionCheck()) {
+    document.getElementById("askAIMessage").style.display = "none";
+  }
 }
 
-export function hideResultContent() {
-  const content = document.getElementById("result-content");
+export function hideSubmissionResultContent() {
+  const content = document.getElementById("submission-result-content");
   content.style.display = "none";
 }
 

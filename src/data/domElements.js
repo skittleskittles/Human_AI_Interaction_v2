@@ -11,7 +11,11 @@ export const leftPanel = document.getElementById("left-panel");
 export const centerPanel = document.getElementById("center-panel");
 export const rightPanel = document.getElementById("right-panel");
 
-export const aiSuggestionsLabel = document.getElementById("ai-suggestion-label")
+export const optionContainer = document.getElementById("option-container");
+export const labelContainer = document.getElementById("label-container");
+export const solutionContainer = document.getElementById("solution-container");
+
+export const solutionLabel = document.getElementById("solution-label");
 
 export function clearPageContent() {
   const sections = [

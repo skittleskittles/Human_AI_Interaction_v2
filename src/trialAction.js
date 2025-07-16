@@ -14,7 +14,6 @@ import {
   isComprehensionCheck,
   resetSubmissionPerformance,
   shouldEndAttentionCheck,
-  getSubmissionLimit,
   getComprehensionTrialsNum,
   resetTrialID,
   shouldEndComprehensionCheck,
@@ -34,24 +33,18 @@ import {
   incrementAskAICount,
   getRevealedIndicesThisTrial,
   recordRevealedIndicesThisTrial,
-  phaseState,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
   showResultContent,
-  hideResultContent,
+  hideSubmissionResultContent,
   updateUseAIMessage,
+  updateTotalPassMessage,
 } from "./uiState.js";
-import { bindDragDropEvents } from "./dragDrop.js";
-import {
-  getUserAnswer,
-  evaluateAnswer,
-  addPxAndRem,
-  escapeRegExp,
-} from "./utils.js";
+import { renderAIChat, renderBoxesAndOptions, renderInstructions, renderStatements, updateSideLabels } from "./render.js";
+import { getUserAnswer, evaluateAnswer } from "./utils.js";
 import {
   startTimer,
-  resetTimer,
   pauseTimer,
   resumeTimer,
   getTimerValue,
@@ -74,13 +67,7 @@ import {
   showEnterPhase2,
   showEnterPhase3,
 } from "./modal.js";
-import {
-  aiSuggestionsLabel,
-  centerPanel,
-  leftPanel,
-  rightPanel,
-  timeBox,
-} from "./data/domElements.js";
+import { solutionLabel, timeBox } from "./data/domElements.js";
 import { disableDrag } from "./dragDrop.js";
 
 export function bindTrialButtons() {
@@ -255,7 +242,6 @@ export async function nextTrial() {
 }
 
 function initializeAfterNextTrial() {
-  hideResultContent();
   resetTrialSteps();
   resetAskAI();
   resetSubmissions();
@@ -277,7 +263,9 @@ export function proceedToNextPhase() {
         setCurPhase(PHASE_NAME.PHASE2);
         resetCurrentPhaseTrialCount();
         setPhaseTimerEnded(false);
+        document.getElementById("timer").textContent = "20:00";
         startTimer(PHASE_NAME.PHASE2);
+        nextTrial();
         resolve();
       });
     } else if (getCurPhase() === PHASE_NAME.PHASE2) {
@@ -285,7 +273,9 @@ export function proceedToNextPhase() {
         setCurPhase(PHASE_NAME.PHASE3);
         resetCurrentPhaseTrialCount();
         setPhaseTimerEnded(false);
+        document.getElementById("timer").textContent = "08:00";
         startTimer(PHASE_NAME.PHASE3);
+        nextTrial();
         resolve();
       });
     } else if (getCurPhase() === PHASE_NAME.PHASE3) {
@@ -412,15 +402,15 @@ function showAskAIAnswers() {
 
   setTimeout(() => {
     // 1. Hide all AI suggestions first
-    const allSuggestions = document.querySelectorAll("[id^='ai-suggestion-']");
+    const allSuggestions = document.querySelectorAll("[id^='solution-']");
     allSuggestions.forEach((el) => {
       el.style.visibility = "hidden";
     });
-    aiSuggestionsLabel.style.visibility = "visible";
+    solutionLabel.style.visibility = "visible";
 
     // 2. Show only the revealed ones
     revealedObjects.forEach((obj) => {
-      const el = document.getElementById(`ai-suggestion-${obj.name}`);
+      const el = document.getElementById(`solution-${obj.name}`);
       if (el) {
         el.style.visibility = "visible";
       }
@@ -473,207 +463,9 @@ function renderTrial(trial) {
   renderBoxesAndOptions(trial);
   renderStatements(trial.statements, trial.answer);
   updateSideLabels(trial.front_end);
+  updateTotalPassMessage();
+  hideSubmissionResultContent();
   initializeAfterNextTrial();
-}
-
-function renderInstructions(instructionText) {
-  let instruction;
-  const submitLimit = getSubmissionLimit();
-
-  if (isAttentionCheck()) {
-    instruction = `<p>
-      This is the attention check trial.</p>
-      <p>The timer is paused for this trial.</p>
-      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.</p>
-      <p>You need to score 100 to pass this trial.</p>
-      <p>If you fail the attention check, you will not get the bonus payment regardless of your overall performance.</p>`;
-  } else if (isComprehensionCheck()) {
-    instruction = `<p>This is a comprehension check trial.</p>
-      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.</p>
-      <p>You need to score 100 to pass this trial.</p>
-      <p>If you fail this trial twice, the experiment ends automatically.</p>`;
-  } else {
-    instruction = `<p>${instructionText}</p>
-      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.</p>
-      <p>Maximize your score with minimal time.</p>`;
-  }
-
-  document.getElementById("instruction-text").innerHTML = instruction;
-}
-
-function renderAIChat() {
-  if (!isAllowedAskAITrials()) {
-    leftPanel.style.display = "none";
-    return;
-  }
-
-  leftPanel.style.display = "flex";
-  document.getElementById("askAI-btn").textContent =
-    `Reveal ${getAIRevealCounts()} ` +
-    (getAIRevealCounts() === 1 ? "object's location" : "objects' locations");
-
-  const chatBox = document.getElementById("ai-chat");
-  chatBox.innerHTML = "";
-  const initialBubble = document.createElement("div");
-  initialBubble.classList.add("chat-bubble", "ai");
-
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
-  avatar.textContent = "🤖";
-
-  const msg = document.createElement("div");
-  msg.className = "message";
-  msg.innerHTML = `<strong>AI:</strong> How can I help?`;
-
-  initialBubble.appendChild(avatar);
-  initialBubble.appendChild(msg);
-  chatBox.appendChild(initialBubble);
-}
-
-function renderBoxesAndOptions(questionData) {
-  const options = questionData.options;
-  const style = questionData.style || [];
-
-  if (isAttentionCheck()) {
-    document.getElementById("trialID").textContent = "ATTENTION CHECK Trial";
-  } else {
-    document.getElementById("trialID").textContent =
-      "Trial " +
-      (isComprehensionCheck() ? getCurTrialIndex() : getCurQuestionIndex());
-  }
-
-  const optionContainer = document.getElementById("option-container");
-  const boxContainer = document.getElementById("box-container");
-  const labelContainer = document.getElementById("label-container");
-
-  optionContainer.innerHTML = "";
-  boxContainer.innerHTML = "";
-  labelContainer.innerHTML = "";
-
-  // Step 1: Measure option height
-  const tempOptions = options.map((id) => {
-    const el = document.createElement("div");
-    el.className = "option";
-    el.style.position = "absolute";
-    el.style.visibility = "hidden";
-    el.textContent = id;
-    document.body.appendChild(el);
-    return el;
-  });
-
-  const maxHeight = Math.max(
-    ...tempOptions.map((el) => el.getBoundingClientRect().height)
-  );
-  tempOptions.forEach((el) => el.remove());
-
-  // Step 2: Render options and boxes
-  options.forEach((optionText, i) => {
-    // Top label: 1, 2, ...
-    const label = document.createElement("div");
-    label.className = "label";
-    label.textContent = i + 1;
-    labelContainer.appendChild(label);
-
-    // Option
-    const option = document.createElement("div");
-    option.className = "option";
-    option.id = optionText;
-    option.textContent = optionText;
-    applyPatternStyle(option, style[i] || "blank");
-    option.style.height = `${maxHeight}px`;
-    optionContainer.appendChild(option);
-
-    // Box + optional front/end label
-    const boxGroup = document.createElement("div");
-    boxGroup.className = "box-group";
-
-    const box = document.createElement("div");
-    box.className = "box";
-    box.style.height = addPxAndRem(maxHeight, 1);
-    boxGroup.appendChild(box);
-
-    if (i === 0 || i === options.length - 1) {
-      const label = document.createElement("div");
-      label.className = "side-label-under";
-      label.id = i === 0 ? "front-label-under" : "end-label-under";
-      label.textContent = i === 0 ? "front" : "end"; // default
-      boxGroup.appendChild(label);
-    }
-
-    boxContainer.appendChild(boxGroup);
-  });
-
-  if (isAllowedAskAITrials()) {
-    const answer = questionData.answer;
-    const sortedStyle = questionData.sortedStyle || [];
-
-    const aiSuggestionsContainer = document.getElementById(
-      "ai-suggestion-container"
-    );
-    aiSuggestionsContainer.innerHTML = "";
-    answer.forEach((ans, i) => {
-      const aiAns = document.createElement("div");
-      aiAns.className = "ai-suggestion";
-      aiAns.id = `ai-suggestion-${ans}`;
-      aiAns.textContent = ans;
-      applyPatternStyle(aiAns, sortedStyle[i] || "blank");
-      aiAns.style.height = `${maxHeight}px`;
-      aiSuggestionsContainer.appendChild(aiAns);
-    });
-  }
-
-  bindDragDropEvents();
-}
-
-function applyPatternStyle(element, pattern) {
-  const base = {
-    blank: "lightblue",
-    "dotted circles":
-      "repeating-radial-gradient(circle, lightblue, lightblue 5px, white 5px, white 10px)",
-    "horizontal lines":
-      "repeating-linear-gradient(to bottom, lightblue, lightblue 5px, white 5px, white 10px)",
-    "vertical lines":
-      "repeating-linear-gradient(to right, lightblue, lightblue 5px, white 5px, white 10px)",
-    "diagonal stripes":
-      "repeating-linear-gradient(45deg, lightblue, lightblue 5px, white 5px, white 10px)",
-    "horizontal stripes": `
-    repeating-linear-gradient(to right, transparent 0 8px, lightblue 8px 16px),
-    repeating-linear-gradient(to bottom, transparent 0 8px, lightblue 8px 16px)
-  `,
-  };
-
-  element.style.background = base[pattern] || base["blank"];
-}
-
-function renderStatements(statements, answers) {
-  const list = document.querySelector("#statement-box ul");
-
-  const rendered = statements.map((s) => {
-    let highlighted = s;
-    answers.forEach((answer) => {
-      const regex = new RegExp(`\\b${escapeRegExp(answer)}\\b`, "gi");
-      highlighted = highlighted.replace(
-        regex,
-        (match) => `<strong>${match}</strong>`
-      );
-    });
-    return `<li>${highlighted}</li>`;
-  });
-
-  list.innerHTML = rendered.join("");
-}
-
-function updateSideLabels(front_end) {
-  const frontLabel = document.getElementById("front-label-under");
-  const endLabel = document.getElementById("end-label-under");
-
-  if (Array.isArray(front_end) && front_end.length === 2) {
-    if (frontLabel) frontLabel.textContent = front_end[0];
-    if (endLabel) endLabel.textContent = front_end[1];
-  } else {
-    if (frontLabel) frontLabel.textContent = "front";
-    if (endLabel) endLabel.textContent = "end";
-  }
 }
 
 /*
@@ -740,12 +532,6 @@ export function dbRecordTrial(
 
   if (!lastTrial) return;
 
-  console.log(
-    "userAns.length:",
-    userAns.length,
-    "submissionTimeSec:",
-    submissionTimeSec
-  );
   if (isSubmission && userAns.length > 0 && submissionTimeSec != 0) {
     // Add submission-level user choice if provided
     recordUserChoiceData(lastTrial, userAns, performance, submissionTimeSec);
