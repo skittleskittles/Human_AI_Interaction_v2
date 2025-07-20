@@ -76,8 +76,8 @@ export function showEnterComprehensionTrialsPopUp() {
   showModal({
     context: "comprehension",
     html: `<p>
-      Now, you will play ${numTrials} comprehension check trials. Please carefully read the
-      instructions and make your choices.
+      Now, you will play <strong>${numTrials} comprehension check</strong> trials.<br/><br/>
+      Please carefully read the instructions and make your choices.
     </p>`,
   });
 }
@@ -137,13 +137,15 @@ export function showMultipleAttemptsPopUp() {
   clearPageContent();
 }
 
-export function showEnterMainGamePopUp() {
+export function showEnterMainGamePopUp(onCloseFunc) {
   showModal({
     context: "start-main-game",
     html: `<p>
-      You’ve passed the comprehension check.<br/><br/> 
-      You may now begin the main study <strong>Phase 1</strong> by clicking <strong>NEXT TRIAL</strong>.
+       Great job - you’ve passed the comprehension check!<br/><br/>
+       <strong>Phase 1</strong> of the main study will now begin.<br/>
+       It should take about <strong>8 minutes</strong> with <em>no AI help</em>.
     </p>`,
+    onClose: onCloseFunc,
   });
 }
 

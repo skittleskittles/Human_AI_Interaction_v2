@@ -47,7 +47,7 @@ onAuthStateChanged(auth, (user) => {
 /**
  * Main function: Save single trial or just update end_times
  */
-export async function saveSingleTrial(experiment, trial) {
+export async function saveSingleTrial(experiment, trial, phaseKey) {
   try {
     const endTime = trial?.end_time || getCurDate();
     const userDocRef = await saveOrUpdateUser(endTime);
@@ -68,7 +68,7 @@ export async function saveSingleTrial(experiment, trial) {
       return;
     }
 
-    await saveTrialData(expRef, trial);
+    await saveTrialData(expRef, trial, phaseKey);
     console.log(
       `✅ Trial ${trial.trial_id} saved for user ${User.prolific_pid}.`
     );
@@ -95,6 +95,7 @@ export async function saveOrUpdateUser(endTime) {
       is_passed_all_experiments: User.is_passed_all_experiments,
       num_objects: User.num_objects,
       exp_group: User.exp_group,
+      total_bonus_amount: User.total_bonus_amount,
     };
     await setDoc(userDocRef, payload, { merge: true });
 
@@ -133,8 +134,11 @@ async function saveOrUpdateExperiment(userDocRef, experiment, endTime) {
         num_trials: experiment.num_trials,
         is_passed_attention_check: experiment.is_passed_attention_check,
         is_finished: experiment.is_finished,
+        phase_correct_trials: experiment.phase_correct_trials,
+        phase_weighted_trials: experiment.phase_weighted_trials,
         total_correct_trials: experiment.total_correct_trials,
         total_ask_ai_count: experiment.total_ask_ai_count,
+        bonus_amount: experiment.bonus_amount,
       });
     } else {
       await updateDoc(expRef, {
@@ -142,8 +146,11 @@ async function saveOrUpdateExperiment(userDocRef, experiment, endTime) {
         is_passed_attention_check: experiment.is_passed_attention_check,
         is_finished: experiment.is_finished,
         num_trials: experiment.num_trials,
+        phase_correct_trials: experiment.phase_correct_trials,
+        phase_weighted_trials: experiment.phase_weighted_trials,
         total_correct_trials: experiment.total_correct_trials,
         total_ask_ai_count: experiment.total_ask_ai_count,
+        bonus_amount: experiment.bonus_amount,
       });
     }
     console.log(
@@ -158,17 +165,11 @@ async function saveOrUpdateExperiment(userDocRef, experiment, endTime) {
 /**
  * Save the trial data under the experiment
  */
-async function saveTrialData(expRef, trial) {
+async function saveTrialData(expRef, trial, phaseKey) {
   try {
     let trialRef;
-    if (trial.is_comprehension_check) {
-      trialRef = doc(
-        collection(expRef, "comprehension_trials"),
-        `${trial.trial_id}`
-      );
-    } else {
-      trialRef = doc(collection(expRef, "trials"), `${trial.trial_id}`);
-    }
+    trialRef = doc(collection(expRef, "trials"), `${trial.trial_id}`);
+
     await setDoc(trialRef, {
       trial_id: trial.trial_id,
       question_id: trial.question_id,
@@ -178,6 +179,7 @@ async function saveTrialData(expRef, trial) {
       is_comprehension_check: trial.is_comprehension_check,
       has_click_reveal_soluton: trial.has_click_reveal_soluton,
       score: trial.score,
+      weighted_correct_rate: trial.weighted_correct_rate,
       correct_num: trial.correct_num,
       ai_choice: trial.ai_choice,
       best_choice: trial.best_choice,
@@ -185,6 +187,8 @@ async function saveTrialData(expRef, trial) {
       total_submissions: trial.total_submissions,
       total_steps: trial.total_steps,
       ask_ai_count: trial.ask_ai_count,
+      cur_total_weighted_correct_trials:
+        trial.cur_total_weighted_correct_trials,
       cur_total_correct_trials: trial.cur_total_correct_trials,
       cur_total_ask_ai_count: trial.cur_total_ask_ai_count,
       total_time: trial.total_time,

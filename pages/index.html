@@ -217,7 +217,7 @@
                 Reveal 1 object's location
               </button>
               <div id="askAI-remind">
-                Using AI will cost points for this trial.
+                Each extra AI use cost <span id="askAI-cost">0.1</span> points.
               </div>
             </div>
             <div id="askAI-tooltip" style="display: none"></div>
@@ -288,7 +288,7 @@
             <div class="option" draggable="true" id="E">E</div>
           </div>
 
-          <div id="reveal-sol-message" style="display: none;">
+          <div id="reveal-sol-message" style="display: none">
             Any object you placed correctly is highlighted in green.
           </div>
 
@@ -347,13 +347,11 @@
                 <div>Score (0–100): <span id="score">--</span></div>
                 <div id="additionalMessage" style="display: none"></div>
               </div>
-              <div id="totalPassMessage">
-                You have got <span id="correct-trials">0</span> point(s) so far.
-              </div>
+              <div id="totalPassMessage">You have got 0 point(s) so far.</div>
               <div id="askAIMessage" style="display: none">
-                You’ve used AI for
-                <span id="askAI-count" style="color: blue">0</span> time(s)
-                during this trial.
+                You’ll earn
+                <span id="will-earn-points" style="color: blue">0</span>
+                point(s) if you answer this trial correctly.
               </div>
             </div>
           </div>

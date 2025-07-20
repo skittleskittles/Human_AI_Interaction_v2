@@ -15,6 +15,7 @@ const MAX_ASK_AI_LIMIT = 5;
 const CAN_ASK_AI_UNLIMITES = true;
 
 export const PHASE_NAME = {
+  COMPREHENSION_CHECK: "comprehension_check",
   PHASE1: "phase1",
   PHASE2: "phase2",
   PHASE3: "phase3",
@@ -52,29 +53,51 @@ export const GROUP_TYPE_MAP = {
 
 export const globalState = {
   objectCount: 5,
-  curTrialIndex: 0, // 1 based
+  globalCurTrialIndex: 0, // 1 based
+  phaseCurTrialIndex: 0, // 1 based
 
   curQuestionIndex: 0, // 1 based, for NO AI group
   questions: [], //  for NO AI group
 
   /* phase */
-  curPhase: PHASE_NAME.PHASE1, // phase1 | phase2 | phase3
+  curPhase: "", // comprehension_check | phase1 | phase2 | phase3
   phaseTimerEnded: false,
-  currentPhaseTrialCount: 0,
+  // currentPhaseTrialCount: 0,
 
   performance: {
-    lastSubmission: {
+    lastSubmission: {},
+    curSubmission: {
       correctChoice: 0, // Number of correctly placed objects in the most recent submission
       score: 0, // Accuracy score of the most recent submission (0–100)
       steps: 0, // Number of drag steps made in the most recent submission
+      weightedCorrectRate: 0, // [0, 1], counted ai cost
       askAICount: 0,
     },
+
     curTrialAskAICount: 0, // Number of ask ai count in this trial
     submissionCount: 0, // Total number of submissions in the current trial
     totalSteps: 0, // Total number of drag steps across all submissions in the current trial
-    correctTrialCount: 0, // Total number of 100% correct trials
     totalAskAICount: 0,
     hasClickRevealSol: false,
+    globalTotalCorrectTrials: 0, // Total number of 100% correct trials (global)
+
+    phaseWeightedCorrectTrials: {
+      // Total number of 100% correct trials after reducing ai cost (phase)
+      phase1: 0,
+      phase2: 0,
+      phase3: 0,
+    },
+    phaseTotalCorrectTrials: {
+      // Total number of 100% correct trials (phase)
+      phase1: 0,
+      phase2: 0,
+      phase3: 0,
+    },
+    phaseBonusAmount: {
+      phase1: 0,
+      phase2: 0,
+      phase3: 0,
+    },
   },
 
   remainingSubmissions: MAX_SUBMISSION_LIMIT,
@@ -136,24 +159,11 @@ export function getNoAIPhaseTrialsLimit() {
   return NO_AI_PHASE_TRIALS_LIMIT;
 }
 
-export function incrementCurrentPhaseTrialCount() {
-  globalState.currentPhaseTrialCount++;
-}
-
-export function resetCurrentPhaseTrialCount() {
-  globalState.currentPhaseTrialCount = 0;
-}
-
-export function getCurrentPhaseTrialCount() {
-  return globalState.currentPhaseTrialCount;
-}
-
 export function canEndPhase() {
   // NoAI Phase
   if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE3].includes(getCurPhase())) {
     return (
-      phaseTimerEnded() &&
-      getCurrentPhaseTrialCount() >= getNoAIPhaseTrialsLimit()
+      phaseTimerEnded() && getPhaseCurTrialIndex() >= getNoAIPhaseTrialsLimit()
     );
   }
   return phaseTimerEnded();
@@ -168,21 +178,12 @@ export function setQuestionsData(data) {
 }
 
 export function advanceTrial(shouldShowSpecialTrials) {
-  globalState.curTrialIndex++;
+  globalState.globalCurTrialIndex++;
+  globalState.phaseCurTrialIndex++;
 
   if (shouldShowSpecialTrials) {
     return true;
   }
-
-  // if (isNoAIExpGroup()) {
-  //   // normal trial, use questions from questions list
-  //   globalState.curQuestionIndex++;
-  //   if (globalState.curQuestionIndex > globalState.questions.length) {
-  //     alert("All trials completed!");
-  //     return false;
-  //   }
-  //   return true;
-  // }
 
   const phase = getCurPhase();
   if (
@@ -210,12 +211,9 @@ export function getCurQuestionData() {
     return getObjCount() === 5 ? attentionTrial5 : attentionTrial6;
   }
   if (isComprehensionCheck()) {
-    return comprehensionTrials[getCurTrialIndex() - 1];
+    return comprehensionTrials[getGlobalCurTrialIndex() - 1];
   }
 
-  // if (isNoAIExpGroup()) {
-  //   return globalState.questions[globalState.curQuestionIndex - 1];
-  // }
   const phase = getCurPhase();
   const index = phaseState.phaseIndexMap[phase];
   if (index < phaseState.PHASE_QUESTIONS[phase].length) {
@@ -227,11 +225,21 @@ export function getCurQuestionData() {
   }
 }
 
-export function getCurTrialIndex() {
+// curTrialIndex: 包括comprehension、attention check，所有trials
+export function getGlobalCurTrialIndex() {
   // attention check also counts
-  return globalState.curTrialIndex;
+  return globalState.globalCurTrialIndex;
 }
 
+export function resetPhaseCurTrialIndex() {
+  globalState.phaseCurTrialIndex = 0;
+}
+
+export function getPhaseCurTrialIndex() {
+  return globalState.phaseCurTrialIndex;
+}
+
+// curQuestionIndex: 不包括comprehension、attention check
 export function getCurQuestionIndex() {
   const phaseMap = phaseState.phaseIndexMap;
   const questionMap = phaseState.PHASE_QUESTIONS;
@@ -255,8 +263,9 @@ export function getCurQuestionIndex() {
 
   return total;
 }
+
 export function resetTrialID() {
-  globalState.curTrialIndex = 0;
+  globalState.globalCurTrialIndex = 0;
 }
 
 /**
@@ -323,7 +332,7 @@ export function incrementAskAICount() {
   if (!CAN_ASK_AI_UNLIMITES && globalState.remainingAskAICount > 0) {
     globalState.remainingAskAICount--;
   }
-  globalState.performance.lastSubmission.askAICount++;
+  globalState.performance.curSubmission.askAICount++;
   globalState.performance.curTrialAskAICount++;
   globalState.performance.totalAskAICount++;
 }
@@ -340,8 +349,41 @@ export function recordRevealedIndicesThisTrial(idx) {
   }
 }
 
-export function getTrialAskAICount() {
-  return globalState.performance.curTrialAskAICount;
+export function calWeightedPointIfCorrect() {
+  let points = 1;
+  const askAICnt = globalState.performance.curTrialAskAICount;
+  if (askAICnt <= 5) {
+    if (globalState.AI_HELP == AI_HELP_TYPE.HIGH_COST_AI) {
+      points = 1 - 0.18 * askAICnt;
+    }
+    if (globalState.AI_HELP == AI_HELP_TYPE.LOW_COST_AI) {
+      points = 1 - 0.1 * askAICnt;
+    }
+  } else {
+    if (globalState.AI_HELP == AI_HELP_TYPE.HIGH_COST_AI) {
+      points = 0.05;
+    }
+    if (globalState.AI_HELP == AI_HELP_TYPE.LOW_COST_AI) {
+      points = 0.3;
+    }
+  }
+  return Number(points.toFixed(2));
+}
+
+export function calAskAICost() {
+  let cost = 0.18;
+  const askAICnt = globalState.performance.curTrialAskAICount;
+  if (askAICnt <= 5) {
+    if (globalState.AI_HELP == AI_HELP_TYPE.HIGH_COST_AI) {
+      cost = 0.18;
+    }
+    if (globalState.AI_HELP == AI_HELP_TYPE.LOW_COST_AI) {
+      cost = 0.1;
+    }
+  } else {
+    cost = 0;
+  }
+  return cost;
 }
 
 /**
@@ -384,7 +426,7 @@ export function getTrialTotalSubmissions() {
  */
 export function incrementSteps() {
   globalState.performance.totalSteps++;
-  globalState.performance.lastSubmission.steps++;
+  globalState.performance.curSubmission.steps++;
 }
 
 export function resetTrialSteps() {
@@ -398,18 +440,31 @@ export function resetTrialPerformance() {
 }
 
 export function resetSubmissionPerformance() {
-  globalState.performance.lastSubmission.correctChoice = 0;
-  globalState.performance.lastSubmission.score = 0;
-  globalState.performance.lastSubmission.steps = 0;
-  globalState.performance.lastSubmission.askAICount = 0;
+  globalState.performance.lastSubmission =
+    globalState.performance.curSubmission;
+  globalState.performance.curSubmission.correctChoice = 0;
+  globalState.performance.curSubmission.score = 0;
+  globalState.performance.curSubmission.weightedCorrectRate = 0;
+  globalState.performance.curSubmission.steps = 0;
+  globalState.performance.curSubmission.askAICount = 0;
 }
 
 export function updatePerformanceAfterSubmission(correctChoice, score) {
-  globalState.performance.lastSubmission.correctChoice = correctChoice;
-  globalState.performance.lastSubmission.score = score;
+  globalState.performance.curSubmission.correctChoice = correctChoice;
+  globalState.performance.curSubmission.score = score;
   globalState.performance.submissionCount++;
   if (score === 100 && !isAttentionCheck() && !isComprehensionCheck()) {
-    globalState.performance.correctTrialCount++;
+    const weightedPoint = calWeightedPointIfCorrect();
+    globalState.performance.curSubmission.weightedCorrectRate = weightedPoint;
+    globalState.performance.phaseWeightedCorrectTrials[getCurPhase()] +=
+      weightedPoint;
+
+    globalState.performance.phaseTotalCorrectTrials[getCurPhase()]++;
+    globalState.performance.globalTotalCorrectTrials++;
+
+    // calculate bonus
+    const bonusAmount = calBonusAmount(getCurPhase());
+    globalState.performance.phaseBonusAmount[getCurPhase()] = bonusAmount;
   }
 }
 
@@ -417,13 +472,60 @@ export function getPerformance() {
   return globalState.performance;
 }
 
-export function getTotalCorrectTrials() {
-  return globalState.performance.correctTrialCount;
+export function getGlobalTotalCorrectTrials() {
+  return globalState.performance.globalTotalCorrectTrials;
 }
 
 export function getBonusThreshold() {
   const objCount = getObjCount();
   return BONUS_THRESHOLD[objCount];
+}
+
+export function getPhasePoints(phase) {
+  return getPerformance().phaseWeightedCorrectTrials[phase];
+}
+
+export function calBonusAmount(phase) {
+  let bonusAmount = 0;
+  const correctTrials = getPerformance().phaseWeightedCorrectTrials[phase];
+
+  if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(phase)) {
+    if (phase == PHASE_NAME.phase2) {
+      correctTrials +=
+        globalState.performance.phaseWeightedCorrectTrials[phase1];
+    }
+    if (correctTrials <= 13) {
+      bonusAmount = 0.15 * correctTrials;
+    } else if (correctTrials >= 14) {
+      bonusAmount = 2;
+    }
+  }
+
+  if (phase == PHASE_NAME.PHASE3) {
+    if (correctTrials >= 1 && correctTrials <= 4) {
+      bonusAmount = 0.1 * correctTrials;
+    } else if (correctTrials >= 5 && correctTrials <= 7) {
+      bonusAmount = 0.4 + 0.2 * (correctTrials - 1);
+    } else if (correctTrials >= 8) {
+      bonusAmount = 1;
+    }
+  }
+
+  return Number(bonusAmount.toFixed(2));
+}
+
+export function getBonusAmount(phase) {
+  let bonusAmount = 0;
+  const phaseMap = globalState.performance.phaseBonusAmount || {};
+  if (phase == "all") {
+    for (const phaseName in phaseMap) {
+      bonusAmount += Number(phaseMap[phaseName] || 0);
+    }
+  } else {
+    bonusAmount = Number(phaseMap[phase] || 0);
+  }
+
+  return Number(bonusAmount.toFixed(2));
 }
 
 /**

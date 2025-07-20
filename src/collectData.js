@@ -5,9 +5,13 @@
 
 import {
   GROUP_TYPE_MAP,
+  calBonusAmount,
   getAIHelpType,
-  getCurTrialIndex,
+  getBonusAmount,
+  getCurPhase,
+  getGlobalCurTrialIndex,
   getObjCount,
+  getPhaseCurTrialIndex,
 } from "./data/variable.js";
 import { getCurDate } from "./utils.js";
 
@@ -21,6 +25,7 @@ import { getCurDate } from "./utils.js";
  * @property {boolean} is_consent
  * @property {boolean} is_passed_comprehension
  * @property {boolean} is_passed_all_experiments
+ * @property {number} total_bonus_amount
  * @property {Feedback} feedback
  * @property {Experiment[]} experiments
  */
@@ -33,36 +38,41 @@ export const User = {
   is_passed_comprehension: false,
   is_passed_attention_check: false,
   is_passed_all_experiments: false, // pass attention check and finish all 20 minutes
-  experiments: [], // Experiment
+  total_bonus_amount: 0,
+  experiments: {}, // key: phase name, val: Experiment
   num_objects: getObjCount(),
   exp_group: GROUP_TYPE_MAP[getAIHelpType()],
 };
 
 /**
  * @typedef {Object} Experiment
- * @property {number} experiment_id
+ * @property {string} experiment_id
  * @property {Date} create_time
  * @property {Date} end_time
  * @property {number} failed_attention_check_count
  * @property {boolean} is_finished
  * @property {number} num_trials
+ * @property {number} phase_correct_trials
+ * @property {number} phase_weighted_trials
  * @property {number} total_correct_trials
  * @property {number} total_ask_ai_count
+ * @property {number} bonus_amount
  * @property {Trial[]} trials
- * @property {Trial[]} comprehension_trials
  */
-export function createNewExperimentData(experiment_id = 0) {
+export function createNewExperimentData(experiment_id = getCurPhase()) {
   return {
-    experiment_id,
+    experiment_id, // phase name
     create_time: getCurDate(),
     end_time: getCurDate(), // will be updated at the end
     is_passed_attention_check: false,
     is_finished: false,
     num_trials: 0,
+    phase_correct_trials: 0,
+    phase_weighted_trials: 0,
     total_correct_trials: 0,
     total_ask_ai_count: 0,
-    trials: [], // will be populated with Trial objects
-    comprehension_trials: [],
+    bonus_amount: 0,
+    trials: [],
   };
 }
 
@@ -71,10 +81,11 @@ export function createNewExperimentData(experiment_id = 0) {
  * @returns {Experiment}
  */
 export function getCurExperimentData() {
-  if (User.experiments.length === 0) {
+  const curPhase = getCurPhase();
+  if (!User.experiments || !User.experiments[curPhase]) {
     return null;
   }
-  return User.experiments[0];
+  return User.experiments[curPhase];
 }
 
 /**
@@ -94,6 +105,8 @@ export function getCurExperimentData() {
  * @property {Number} ask_ai_count
  * @property {Number} total_submissions
  * @property {Number} total_steps
+ * @property {number} weighted_correct_rate
+ * @property {number} cur_total_weighted_correct_trials
  * @property {number} cur_total_correct_trials
  * @property {number} cur_total_ask_ai_count
  * @property {Number} total_time // seconds, 每一轮trial总时间
@@ -125,6 +138,8 @@ export function createNewTrialData(
     ask_ai_count: 0,
     total_steps: 0,
     total_submissions: 0,
+    weighted_correct_rate: 0,
+    cur_total_weighted_correct_trials: 0,
     cur_total_correct_trials: 0,
     cur_total_ask_ai_count: 0,
     total_time: 0,
@@ -146,7 +161,13 @@ export function updateExperimentData(
 
   experiment.num_trials = experiment.trials.length;
   experiment.is_passed_attention_check = User.is_passed_attention_check;
-  experiment.total_correct_trials = performance.correctTrialCount;
+  experiment.total_correct_trials = performance.globalTotalCorrectTrials;
+  experiment.phase_correct_trials =
+    performance.phaseTotalCorrectTrials[getCurPhase()];
+  experiment.phase_weighted_trials =
+    performance.phaseWeightedCorrectTrials[getCurPhase()];
+  experiment.bonus_amount = performance.phaseBonusAmount[getCurPhase()];
+  User.total_bonus_amount = getBonusAmount("all");
   experiment.total_ask_ai_count = performance.totalAskAICount;
 }
 
@@ -162,15 +183,31 @@ export function updateTrialData(
   trial.end_time = getCurDate();
   if (isSubmission) {
     trial.score = performance.lastSubmission.score;
+    trial.weighted_correct_rate =
+      performance.lastSubmission.weightedCorrectRate;
     trial.correct_num = performance.lastSubmission.correctChoice;
     trial.total_submissions = performance.submissionCount;
     trial.total_steps = performance.totalSteps;
   }
   trial.has_click_reveal_soluton = performance.hasClickRevealSol;
   trial.ask_ai_count = performance.curTrialAskAICount;
-  trial.cur_total_correct_trials = performance.correctTrialCount;
+  trial.cur_total_correct_trials =
+    performance.phaseTotalCorrectTrials[getCurPhase()];
+  trial.cur_total_weighted_correct_trials =
+    performance.phaseWeightedCorrectTrials[getCurPhase()];
   trial.cur_total_ask_ai_count = performance.totalAskAICount;
   trial.total_time = trialTimeSec;
+}
+
+/**
+ * Returns the current phase trial list object
+ * @returns {Trial[]}
+ */
+export function getCurPhaseTrialList() {
+  const currentExperiment = getCurExperimentData();
+  if (!currentExperiment) return null;
+
+  return currentExperiment.trials;
 }
 
 /**
@@ -179,21 +216,16 @@ export function updateTrialData(
  */
 export function getCurTrialData(isComprehensionCheck) {
   const currentExperiment = getCurExperimentData();
-  if (!currentExperiment) {
-    return null;
-  }
+  if (!currentExperiment) return null;
+
   if (isComprehensionCheck) {
     // comprehension trials
-    if (currentExperiment.comprehension_trials.length > 0) {
-      return currentExperiment?.comprehension_trials[getCurTrialIndex() - 1];
-    }
+    const trialIndex = getGlobalCurTrialIndex() - 1;
+    return currentExperiment.comprehension_trials[trialIndex] || null;
   } else {
-    // regular trials
-    if (currentExperiment.trials.length > 0) {
-      return currentExperiment?.trials[getCurTrialIndex() - 1];
-    }
+    const trialIndex = getPhaseCurTrialIndex() - 1;
+    return getCurPhaseTrialList()[trialIndex] || null;
   }
-  return null;
 }
 
 /**
@@ -211,19 +243,11 @@ export function recordUserChoiceData(
   performance,
   submissionTimeSec
 ) {
-  const userChoice = createChoice(
-    userAns,
-    performance,
-    submissionTimeSec,
-  );
+  const userChoice = createChoice(userAns, performance, submissionTimeSec);
   trial.user_choice.push(userChoice);
 }
 
-export function createChoice(
-  userAns,
-  performance,
-  submissionTimeSec
-) {
+export function createChoice(userAns, performance, submissionTimeSec) {
   const userChoice = {
     choices: userAns,
     correct_num: performance.lastSubmission.correctChoice,

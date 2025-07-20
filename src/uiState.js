@@ -1,12 +1,15 @@
 import {
+  calWeightedPointIfCorrect,
   getCurPhase,
   getPerformance,
+  getPhasePoints,
   getTrialAskAICount,
   hasRevealedSol,
   hasSubmittedThisTrial,
   isAllowedAskAITrials,
   isAttentionCheck,
   isComprehensionCheck,
+  PHASE_NAME,
   remainingAskAICount,
   remainingSubmissions,
 } from "./data/variable.js";
@@ -19,6 +22,7 @@ import { User } from "./collectData.js";
 export function refreshInteractionState({
   forceEnableNext = hasSubmittedThisTrial(),
   forceDisableAskAI = false,
+  justSubmitted = false,
 } = {}) {
   // check if all boxes are filled
   const boxes = document.querySelectorAll(".box");
@@ -32,7 +36,7 @@ export function refreshInteractionState({
   );
 
   const performance = getPerformance();
-  const score = performance.lastSubmission.score;
+  const score = performance.curSubmission.score;
 
   const canSubmit = hasRevealedSol()
     ? false
@@ -45,9 +49,13 @@ export function refreshInteractionState({
     forceDisableAskAI || hasRevealedSol()
       ? false
       : allFilled && remainingAskAICount() > 0 && isAllowedAskAITrials();
+
+  // only allow reveal once, and available only right after you submit.
   const canRevealSol = hasRevealedSol()
     ? false
-    : performance.submissionCount > 0 && score !== 100;
+    : performance.submissionCount > 0 &&
+      score !== 100 &&
+      (justSubmitted || performance.curSubmission.steps == 0);
 
   updateButtons({
     submit: canSubmit,
@@ -98,17 +106,17 @@ export function showResultContent() {
   content.style.display = "block";
 
   document.getElementById("correct-choice").textContent =
-    performance.lastSubmission.correctChoice;
+    performance.curSubmission.correctChoice;
   document.getElementById(
     "score"
-  ).textContent = `${performance.lastSubmission.score}`;
+  ).textContent = `${performance.curSubmission.score}`;
 
   updateTotalPassMessage();
 
   const additionalMessage = document.getElementById("additionalMessage");
   additionalMessage.style.display = "none";
   if (isAttentionCheck()) {
-    if (performance.lastSubmission.score !== 100) {
+    if (performance.curSubmission.score !== 100) {
       additionalMessage.style.display = "block";
       additionalMessage.textContent = "You have failed this attention check.";
       additionalMessage.style.color = "red";
@@ -117,7 +125,7 @@ export function showResultContent() {
     }
   } else if (isComprehensionCheck()) {
     additionalMessage.style.display = "block";
-    if (performance.lastSubmission.score !== 100) {
+    if (performance.curSubmission.score !== 100) {
       additionalMessage.textContent = "You did not score 100.";
       additionalMessage.style.color = "red";
     } else {
@@ -128,8 +136,26 @@ export function showResultContent() {
 }
 
 export function updateTotalPassMessage() {
-  document.getElementById("correct-trials").textContent =
-    getPerformance().correctTrialCount;
+  let totalPassMessageContent = `You have got ${0} point(s) so far.`;
+  if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(getCurPhase())) {
+    let points = getPhasePoints(PHASE_NAME.PHASE1);
+    if (getCurPhase() == PHASE_NAME.PHASE2) {
+      points += getPhasePoints(PHASE_NAME.PHASE2);
+    }
+    totalPassMessageContent = `You have got 
+    ${Number(points.toFixed(2))} point(s) so far.`;
+  } else if (getCurPhase() == PHASE_NAME.PHASE3) {
+    const pointsA =
+      getPhasePoints(PHASE_NAME.PHASE1) + getPhasePoints(PHASE_NAME.PHASE2);
+    totalPassMessageContent = `You have got ${Number(
+      pointsA.toFixed(2)
+    )} point(s) in phase 1 and 2.<br/>
+    You have got ${Number(
+      getPhasePoints(PHASE_NAME.PHASE3).toFixed(2)
+    )} point(s) in phase 3.`;
+  }
+  document.getElementById("totalPassMessage").innerHTML =
+    totalPassMessageContent;
   document.getElementById("totalPassMessage").style.display = "block";
   if (isAttentionCheck() || isComprehensionCheck()) {
     document.getElementById("totalPassMessage").style.display = "none";
@@ -140,7 +166,8 @@ export function updateUseAIMessage() {
   document.getElementById("askAIMessage").style.display = isAllowedAskAITrials()
     ? "block"
     : "none";
-  document.getElementById("askAI-count").textContent = getTrialAskAICount();
+  document.getElementById("will-earn-points").textContent =
+    calWeightedPointIfCorrect();
   if (isAttentionCheck() || isComprehensionCheck()) {
     document.getElementById("askAIMessage").style.display = "none";
   }
@@ -154,16 +181,22 @@ export function hideSubmissionResultContent() {
 /***
  * Button tooltip
  */
-export function showButtonTooltip(buttonId, message) {
-  const tooltip = document.getElementById(buttonId);
-  tooltip.innerHTML = message;
-  tooltip.style.display = "block";
-  tooltip.style.opacity = "1";
+export function showButtonTooltip(targetId, message) {
+  const tooltip = document.getElementById(targetId);
 
-  setTimeout(() => {
+  const show = () => {
+    tooltip.innerHTML = message;
+    tooltip.style.display = "block";
+    tooltip.style.opacity = "1";
+  };
+
+  const hide = () => {
     tooltip.style.opacity = "0";
     setTimeout(() => {
       tooltip.style.display = "none";
     }, 300);
-  }, 2000);
+  };
+
+  show();
+  setTimeout(hide, 2000);
 }

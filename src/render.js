@@ -4,9 +4,10 @@ import {
   isComprehensionCheck,
   isAllowedAskAITrials,
   getAIRevealCounts,
-  getCurTrialIndex,
+  getGlobalCurTrialIndex,
   getCurQuestionIndex,
   getCurQuestionData,
+  calAskAICost,
 } from "./data/variable";
 import { bindDragDropEvents } from "./dragDrop.js";
 import {
@@ -58,6 +59,8 @@ export function renderAIChat() {
     `Reveal ${getAIRevealCounts()} ` +
     (getAIRevealCounts() === 1 ? "object's location" : "objects' locations");
 
+  updateAskAICost();
+  
   const chatBox = document.getElementById("ai-chat");
   chatBox.innerHTML = "";
   const initialBubble = document.createElement("div");
@@ -76,6 +79,10 @@ export function renderAIChat() {
   chatBox.appendChild(initialBubble);
 }
 
+export function updateAskAICost() {
+  document.getElementById("askAI-cost").textContent = calAskAICost();
+}
+
 export function renderBoxesAndOptions(questionData) {
   const options = questionData.options;
   const styleMap = questionData.styleMap || {};
@@ -85,7 +92,9 @@ export function renderBoxesAndOptions(questionData) {
   } else {
     document.getElementById("trialID").textContent =
       "Trial " +
-      (isComprehensionCheck() ? getCurTrialIndex() : getCurQuestionIndex());
+      (isComprehensionCheck()
+        ? getGlobalCurTrialIndex()
+        : getCurQuestionIndex());
   }
 
   const boxContainer = document.getElementById("box-container");

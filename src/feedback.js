@@ -1,7 +1,7 @@
 import {
   globalState,
   AI_HELP_TYPE,
-  getTotalCorrectTrials,
+  getGlobalTotalCorrectTrials,
   getObjCount,
   getBonusThreshold,
   isNoAIExpGroup,
@@ -114,7 +114,7 @@ async function submitFeedbackForm(submitButton, thankYouMessage) {
   let redirectFn = null;
 
   if (User.is_passed_attention_check) {
-    const totalCorrectTrials = getTotalCorrectTrials();
+    const totalCorrectTrials = getGlobalTotalCorrectTrials();
     if (totalCorrectTrials >= getBonusThreshold()) {
       message = `Thank you for participating in the game! 
 Your bonus payment will be distributed shortly.

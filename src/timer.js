@@ -3,8 +3,8 @@ import {
   attentionCheckShown,
   enableAttentionCheckPending,
   getCurPhase,
-  getCurrentPhaseTrialCount,
   getNoAIPhaseTrialsLimit,
+  getPhaseCurTrialIndex,
   setPhaseTimerEnded,
 } from "./data/variable.js";
 import { showNeedMoreTrialsPopUp } from "./modal.js";
@@ -15,7 +15,7 @@ import { showNeedMoreTrialsPopUp } from "./modal.js";
 
 // todo fsy
 const PHASE1_DURATION = 10;
-const PHASE2_DURATION = 20 * 60;
+const PHASE2_DURATION = 20;
 const PHASE3_DURATION = 10;
 
 // todo fsy: NO AI version
@@ -57,7 +57,7 @@ export function startTimer(mode) {
           // NoAI Phase
           if (
             [PHASE_NAME.PHASE1, PHASE_NAME.PHASE3].includes(getCurPhase()) &&
-            getCurrentPhaseTrialCount() < getNoAIPhaseTrialsLimit()
+            getPhaseCurTrialIndex() < getNoAIPhaseTrialsLimit()
           ) {
             showNeedMoreTrialsPopUp();
           }

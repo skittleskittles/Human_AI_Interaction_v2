@@ -1,7 +1,7 @@
 import {
   getCurQuestionData,
   advanceTrial,
-  getCurTrialIndex,
+  getGlobalCurTrialIndex,
   incrementSteps,
   resetTrialSteps,
   updatePerformanceAfterSubmission,
@@ -24,10 +24,8 @@ import {
   resetAskAI,
   PHASE_NAME,
   getCurPhase,
-  incrementCurrentPhaseTrialCount,
   canEndPhase,
   setCurPhase,
-  resetCurrentPhaseTrialCount,
   setPhaseTimerEnded,
   isAllowedAskAITrials,
   incrementAskAICount,
@@ -35,6 +33,7 @@ import {
   recordRevealedIndicesThisTrial,
   setHasRevealedSol,
   hasRevealedSol,
+  resetPhaseCurTrialIndex,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
@@ -50,6 +49,7 @@ import {
   renderBoxesAndOptions,
   renderInstructions,
   renderStatements,
+  updateAskAICost,
   updateSideLabels,
 } from "./render.js";
 import { getUserAnswer, evaluateAnswer } from "./utils.js";
@@ -60,7 +60,7 @@ import {
   getTimerValue,
   restartTimer,
 } from "./timer.js";
-import { User } from "./collectData.js";
+import { getCurPhaseTrialList, User } from "./collectData.js";
 import {
   createNewExperimentData,
   createNewTrialData,
@@ -91,11 +91,23 @@ export function bindTrialButtons() {
   document
     .getElementById("askAI-btn")
     .addEventListener("click", showAskAIAnswers);
-  document
-    .getElementById("reveal-sol-btn")
-    .addEventListener("click", showAnswers);
+
+  const revealBtn = document.getElementById("reveal-sol-btn");
+  revealBtn.addEventListener("click", showAnswers);
+  revealBtn.addEventListener("mouseenter", showRevealSolHint);
 }
 
+function showRevealSolHint(mode) {
+  const revealSolBtn = document.getElementById("reveal-sol-btn");
+  const isDisabled = revealSolBtn.classList.contains("disabled-visual");
+  const isLocked = revealSolBtn.dataset.locked === "true";
+  if (!isDisabled && !isLocked) {
+    showButtonTooltip(
+      "reveal-sol-tooltip",
+      "Once clicked, you <strong>CANNOT</strong><br/>revise your answer or re-SUBMIT."
+    );
+  }
+}
 /*
  ********************************************
  * Submit Trial
@@ -128,7 +140,7 @@ function updateAfterSubmission(
   showResultContent();
   updateRemainingSubmissionInfo();
 
-  refreshInteractionState({ forceEnableNext: true });
+  refreshInteractionState({ forceEnableNext: true, justSubmitted: true });
 
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const trialTimeSec = getTimerValue("trial");
@@ -145,7 +157,14 @@ function updateAfterSubmission(
   restartTimer("submission"); // restart submission timer
 
   /* database */
-  dbRecordTrial(performance, userAns, submissionTimeSec, trialTimeSec, true);
+  dbRecordTrial(
+    performance,
+    userAns,
+    submissionTimeSec,
+    trialTimeSec,
+    true,
+    getCurPhase()
+  );
 
   /* end comprehension check trials */
   if (isComprehensionCheck()) {
@@ -153,12 +172,12 @@ function updateAfterSubmission(
       showEndGameFailedComprehensionCheckPopUp();
       clearAllTimers();
     }
-    if (score === 100 && getCurTrialIndex() === getComprehensionTrialsNum()) {
-      // pass comprehension trials
-      resetTrialID();
-      shouldEndComprehensionCheck();
-      showEnterMainGamePopUp();
+    if (
+      score === 100 &&
+      getGlobalCurTrialIndex() === getComprehensionTrialsNum()
+    ) {
       User.is_passed_comprehension = true;
+      proceedToNextPhase(); // pass comprehension check; enter phase 1
     }
   }
 }
@@ -208,32 +227,25 @@ export async function nextTrial() {
     timeBox.style.display = "none";
   }
 
-  /* complete last trial */
-  if (getCurTrialIndex() > 0) {
-    // cur trial is not the first trial
-    /* record last trial data */
-    const performance = JSON.parse(JSON.stringify(getPerformance()));
-    const submissionTimeSec = getTimerValue("submission");
-    const trialTimeSec = getTimerValue("trial");
+  /* record last trial data */
+  const performance = JSON.parse(JSON.stringify(getPerformance()));
+  const submissionTimeSec = getTimerValue("submission");
+  const trialTimeSec = getTimerValue("trial");
 
-    incrementCurrentPhaseTrialCount();
-    restartTimer("trial");
-    restartTimer("submission");
+  dbRecordTrial(performance, [], 0, trialTimeSec, false, getCurPhase()); // Record last trial total time
 
-    dbRecordTrial(performance, [], 0, trialTimeSec, false); // Record last trial total time
-
-    if (canEndPhase()) {
-      await proceedToNextPhase();
-      if (getCurPhase() == PHASE_NAME.PHASE3) {
-        return;
-      }
+  if (canEndPhase()) {
+    await proceedToNextPhase();
+    if (getCurPhase() == "") {
+      return;
     }
-  } else {
-    restartTimer("trial");
-    restartTimer("submission");
   }
 
   /* start next trial */
+
+  restartTimer("trial");
+  restartTimer("submission");
+
   if (shouldEndAttentionCheck()) {
     resumeTimer(getCurPhase());
   }
@@ -245,9 +257,9 @@ export async function nextTrial() {
 
   if (!advanceTrial(isAttentionCheck() || isComprehensionCheck())) return;
   console.log(
-    `--Trail idx ${getCurTrialIndex()}--Question idx ${getCurQuestionIndex()}--Question id ${
+    `--Trail idx ${getGlobalCurTrialIndex()}--Question idx ${getCurQuestionIndex()}--Question id ${
       getCurQuestionData().question_id
-    }--`
+    }--${getCurPhase()}--`
   );
 
   renderTrial(getCurQuestionData());
@@ -278,28 +290,40 @@ function initializeAfterNextTrial() {
  */
 export function proceedToNextPhase() {
   return new Promise((resolve) => {
-    if (getCurPhase() === PHASE_NAME.PHASE1) {
+    if (getCurPhase() === PHASE_NAME.COMPREHENSION_CHECK) {
+      showEnterMainGamePopUp(() => {
+        shouldEndComprehensionCheck();
+        setCurPhase(PHASE_NAME.PHASE1);
+        resetTrialID();
+        resetPhaseCurTrialIndex();
+        setPhaseTimerEnded(false);
+        timeBox.style.display = "block";
+        document.getElementById("timer").textContent = "08:00";
+        startTimer(PHASE_NAME.PHASE1);
+        nextTrial();
+        resolve();
+      });
+    } else if (getCurPhase() === PHASE_NAME.PHASE1) {
       showEnterPhase2(() => {
         setCurPhase(PHASE_NAME.PHASE2);
-        resetCurrentPhaseTrialCount();
+        resetPhaseCurTrialIndex();
         setPhaseTimerEnded(false);
         document.getElementById("timer").textContent = "20:00";
         startTimer(PHASE_NAME.PHASE2);
-        nextTrial();
         resolve();
       });
     } else if (getCurPhase() === PHASE_NAME.PHASE2) {
       showEnterPhase3(() => {
         setCurPhase(PHASE_NAME.PHASE3);
-        resetCurrentPhaseTrialCount();
+        resetPhaseCurTrialIndex();
         setPhaseTimerEnded(false);
         document.getElementById("timer").textContent = "08:00";
         startTimer(PHASE_NAME.PHASE3);
-        nextTrial();
         resolve();
       });
     } else if (getCurPhase() === PHASE_NAME.PHASE3) {
       handleTimeOut(); // todo fsy: after submit feedback
+      setCurPhase("");
       resolve();
     } else {
       resolve(); // fallback
@@ -330,7 +354,7 @@ function handleTimeOut() {
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const trialTimeSec = getTimerValue("trial");
 
-  dbRecordTrial(performance, [], 0, trialTimeSec, false);
+  dbRecordTrial(performance, [], 0, trialTimeSec, false, getCurPhase());
 }
 
 /*
@@ -419,6 +443,7 @@ function showAskAIAnswers() {
   const revealedObjects = getRandomAnsFromCorrectOrder(revealCount);
 
   incrementAskAICount();
+  updateAskAICost();
   refreshInteractionState({ forceDisableAskAI: true });
 
   const userMsg =
@@ -462,19 +487,19 @@ function showAskAIAnswers() {
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
 
-  dbRecordTrial(performance, [], 0, trialTimeSec, false); // todo fsy
+  dbRecordTrial(performance, [], 0, trialTimeSec, false, getCurPhase());
 }
 
 function showAnswers() {
   const revealSolBtn = document.getElementById("reveal-sol-btn");
   if (revealSolBtn.dataset.locked === "true") {
-    let tooltipText =
-      "You already answered correctly.<br/>Please click NEXT TRIAL to continue.";
+    let tooltipText = "Available only right after you submit.";
     if (hasRevealedSol()) {
       tooltipText =
         "You already revealed the solutions.<br/>Please click NEXT TRIAL to continue.";
-    } else if (getPerformance().submissionCount < 1) {
-      tooltipText = "You need to at least SUBMIT once";
+    } else if (remainingSubmissions() == 0) {
+      tooltipText =
+        "You already answered correctly.<br/>Please click NEXT TRIAL to continue.";
     }
     showButtonTooltip("reveal-sol-tooltip", tooltipText);
     return;
@@ -511,7 +536,7 @@ function showAnswers() {
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
 
-  dbRecordTrial(performance, [], 0, trialTimeSec, false); // todo fsy
+  dbRecordTrial(performance, [], 0, trialTimeSec, false, getCurPhase);
 }
 /*
  ********************************************
@@ -526,6 +551,8 @@ function renderTrial(trial) {
   updateSideLabels(trial.front_end);
   updateTotalPassMessage();
   hideSubmissionResultContent();
+  document.getElementById("reveal-sol-btn").style.display =
+    isComprehensionCheck() ? "none" : "block";
   initializeAfterNextTrial();
 }
 
@@ -536,22 +563,21 @@ function renderTrial(trial) {
  */
 function dbInitExperimentData() {
   const newExperiment = createNewExperimentData();
-  User.experiments.push(newExperiment);
+  User.experiments[getCurPhase()] = newExperiment;
 }
 
 function dbInitTrialData(questionId, answer) {
-  if (User.experiments.length === 0) {
+  if (!getCurExperimentData()) {
     // Initialize experiment if it doesn't exist
     dbInitExperimentData();
   }
 
   const isComprehension = isComprehensionCheck();
   const isAttention = isAttentionCheck();
-  const curExp = User.experiments[0];
 
   let trialId;
   if (isComprehension) {
-    trialId = getCurTrialIndex();
+    trialId = getGlobalCurTrialIndex();
   } else if (isAttention) {
     trialId = "attention check";
   } else {
@@ -561,7 +587,7 @@ function dbInitTrialData(questionId, answer) {
   // Check if trial already exists (for comprehension trials only)
   if (
     isComprehension &&
-    curExp.comprehension_trials.some((t) => t.trial_id === trialId)
+    getCurPhaseTrialList().some((t) => t.trial_id === trialId)
   ) {
     return; // Trial already exists, do not re-add
   }
@@ -574,11 +600,7 @@ function dbInitTrialData(questionId, answer) {
     isAttention
   );
 
-  if (isComprehension) {
-    curExp.comprehension_trials.push(newTrial);
-  } else {
-    curExp.trials.push(newTrial);
-  }
+  getCurPhaseTrialList().push(newTrial);
 }
 
 export function dbRecordTrial(
@@ -586,7 +608,8 @@ export function dbRecordTrial(
   userAns = [],
   submissionTimeSec = 0,
   trialTimeSec = 0,
-  isSubmission = false
+  isSubmission = false,
+  phaseKey
 ) {
   const curExperiment = getCurExperimentData();
   const lastTrial = getCurTrialData(isComprehensionCheck());
@@ -606,6 +629,6 @@ export function dbRecordTrial(
 
   // Save to Firestore
   import("./firebase/saveData2Firebase.js").then((module) => {
-    module.saveSingleTrial(curExperiment, lastTrial);
+    module.saveSingleTrial(curExperiment, lastTrial, phaseKey);
   });
 }

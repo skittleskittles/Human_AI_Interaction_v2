@@ -1,5 +1,5 @@
 import { instructionsContainer, gameContainer } from "./data/domElements.js";
-import { shouldShowComprehensionCheck } from "./data/variable";
+import { setCurPhase, shouldShowComprehensionCheck } from "./data/variable";
 import { getCurDate } from "./utils.js";
 import { getObjCount } from "./data/variable";
 import { startGame } from "./index.js";
@@ -92,6 +92,7 @@ function setupInstructionNavigation() {
       gameContainer.style.display = "flex";
       shouldShowComprehensionCheck();
       showEnterComprehensionTrialsPopUp();
+      setCurPhase(PHASE_NAME.COMPREHENSION_CHECK);
       startGame();
       // update user data before enter eduation trials
       import("./firebase/saveData2Firebase.js").then((module) => {

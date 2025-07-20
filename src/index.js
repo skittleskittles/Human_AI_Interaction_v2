@@ -12,6 +12,8 @@ import {
   setQuestionsData,
   GROUP_TYPE_MAP,
   getAIHelpType,
+  setCurPhase,
+  PHASE_NAME,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
 import { loadModal } from "./modal.js";
@@ -179,6 +181,10 @@ async function continueExperiment(skipConsent, skipComprehension) {
     shouldShowComprehensionCheck();
     showEnterComprehensionTrialsPopUp();
   }
+
+  setCurPhase(
+    skipComprehension ? PHASE_NAME.PHASE1 : PHASE_NAME.COMPREHENSION_CHECK
+  );
 
   gameContainer.style.display = "flex";
   startGame();
