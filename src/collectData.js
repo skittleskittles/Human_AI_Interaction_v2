@@ -85,6 +85,7 @@ export function getCurExperimentData() {
  * @property {Date} end_time
  * @property {boolean} is_attention_check
  * @property {boolean} is_comprehension_check
+ * @property {boolean} has_click_reveal_soluton
  * @property {number} score
  * @property {number} correct_num
  * @property {Choice[]} ai_choice
@@ -115,6 +116,7 @@ export function createNewTrialData(
     end_time: getCurDate(),
     is_comprehension_check: is_comprehension_check,
     is_attention_check: is_attention_check,
+    has_click_reveal_soluton: false,
     score: 0,
     correct_num: 0,
     ai_choice: [], // []Choice
@@ -164,6 +166,7 @@ export function updateTrialData(
     trial.total_submissions = performance.submissionCount;
     trial.total_steps = performance.totalSteps;
   }
+  trial.has_click_reveal_soluton = performance.hasClickRevealSol;
   trial.ask_ai_count = performance.curTrialAskAICount;
   trial.cur_total_correct_trials = performance.correctTrialCount;
   trial.cur_total_ask_ai_count = performance.totalAskAICount;

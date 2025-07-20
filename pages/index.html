@@ -79,20 +79,55 @@
         align-items: center;
       }
 
+      #reveal-sol-message {
+        position: absolute;
+        bottom: 15rem;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: green;
+        font-size: 1rem;
+        font-weight: bold;
+      }
+
       #reset-btn {
         margin-right: auto;
         margin-left: 4rem;
       }
 
-      .center-buttons {
+      .right-buttons {
         display: flex;
-        gap: 5rem;
-        margin: 0 auto;
+        gap: 1rem;
+        margin: 0 2rem 0 auto;
+      }
+
+      #reveal-sol-btn.disabled-visual {
+        background-color: gray;
+        cursor: not-allowed;
+        pointer-events: auto;
+        opacity: 0.6;
+      }
+
+      #reveal-sol-tooltip {
+        position: absolute;
+        background-color: #555555;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        top: -43px;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s;
       }
 
       button {
-        padding: 0.625rem 1.25rem;
-        font-size: 1.1rem;
+        padding: 0.625rem 1rem;
+        font-size: 1rem;
         background-color: #007bff;
         color: white;
         border: none;
@@ -185,7 +220,7 @@
                 Using AI will cost points for this trial.
               </div>
             </div>
-            <div id="askAITooltip" style="display: none"></div>
+            <div id="askAI-tooltip" style="display: none"></div>
           </div>
         </div>
 
@@ -252,11 +287,22 @@
             <div class="option" draggable="true" id="D">D</div>
             <div class="option" draggable="true" id="E">E</div>
           </div>
+
+          <div id="reveal-sol-message" style="display: none;">
+            Any object you placed correctly is highlighted in green.
+          </div>
+
           <div class="buttons-container">
-            <button id="reset-btn" disabled class="left-fixed">RESET</button>
-            <div class="center-buttons">
-              <button id="submit-btn" disabled>SUBMIT</button>
-              <button id="next-btn" disabled>NEXT TRIAL</button>
+            <button id="reset-btn" disabled>RESET</button>
+            <button id="submit-btn" disabled>SUBMIT</button>
+            <div class="right-buttons">
+              <div style="position: relative">
+                <button id="reveal-sol-btn" data-locked="false">
+                  REVEAL<br />SOLUTION
+                </button>
+                <div id="reveal-sol-tooltip" style="display: none"></div>
+              </div>
+              <button id="next-btn" disabled>NEXT<br />TRIAL</button>
             </div>
           </div>
         </div>
@@ -302,13 +348,12 @@
                 <div id="additionalMessage" style="display: none"></div>
               </div>
               <div id="totalPassMessage">
-                You have got <span id="correct-trials">0</span> trial(s) 100%
-                correct so far.
+                You have got <span id="correct-trials">0</span> point(s) so far.
               </div>
               <div id="askAIMessage" style="display: none">
-                You’ve used AI
-                <span id="askAI-count" style="color: blue">0</span> time(s) so
-                far.
+                You’ve used AI for
+                <span id="askAI-count" style="color: blue">0</span> time(s)
+                during this trial.
               </div>
             </div>
           </div>

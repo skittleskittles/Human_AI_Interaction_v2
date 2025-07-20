@@ -85,7 +85,7 @@
   opacity: 0.6;
 }
 
-#askAITooltip {
+#askAI-tooltip {
   position: absolute;
   background-color: #555555;
   color: white;

@@ -113,15 +113,13 @@ async function initExperimentEnvironment(shouldShuffle = false) {
           answer.forEach((name, i) => {
             styleMap[name] = originalStyle[i] || "blank";
           });
-          const style = options.map((name) => styleMap[name]);
 
           return {
             question_id,
             answer,
             options,
             instruction,
-            style,
-            sortedStyle: originalStyle,
+            styleMap,
             statements,
             front_end,
           };

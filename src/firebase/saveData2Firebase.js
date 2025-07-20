@@ -176,6 +176,7 @@ async function saveTrialData(expRef, trial) {
       end_time: trial.end_time,
       is_attention_check: trial.is_attention_check,
       is_comprehension_check: trial.is_comprehension_check,
+      has_click_reveal_soluton: trial.has_click_reveal_soluton,
       score: trial.score,
       correct_num: trial.correct_num,
       ai_choice: trial.ai_choice,

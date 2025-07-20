@@ -1,4 +1,4 @@
-import { solutionLabel } from "./domElements";
+import { revealSolMessage, solutionLabel } from "./domElements";
 import {
   attentionTrial5,
   attentionTrial6,
@@ -13,16 +13,6 @@ const NO_AI_PHASE_TRIALS_LIMIT = 1; // todo fsy: default 4
 // if CAN_ASK_AI_UNLIMITES == false, MAX_ASK_AI_LIMIT takes effect
 const MAX_ASK_AI_LIMIT = 5;
 const CAN_ASK_AI_UNLIMITES = true;
-
-const BONUS_THRESHOLD = {
-  5: 6, // 5-object condition: start to get bonus for at least 6 correct
-  6: 6, // 6-object condition: start to get bonus for at least 6 correct
-};
-
-const SHUFFLE_MAX_ID_BY_OBJECT_COUNT = {
-  5: 34, // shuffle trials with id 0–34 (i.e., first 35 trials)
-  6: 19, // shuffle trials with id 0–19 (i.e., first 20 trials)
-};
 
 export const PHASE_NAME = {
   PHASE1: "phase1",
@@ -84,7 +74,9 @@ export const globalState = {
     totalSteps: 0, // Total number of drag steps across all submissions in the current trial
     correctTrialCount: 0, // Total number of 100% correct trials
     totalAskAICount: 0,
+    hasClickRevealSol: false,
   },
+
   remainingSubmissions: MAX_SUBMISSION_LIMIT,
 
   /* AI */
@@ -268,6 +260,17 @@ export function resetTrialID() {
 }
 
 /**
+ * Show solutions
+ */
+export function setHasRevealedSol(val) {
+  globalState.performance.hasClickRevealSol = val;
+}
+
+export function hasRevealedSol() {
+  return globalState.performance.hasClickRevealSol;
+}
+
+/**
  * Ask AI
  */
 export function isNoAIExpGroup() {
@@ -313,6 +316,7 @@ export function resetAskAI() {
   globalState.remainingAskAICount = getAskAILimit();
   globalState.revealedIndicesThisTrial.clear();
   solutionLabel.style.visibility = "hidden";
+  revealSolMessage.style.display = "none";
 }
 
 export function incrementAskAICount() {
@@ -336,8 +340,8 @@ export function recordRevealedIndicesThisTrial(idx) {
   }
 }
 
-export function getTrialTotalAskAICount() {
-  return globalState.performance.totalAskAICount;
+export function getTrialAskAICount() {
+  return globalState.performance.curTrialAskAICount;
 }
 
 /**
@@ -485,3 +489,14 @@ export function shouldEndComprehensionCheck() {
   }
   return false;
 }
+
+// ----- Archived
+const BONUS_THRESHOLD = {
+  5: 6, // 5-object condition: start to get bonus for at least 6 correct
+  6: 6, // 6-object condition: start to get bonus for at least 6 correct
+};
+
+const SHUFFLE_MAX_ID_BY_OBJECT_COUNT = {
+  5: 34, // shuffle trials with id 0–34 (i.e., first 35 trials)
+  6: 19, // shuffle trials with id 0–19 (i.e., first 20 trials)
+};

@@ -33,6 +33,8 @@ import {
   incrementAskAICount,
   getRevealedIndicesThisTrial,
   recordRevealedIndicesThisTrial,
+  setHasRevealedSol,
+  hasRevealedSol,
 } from "./data/variable.js";
 import {
   refreshInteractionState,
@@ -40,8 +42,16 @@ import {
   hideSubmissionResultContent,
   updateUseAIMessage,
   updateTotalPassMessage,
+  showButtonTooltip,
 } from "./uiState.js";
-import { renderAIChat, renderBoxesAndOptions, renderInstructions, renderStatements, updateSideLabels } from "./render.js";
+import {
+  highlightCorrectUserChice,
+  renderAIChat,
+  renderBoxesAndOptions,
+  renderInstructions,
+  renderStatements,
+  updateSideLabels,
+} from "./render.js";
 import { getUserAnswer, evaluateAnswer } from "./utils.js";
 import {
   startTimer,
@@ -67,7 +77,11 @@ import {
   showEnterPhase2,
   showEnterPhase3,
 } from "./modal.js";
-import { solutionLabel, timeBox } from "./data/domElements.js";
+import {
+  revealSolMessage,
+  solutionLabel,
+  timeBox,
+} from "./data/domElements.js";
 import { disableDrag } from "./dragDrop.js";
 
 export function bindTrialButtons() {
@@ -77,6 +91,9 @@ export function bindTrialButtons() {
   document
     .getElementById("askAI-btn")
     .addEventListener("click", showAskAIAnswers);
+  document
+    .getElementById("reveal-sol-btn")
+    .addEventListener("click", showAnswers);
 }
 
 /*
@@ -90,13 +107,13 @@ function submitTrial() {
   const submissionTimeSec = getTimerValue("submission"); // once submit, recore submission interval
 
   const userAns = getUserAnswer();
-  let correctChoice, score;
+  let correctChoiceCnt, correctChoices, score;
 
-  ({ correctChoice, score } = evaluateAnswer(
+  ({ correctChoiceCnt, correctChoices, score } = evaluateAnswer(
     userAns,
     getCurQuestionData().answer
   ));
-  updateAfterSubmission(userAns, correctChoice, score, submissionTimeSec);
+  updateAfterSubmission(userAns, correctChoiceCnt, score, submissionTimeSec);
 }
 
 function updateAfterSubmission(
@@ -244,8 +261,11 @@ export async function nextTrial() {
 function initializeAfterNextTrial() {
   resetTrialSteps();
   resetAskAI();
+  setHasRevealedSol(false);
   resetSubmissions();
   resetTrialPerformance();
+
+  updateUseAIMessage();
   updateRemainingSubmissionInfo();
 
   refreshInteractionState();
@@ -385,9 +405,15 @@ function showAskAIAnswers() {
     if (!isAllowedAskAITrials()) {
       tooltipText = "AI help is not available for this trial.";
     }
-    showAskAITooltip(tooltipText);
+    if (hasRevealedSol()) {
+      tooltipText =
+        "You already revealed the solutions.<br/>Please click NEXT TRIAL to continue.";
+    }
+    showButtonTooltip("askAI-tooltip", tooltipText);
     return;
   }
+
+  revealSolMessage.style.display = "none";
 
   const revealCount = getAIRevealCounts();
   const revealedObjects = getRandomAnsFromCorrectOrder(revealCount);
@@ -406,6 +432,7 @@ function showAskAIAnswers() {
     allSuggestions.forEach((el) => {
       el.style.visibility = "hidden";
     });
+    solutionLabel.innerText = "AI suggestion";
     solutionLabel.style.visibility = "visible";
 
     // 2. Show only the revealed ones
@@ -438,20 +465,54 @@ function showAskAIAnswers() {
   dbRecordTrial(performance, [], 0, trialTimeSec, false); // todo fsy
 }
 
-function showAskAITooltip(message) {
-  const tooltip = document.getElementById("askAITooltip");
-  tooltip.textContent = message;
-  tooltip.style.display = "block";
-  tooltip.style.opacity = "1";
+function showAnswers() {
+  const revealSolBtn = document.getElementById("reveal-sol-btn");
+  if (revealSolBtn.dataset.locked === "true") {
+    let tooltipText =
+      "You already answered correctly.<br/>Please click NEXT TRIAL to continue.";
+    if (hasRevealedSol()) {
+      tooltipText =
+        "You already revealed the solutions.<br/>Please click NEXT TRIAL to continue.";
+    } else if (getPerformance().submissionCount < 1) {
+      tooltipText = "You need to at least SUBMIT once";
+    }
+    showButtonTooltip("reveal-sol-tooltip", tooltipText);
+    return;
+  }
+
+  setHasRevealedSol(true);
 
   setTimeout(() => {
-    tooltip.style.opacity = "0";
-    setTimeout(() => {
-      tooltip.style.display = "none";
-    }, 300);
-  }, 1000);
-}
+    const allSoltions = document.querySelectorAll("[id^='solution-']");
+    allSoltions.forEach((el) => {
+      el.style.visibility = "hidden";
+    });
+    solutionLabel.innerText = "Correct answer";
+    solutionLabel.style.visibility = "visible";
 
+    // show all answers
+    const answers = getCurQuestionData().answer;
+    answers.forEach((ans) => {
+      const el = document.getElementById(`solution-${ans}`);
+      if (el) {
+        el.style.visibility = "visible";
+      }
+    });
+
+    // update correct options
+    highlightCorrectUserChice();
+
+    revealSolMessage.style.display = "block";
+    refreshInteractionState();
+  }, 500);
+
+  /* update db */
+  const performance = JSON.parse(JSON.stringify(getPerformance()));
+  const submissionTimeSec = getTimerValue("submission");
+  const trialTimeSec = getTimerValue("trial");
+
+  dbRecordTrial(performance, [], 0, trialTimeSec, false); // todo fsy
+}
 /*
  ********************************************
  * Render

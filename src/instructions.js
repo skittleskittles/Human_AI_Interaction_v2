@@ -1,12 +1,10 @@
-import {
-  instructionsContainer,
-  gameContainer,
-} from "./data/domElements.js";
+import { instructionsContainer, gameContainer } from "./data/domElements.js";
 import { shouldShowComprehensionCheck } from "./data/variable";
 import { getCurDate } from "./utils.js";
 import { getObjCount } from "./data/variable";
 import { startGame } from "./index.js";
 import { showEnterComprehensionTrialsPopUp } from "./modal.js";
+import { showButtonTooltip } from "./uiState.js";
 
 /*
 --------------------------------------------------------------------------------------
@@ -79,7 +77,10 @@ function setupInstructionNavigation() {
 
     if (nextButton.dataset.locked === "true") {
       if (video) {
-        showNextTooltip("Please watch full video to continue");
+        showButtonTooltip(
+          "next-tooltip",
+          "Please watch full video to continue"
+        );
       }
       return;
     }
@@ -98,20 +99,6 @@ function setupInstructionNavigation() {
       });
     }
   });
-}
-
-function showNextTooltip(message) {
-  const tooltip = document.getElementById("nextTooltip");
-  tooltip.textContent = message;
-  tooltip.style.display = "block";
-  tooltip.style.opacity = "1";
-
-  setTimeout(() => {
-    tooltip.style.opacity = "0";
-    setTimeout(() => {
-      tooltip.style.display = "none";
-    }, 300);
-  }, 3000);
 }
 
 function showInstructionPage(index) {

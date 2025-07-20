@@ -5,7 +5,8 @@ export function getUserAnswer() {
 }
 
 export function evaluateAnswer(userAns, correctAns) {
-  let correctChoice = 0;
+  let correctChoiceCnt = 0;
+  let correctChoices = [];
   const total = correctAns.length;
   let totalScore = 0;
 
@@ -14,7 +15,10 @@ export function evaluateAnswer(userAns, correctAns) {
     if (placed !== -1) {
       const dist = Math.abs(placed - i);
       totalScore += (total - dist) / total;
-      if (placed === i) correctChoice++;
+      if (placed === i) {
+        correctChoiceCnt++;
+        correctChoices.push(correctAns[i]);
+      }
     }
   }
 
@@ -23,7 +27,7 @@ export function evaluateAnswer(userAns, correctAns) {
     rawScore % 1 === 0
       ? Number(rawScore.toFixed(0))
       : Number(rawScore.toFixed(1));
-  return { correctChoice, score };
+  return { correctChoiceCnt, correctChoices, score };
 }
 
 export function getCurDate() {

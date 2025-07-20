@@ -1,7 +1,8 @@
 import {
   getCurPhase,
   getPerformance,
-  getTrialTotalAskAICount,
+  getTrialAskAICount,
+  hasRevealedSol,
   hasSubmittedThisTrial,
   isAllowedAskAITrials,
   isAttentionCheck,
@@ -33,29 +34,37 @@ export function refreshInteractionState({
   const performance = getPerformance();
   const score = performance.lastSubmission.score;
 
-  const canSubmit = allFilled && remainingSubmissions() > 0 && score !== 100;
-  const canReset =
-    !allInStartZone && remainingSubmissions() > 0 && score !== 100;
-  const canNext = isComprehensionCheck() ? score === 100 : forceEnableNext;
-  const canAskAI = forceDisableAskAI
+  const canSubmit = hasRevealedSol()
     ? false
-    : allFilled && remainingAskAICount() > 0 && isAllowedAskAITrials();
+    : allFilled && remainingSubmissions() > 0 && score !== 100;
+  const canReset = hasRevealedSol()
+    ? false
+    : !allInStartZone && remainingSubmissions() > 0 && score !== 100;
+  const canNext = isComprehensionCheck() ? score === 100 : forceEnableNext;
+  const canAskAI =
+    forceDisableAskAI || hasRevealedSol()
+      ? false
+      : allFilled && remainingAskAICount() > 0 && isAllowedAskAITrials();
+  const canRevealSol = hasRevealedSol()
+    ? false
+    : performance.submissionCount > 0 && score !== 100;
 
   updateButtons({
     submit: canSubmit,
     reset: canReset,
     next: canNext,
     askAI: canAskAI,
+    revealSol: canRevealSol,
   });
 
-  if (remainingSubmissions() === 0) {
+  if (remainingSubmissions() === 0 || hasRevealedSol()) {
     disableDrag();
   } else {
     enableDrag();
   }
 }
 
-export function updateButtons({ submit, reset, next, askAI }) {
+export function updateButtons({ submit, reset, next, askAI, revealSol }) {
   document.getElementById("submit-btn").disabled = !submit;
   document.getElementById("reset-btn").disabled = !reset;
   document.getElementById("next-btn").disabled = !next;
@@ -68,7 +77,15 @@ export function updateButtons({ submit, reset, next, askAI }) {
     askAIBtn.classList.add("disabled-visual");
     askAIBtn.dataset.locked = "true";
   }
-  // document.getElementById("askAI-btn").disabled = !askAI;
+
+  const revealSolBtn = document.getElementById("reveal-sol-btn");
+  if (revealSol) {
+    revealSolBtn.classList.remove("disabled-visual");
+    revealSolBtn.dataset.locked = "false";
+  } else {
+    revealSolBtn.classList.add("disabled-visual");
+    revealSolBtn.dataset.locked = "true";
+  }
 }
 
 /***
@@ -123,14 +140,7 @@ export function updateUseAIMessage() {
   document.getElementById("askAIMessage").style.display = isAllowedAskAITrials()
     ? "block"
     : "none";
-  console.log(
-    "curPhase",
-    getCurPhase(),
-    "isAllowedAskAITrials",
-    isAllowedAskAITrials()
-  );
-  document.getElementById("askAI-count").textContent =
-    getTrialTotalAskAICount();
+  document.getElementById("askAI-count").textContent = getTrialAskAICount();
   if (isAttentionCheck() || isComprehensionCheck()) {
     document.getElementById("askAIMessage").style.display = "none";
   }
@@ -142,12 +152,18 @@ export function hideSubmissionResultContent() {
 }
 
 /***
- * Loading Page
+ * Button tooltip
  */
-export function showLoading() {
-  document.getElementById("loading-overlay").style.display = "flex";
-}
+export function showButtonTooltip(buttonId, message) {
+  const tooltip = document.getElementById(buttonId);
+  tooltip.innerHTML = message;
+  tooltip.style.display = "block";
+  tooltip.style.opacity = "1";
 
-export function hideLoading() {
-  document.getElementById("loading-overlay").style.display = "none";
+  setTimeout(() => {
+    tooltip.style.opacity = "0";
+    setTimeout(() => {
+      tooltip.style.display = "none";
+    }, 300);
+  }, 2000);
 }

@@ -6,10 +6,15 @@ import {
   getAIRevealCounts,
   getCurTrialIndex,
   getCurQuestionIndex,
+  getCurQuestionData,
 } from "./data/variable";
-import { updateUseAIMessage } from "./uiState";
 import { bindDragDropEvents } from "./dragDrop.js";
-import { addPxAndRem, escapeRegExp } from "./utils.js";
+import {
+  addPxAndRem,
+  escapeRegExp,
+  evaluateAnswer,
+  getUserAnswer,
+} from "./utils.js";
 import {
   leftPanel,
   labelContainer,
@@ -42,8 +47,6 @@ export function renderInstructions(instructionText) {
 }
 
 export function renderAIChat() {
-  updateUseAIMessage();
-
   if (!isAllowedAskAITrials()) {
     leftPanel.style.display = "none";
     return;
@@ -75,7 +78,7 @@ export function renderAIChat() {
 
 export function renderBoxesAndOptions(questionData) {
   const options = questionData.options;
-  const style = questionData.style || [];
+  const styleMap = questionData.styleMap || {};
 
   if (isAttentionCheck()) {
     document.getElementById("trialID").textContent = "ATTENTION CHECK Trial";
@@ -120,7 +123,7 @@ export function renderBoxesAndOptions(questionData) {
     option.className = "option";
     option.id = optionText;
     option.textContent = optionText;
-    applyPatternStyle(option, style[i] || "blank");
+    applyPatternStyle(option, styleMap[optionText] || "blank");
     option.style.height = `${maxHeight}px`;
     optionContainer.appendChild(option);
 
@@ -144,40 +147,54 @@ export function renderBoxesAndOptions(questionData) {
     boxContainer.appendChild(boxGroup);
   });
 
+  // Step 3: Render solutions
   const solutionContainer = document.getElementById("solution-container");
   solutionContainer.innerHTML = "";
-  if (isAllowedAskAITrials()) {
-    const answer = questionData.answer;
-    const sortedStyle = questionData.sortedStyle || [];
-    answer.forEach((ans, i) => {
-      const solution = document.createElement("div");
-      solution.className = "solution";
-      solution.id = `solution-${ans}`;
-      solution.textContent = ans;
-      applyPatternStyle(solution, sortedStyle[i] || "blank");
-      solution.style.height = `${maxHeight}px`;
-      solutionContainer.appendChild(solution);
-    });
-  }
+
+  const answer = questionData.answer;
+  answer.forEach((ans, i) => {
+    const solution = document.createElement("div");
+    solution.className = "solution";
+    solution.id = `solution-${ans}`;
+    solution.textContent = ans;
+    applyPatternStyle(solution, styleMap[ans] || "blank");
+    solution.style.height = `${maxHeight}px`;
+    solutionContainer.appendChild(solution);
+  });
 
   bindDragDropEvents();
 }
 
-export function applyPatternStyle(element, pattern) {
+export function highlightCorrectUserChice() {
+  const userAns = getUserAnswer();
+  let correctChoiceCnt, correctChoices, score;
+
+  ({ correctChoiceCnt, correctChoices, score } = evaluateAnswer(
+    userAns,
+    getCurQuestionData().answer
+  ));
+
+  correctChoices.forEach((choice) => {
+    const el = document.getElementById(choice);
+    if (el) {
+      applyPatternStyle(el, getCurQuestionData().styleMap[choice], {
+        isCorrect: true,
+      });
+    }
+  });
+}
+
+export function applyPatternStyle(element, pattern, isCorrect = false) {
+  const color = isCorrect ? "#D3ECCD" : "lightblue";
+
   const base = {
-    blank: "lightblue",
-    "dotted circles":
-      "repeating-radial-gradient(circle, lightblue, lightblue 5px, white 5px, white 10px)",
-    "horizontal lines":
-      "repeating-linear-gradient(to bottom, lightblue, lightblue 5px, white 5px, white 10px)",
-    "vertical lines":
-      "repeating-linear-gradient(to right, lightblue, lightblue 5px, white 5px, white 10px)",
-    "diagonal stripes":
-      "repeating-linear-gradient(45deg, lightblue, lightblue 5px, white 5px, white 10px)",
-    "horizontal stripes": `
-    repeating-linear-gradient(to right, transparent 0 8px, lightblue 8px 16px),
-    repeating-linear-gradient(to bottom, transparent 0 8px, lightblue 8px 16px)
-  `,
+    blank: color,
+    "dotted circles": `repeating-radial-gradient(circle, ${color}, ${color} 5px, white 5px, white 10px)`,
+    "horizontal lines": `repeating-linear-gradient(to bottom, ${color}, ${color} 5px, white 5px, white 10px)`,
+    "vertical lines": `repeating-linear-gradient(to right, ${color}, ${color} 5px, white 5px, white 10px)`,
+    "diagonal stripes": `repeating-linear-gradient(45deg, ${color}, ${color} 5px, white 5px, white 10px)`,
+    "horizontal stripes": `repeating-linear-gradient(to right, transparent 0 8px, ${color} 8px 16px),
+       repeating-linear-gradient(to bottom, transparent 0 8px, ${color} 8px 16px)`,
   };
 
   element.style.background = base[pattern] || base["blank"];

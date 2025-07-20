@@ -16,6 +16,8 @@ export const labelContainer = document.getElementById("label-container");
 export const solutionContainer = document.getElementById("solution-container");
 
 export const solutionLabel = document.getElementById("solution-label");
+export const revealSolMessage = document.getElementById("reveal-sol-message");
+
 
 export function clearPageContent() {
   const sections = [
