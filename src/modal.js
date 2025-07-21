@@ -141,9 +141,10 @@ export function showEnterMainGamePopUp(onCloseFunc) {
   showModal({
     context: "start-main-game",
     html: `<p>
-       Great job - you’ve passed the comprehension check!<br/><br/>
-       <strong>Phase 1</strong> of the main study will now begin.<br/>
-       It should take about <strong>8 minutes</strong> with <em>no AI help</em>.
+       Great job! You’ve passed the comprehension check!<br/><br/>
+       Now entering <strong>Phase 1</strong>. <br/>
+       You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} trials.  <br/>
+       If 8 minutes pass first, keep going until you finish ${getNoAIPhaseTrialsLimit()} trials.
     </p>`,
     onClose: onCloseFunc,
   });
@@ -153,9 +154,9 @@ export function showNeedMoreTrialsPopUp() {
   showModal({
     context: "need-more-trials",
     html: `<p>
-      The timer for this phase has ended.<br/>
-      However, to proceed to the next phase, you must complete at least <strong>${getNoAIPhaseTrialsLimit()} trials</strong>.<br/><br/>
-      Please continue until you reach the minimum requirement.
+      Time’s up!<br/>
+      However, you must complete <strong> ${getNoAIPhaseTrialsLimit()} trials</strong> to enter the next part. <br/>
+      Please continue until you meet this requirement.
     </p>`,
   });
 }
@@ -164,8 +165,9 @@ export function showEnterPhase2(onCloseFunc) {
   showModal({
     context: "enter-phase2",
     html: `<p>
-      Now you will move to <strong>Phase 2</strong>.<br/>
-      You will have <strong>20 minutes</strong> for this phase.
+      Now entering <strong>Phase 2</strong>.<br/>
+      You will have <strong>20 minutes</strong> for this phase. <br/>
+      Note: AI assistance is on-demand and unlimited, with a cost per use in this phase. Usage resets for each trial.
     </p>`,
     onClose: onCloseFunc,
   });
@@ -175,9 +177,10 @@ export function showEnterPhase3(onCloseFunc) {
   showModal({
     context: "enter-phase3",
     html: `<p>
-      You're entering <strong>Phase 3</strong>.<br/>
-      This final stage lasts around 8 minute with <em>no AI help</em>.<br/>
-      Do your best!
+      Now entering <strong>Phase 3</strong>., the final challenge!<br/>
+      You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} trials.  <br/>
+      If 8 minutes pass first, keep going until you finish ${getNoAIPhaseTrialsLimit()} trials.<br/>
+      Note: No AI assistance in this phase. Do your best!
     </p>`,
     onClose: onCloseFunc,
   });
@@ -187,7 +190,7 @@ export function showEndTimePopUp() {
   showModal({
     context: "end-time",
     html: `<p>
-      Time's up! Thank you for your effort.<br/>
+      Thanks for completing the main study! <br>
       Please take a moment to complete a brief survey.
     </p>`,
     onClose: () => {

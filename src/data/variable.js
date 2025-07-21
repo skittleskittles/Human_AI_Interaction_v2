@@ -8,7 +8,7 @@ import {
 const MAX_SUBMISSION_LIMIT = 2;
 const NUM_COMPREHENSION_TRIALS = 2;
 
-const NO_AI_PHASE_TRIALS_LIMIT = 1; // todo fsy: default 4
+const NO_AI_PHASE_TRIALS_LIMIT = 2; // todo fsy: default 4
 
 // if CAN_ASK_AI_UNLIMITES == false, MAX_ASK_AI_LIMIT takes effect
 const MAX_ASK_AI_LIMIT = 5;
