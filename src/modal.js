@@ -3,6 +3,7 @@ import { showFeedback } from "./feedback.js";
 import {
   getComprehensionTrialsNum,
   getNoAIPhaseTrialsLimit,
+  isNoAIExpGroup,
 } from "./data/variable.js";
 import { resetTrial } from "./trialAction.js";
 
@@ -162,26 +163,34 @@ export function showNeedMoreTrialsPopUp() {
 }
 
 export function showEnterPhase2(onCloseFunc) {
+  let htmlContent = `<p>
+      Now entering <strong>Phase 2</strong>.<br/>
+      You will have <strong>20 minutes</strong> for this phase.
+    </p>`;
+  if (!isNoAIExpGroup()) {
+    htmlContent += `<p><em>Note</em>: AI assistance is on-demand and unlimited,
+       with a cost per use in this phase. Usage resets for each trial.</p>`;
+  }
   showModal({
     context: "enter-phase2",
-    html: `<p>
-      Now entering <strong>Phase 2</strong>.<br/>
-      You will have <strong>20 minutes</strong> for this phase. <br/>
-      Note: AI assistance is on-demand and unlimited, with a cost per use in this phase. Usage resets for each trial.
-    </p>`,
+    html: htmlContent,
     onClose: onCloseFunc,
   });
 }
 
 export function showEnterPhase3(onCloseFunc) {
+  let htmlContent = `<p>
+      Now entering <strong>Phase 3</strong>, the final challenge!<br/><br/>
+      You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} trials.<br/>
+      If 8 minutes pass first, keep going until you finish ${getNoAIPhaseTrialsLimit()} trials.
+    </p>`;
+  if (!isNoAIExpGroup()) {
+    htmlContent +=
+      "<p><em>Note</em>: No AI assistance in this phase. Do your best!</p>";
+  }
   showModal({
     context: "enter-phase3",
-    html: `<p>
-      Now entering <strong>Phase 3</strong>., the final challenge!<br/>
-      You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} trials.  <br/>
-      If 8 minutes pass first, keep going until you finish ${getNoAIPhaseTrialsLimit()} trials.<br/>
-      Note: No AI assistance in this phase. Do your best!
-    </p>`,
+    html: htmlContent,
     onClose: onCloseFunc,
   });
 }
