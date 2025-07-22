@@ -53,8 +53,7 @@ export function startTimer(mode) {
           clearInterval(timer.interval);
           timer.interval = null;
 
-          setPhaseTimerEnded(true);
-          // NoAI Phase
+          setPhaseTimerEnded(true); 
           if (
             [PHASE_NAME.PHASE1, PHASE_NAME.PHASE3].includes(getCurPhase()) &&
             getPhaseCurTrialIndex() < getNoAIPhaseTrialsLimit()

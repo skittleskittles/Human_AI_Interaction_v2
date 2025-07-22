@@ -94,7 +94,12 @@ export function bindTrialButtons() {
 
   const revealBtn = document.getElementById("reveal-sol-btn");
   revealBtn.addEventListener("click", showAnswers);
-  revealBtn.addEventListener("mouseenter", showRevealSolHint);
+  revealBtn.addEventListener("mouseenter", () => {
+    showRevealSolHint("mouseenter");
+  });
+  revealBtn.addEventListener("mouseleave", () => {
+    showRevealSolHint("mouseleave");
+  });
 }
 
 function showRevealSolHint(mode) {
@@ -104,8 +109,12 @@ function showRevealSolHint(mode) {
   if (!isDisabled && !isLocked) {
     showButtonTooltip(
       "reveal-sol-tooltip",
-      "Once clicked, you <strong>CANNOT</strong><br/>revise your answer or re-SUBMIT."
+      "Once clicked, you <strong>CANNOT</strong><br/>revise your answer or re-SUBMIT.",
+      true,
+      mode
     );
+  } else if (mode == "mouseleave") {
+    showButtonTooltip("reveal-sol-tooltip", "", true, mode);
   }
 }
 /*
@@ -433,6 +442,10 @@ function showAskAIAnswers() {
       tooltipText =
         "You already revealed the solutions.<br/>Please click NEXT TRIAL to continue.";
     }
+    if (remainingSubmissions() == 0) {
+      tooltipText =
+        "You're out of submissions.<br/>Please click NEXT TRIAL to continue.";
+    }
     showButtonTooltip("askAI-tooltip", tooltipText);
     return;
   }
@@ -442,6 +455,7 @@ function showAskAIAnswers() {
   const revealCount = getAIRevealCounts();
   const revealedObjects = getRandomAnsFromCorrectOrder(revealCount);
 
+  incrementSteps();
   incrementAskAICount();
   updateAskAICost();
   refreshInteractionState({ forceDisableAskAI: true });
@@ -492,7 +506,8 @@ function showAskAIAnswers() {
 
 function showAnswers() {
   const revealSolBtn = document.getElementById("reveal-sol-btn");
-  if (revealSolBtn.dataset.locked === "true") {
+  const isDisabled = revealSolBtn.classList.contains("disabled-visual");
+  if (isDisabled && revealSolBtn.dataset.locked === "true") {
     let tooltipText = "Available only right after you submit.";
     if (hasRevealedSol()) {
       tooltipText =
@@ -505,6 +520,7 @@ function showAnswers() {
     return;
   }
 
+  incrementSteps();
   setHasRevealedSol(true);
 
   setTimeout(() => {

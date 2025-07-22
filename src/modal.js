@@ -98,41 +98,45 @@ export function showEndGameFailedAllAttentionCheckPopUp() {
   showModal({
     context: "fail-attention-all",
     html: `<p>
-      Unfortunately, you did not pass the attention check trial. Now the game is over, 
+      Unfortunately, you did not pass the attention check trial.<br/>
+      Now the game is over, 
       and you will be redirected back to Prolific.
     </p>`,
   });
 }
 
-export function showFailedAttentionCheckPopUp() {
-  const failedCount = countFailedAttentionCheck();
-  let message = "";
+// export function showFailedAttentionCheckPopUp() {
+//   const failedCount = countFailedAttentionCheck();
+//   let message = "";
 
-  if (failedCount === 1) {
-    message = `<p>
-      You just failed an attention check.<br/>
-      If you fail another attention check, you won’t get compensated.
-    </p>`;
-  } else if (failedCount === 2) {
-    message = `<p>
-      You’ve failed another attention check.<br/>
-      Since this is your second failure, you may continue the experiment, 
-      but <strong>you will not be compensated</strong>.
-    </p>`;
-  }
+//   if (failedCount === 1) {
+//     message = `<p>
+//       You just failed an attention check.<br/>
+//       If you fail another attention check, you won’t get compensated.
+//     </p>`;
+//   } else if (failedCount === 2) {
+//     message = `<p>
+//       You’ve failed another attention check.<br/>
+//       Since this is your second failure, you may continue the experiment,<br/> 
+//       but <strong>you will not be compensated</strong>.
+//     </p>`;
+//   }
 
-  showModal({
-    context: "fail-attention",
-    html: message,
-  });
-}
+//   showModal({
+//     context: "fail-attention",
+//     html: message,
+//   });
+// }
 
 export function showMultipleAttemptsPopUp() {
   showModal({
     context: "multiple-attempts",
     html: `<p>
-      You have already participated in this study. Participation is limited to one time only.<br/><br/>
-      Please <strong>return</strong> your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific.
+      You have already participated in this study.<br/>
+      Participation is limited to one time only.<br/><br/>
+      Please <strong>return</strong> your submission by <strong>closing this study</strong> <br/>
+      and
+      clicking <strong>‘Stop Without Completing’</strong> on Prolific.
     </p>`,
   });
   clearPageContent();
@@ -168,7 +172,7 @@ export function showEnterPhase2(onCloseFunc) {
       You will have <strong>20 minutes</strong> for this phase.
     </p>`;
   if (!isNoAIExpGroup()) {
-    htmlContent += `<p><em>Note</em>: AI assistance is on-demand and unlimited,
+    htmlContent += `<p><em>Note</em>: AI assistance is on-demand and unlimited,<br/>
        with a cost per use in this phase. Usage resets for each trial.</p>`;
   }
   showModal({

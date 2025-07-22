@@ -16,7 +16,7 @@ import {
   PHASE_NAME,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
-import { loadModal, showEnterPhase2, showEnterPhase3 } from "./modal.js";
+import { loadModal } from "./modal.js";
 import { nextTrial, bindTrialButtons } from "./trialAction.js";
 import Papa from "papaparse";
 import { getUrlParameters, generateUID, shuffleArray } from "./utils.js";
@@ -190,7 +190,7 @@ async function continueExperiment(skipConsent, skipComprehension) {
   startGame();
 }
 
-export function startGame() { 
+export function startGame() {
   nextTrial();
 }
 

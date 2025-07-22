@@ -15,6 +15,7 @@ import {
 } from "./data/variable.js";
 import { disableDrag, enableDrag } from "./dragDrop.js";
 import { User } from "./collectData.js";
+import { removeAllListeners } from "process";
 
 /***
  * refreshInteractionState: Buttons click & Options drag
@@ -48,7 +49,10 @@ export function refreshInteractionState({
   const canAskAI =
     forceDisableAskAI || hasRevealedSol()
       ? false
-      : allFilled && remainingAskAICount() > 0 && isAllowedAskAITrials();
+      : allFilled &&
+        remainingAskAICount() > 0 &&
+        isAllowedAskAITrials() &&
+        remainingSubmissions() > 0;
 
   // only allow reveal once, and available only right after you submit.
   const canRevealSol = hasRevealedSol()
@@ -181,7 +185,12 @@ export function hideSubmissionResultContent() {
 /***
  * Button tooltip
  */
-export function showButtonTooltip(targetId, message) {
+export function showButtonTooltip(
+  targetId,
+  message,
+  disableAutoHide = false,
+  mode = "click"
+) {
   const tooltip = document.getElementById(targetId);
 
   const show = () => {
@@ -197,6 +206,14 @@ export function showButtonTooltip(targetId, message) {
     }, 300);
   };
 
-  show();
-  setTimeout(hide, 2000);
+  if (mode == "click") {
+    show();
+    if (!disableAutoHide) {
+      setTimeout(hide, 2000); // auto hide
+    }
+  } else if (mode == "mouseenter" && disableAutoHide) {
+    show();
+  } else if (mode == "mouseleave" && disableAutoHide) {
+    hide();
+  }
 }
