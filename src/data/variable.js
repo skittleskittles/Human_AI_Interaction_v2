@@ -50,6 +50,14 @@ export const GROUP_TYPE_MAP = {
   [AI_HELP_TYPE.AI_QUESTION_A]: "ai_question_a",
   [AI_HELP_TYPE.AI_QUESTION_B]: "ai_question_b",
 };
+// eg: https://xxxx?g=alp
+export const URL_GROUP_CODE_MAP = {
+  alp: AI_HELP_TYPE.NO_AI,
+  ba: AI_HELP_TYPE.LOW_COST_AI,
+  gam: AI_HELP_TYPE.HIGH_COST_AI,
+  dlta: AI_HELP_TYPE.AI_QUESTION_A,
+  epsi: AI_HELP_TYPE.AI_QUESTION_B,
+};
 
 export const globalState = {
   objectCount: 5,

@@ -14,6 +14,7 @@ import {
   getAIHelpType,
   setCurPhase,
   PHASE_NAME,
+  URL_GROUP_CODE_MAP,
 } from "./data/variable.js";
 import { User } from "./collectData.js";
 import { loadModal } from "./modal.js";
@@ -34,30 +35,29 @@ async function initExperimentEnvironment(shouldShuffle = false) {
     // 2. Set object count
     setObjCount(6);
     User.num_objects = getObjCount();
-    // set based on `v=zeta`
-    // if (urlParams.v !== undefined && urlParams.v === "zeta") {
-    //   setObjCount(6);
-    //   User.num_objects = 6;
-    // } else {
-    //   setObjCount(5);
-    //   User.num_objects = 5;
-    // }
 
-    // Load Exp Params
+    // 3. Load Exp Params
     setAIRevealCounts(1);
-    setAIHelpType(AI_HELP_TYPE.HIGH_COST_AI);
-    User.exp_group = GROUP_TYPE_MAP[getAIHelpType()];
+    const groupCode = urlParams.g;
+    if (groupCode && URL_GROUP_CODE_MAP[groupCode]) {
+      setAIHelpType(URL_GROUP_CODE_MAP[groupCode]);
+      User.exp_group = GROUP_TYPE_MAP[getAIHelpType()];
+    } else {
+      console.warn("❗ Unrecognized group code. Set as default group.");
+      setAIHelpType(AI_HELP_TYPE.HIGH_COST_AI);
+      User.exp_group = GROUP_TYPE_MAP[getAIHelpType()];
+    }
 
-    // 3. Set Prolific ID (default to random if missing)
+    // 4. Set Prolific ID (default to random if missing)
     User.prolific_pid = urlParams.PROLIFIC_PID || generateUID();
 
-    // 4. Choose file after objCount set
+    // 5. Choose file after objCount set
     const csvFile =
       getObjCount() === 6
         ? "six_objects_instructions.csv"
         : "five_objects_simple.csv";
 
-    // 5. Load CSV data via Papa.parse
+    // 6. Load CSV data via Papa.parse
     Papa.parse(csvFile, {
       download: true,
       header: true,
