@@ -166,7 +166,7 @@ export function updateExperimentData(
     performance.phaseTotalCorrectTrials[getCurPhase()];
   experiment.phase_weighted_trials =
     performance.phaseWeightedCorrectTrials[getCurPhase()];
-  experiment.bonus_amount = performance.phaseBonusAmount[getCurPhase()];
+  experiment.bonus_amount = getBonusAmount(getCurPhase()); // in db: phase 1 bonus_amount does not include phase2；phase2 does include phase1
   User.total_bonus_amount = getBonusAmount("all");
   experiment.total_ask_ai_count = performance.totalAskAICount;
 }

@@ -94,8 +94,7 @@ export const globalState = {
       phase3: 0,
     },
     phaseBonusAmount: {
-      phase1: 0,
-      phase2: 0,
+      phase1_2: 0,
       phase3: 0,
     },
   },
@@ -464,7 +463,11 @@ export function updatePerformanceAfterSubmission(correctChoice, score) {
 
     // calculate bonus
     const bonusAmount = calBonusAmount(getCurPhase());
-    globalState.performance.phaseBonusAmount[getCurPhase()] = bonusAmount;
+    if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(getCurPhase())) {
+      globalState.performance.phaseBonusAmount.phase1_2 = bonusAmount;
+    } else if (getCurPhase() == PHASE_NAME.PHASE3) {
+      globalState.performance.phaseBonusAmount.phase3 = bonusAmount;
+    }
   }
 }
 
@@ -474,11 +477,6 @@ export function getPerformance() {
 
 export function getGlobalTotalCorrectTrials() {
   return globalState.performance.globalTotalCorrectTrials;
-}
-
-export function getBonusThreshold() {
-  const objCount = getObjCount();
-  return BONUS_THRESHOLD[objCount];
 }
 
 export function getPhasePoints(phase) {
@@ -491,29 +489,35 @@ export function calBonusAmount(phase) {
 
   if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(phase)) {
     if (phase == PHASE_NAME.phase2) {
+      // phase2 bonus include phase1
       correctTrials +=
         globalState.performance.phaseWeightedCorrectTrials[phase1];
     }
-    if (correctTrials <= 13) {
-      bonusAmount = 0.15 * correctTrials;
-    } else if (correctTrials >= 14) {
+
+    bonusAmount = 0.15 * correctTrials;
+    if (bonusAmount > 2) {
       bonusAmount = 2;
     }
   }
 
   if (phase == PHASE_NAME.PHASE3) {
-    if (correctTrials >= 1 && correctTrials <= 4) {
-      bonusAmount = 0.1 * correctTrials;
-    } else if (correctTrials >= 5 && correctTrials <= 7) {
-      bonusAmount = 0.4 + 0.2 * (correctTrials - 1);
-    } else if (correctTrials >= 8) {
-      bonusAmount = 1;
+    if (correctTrials >= 0 && correctTrials <= 4) {
+      bonusAmount = 0.15 * correctTrials;
+    } else if (correctTrials >= 5 && correctTrials <= 8) {
+      bonusAmount = 0.6 + 0.2 * (correctTrials - 4);
+    } else if (correctTrials >= 9) {
+      bonusAmount = 1.5;
     }
   }
 
   return Number(bonusAmount.toFixed(2));
 }
 
+/*
+ * @phase = phase1/phase2: return phase1+2;
+ * @phase = phase3: return phase3;
+ * @phase = all: return phase1+2 + phase3;
+ */
 export function getBonusAmount(phase) {
   let bonusAmount = 0;
   const phaseMap = globalState.performance.phaseBonusAmount || {};
@@ -522,7 +526,11 @@ export function getBonusAmount(phase) {
       bonusAmount += Number(phaseMap[phaseName] || 0);
     }
   } else {
-    bonusAmount = Number(phaseMap[phase] || 0);
+    if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(phase)) {
+      bonusAmount = Number(phaseMap.phase1_2 || 0);
+    } else if (phase == PHASE_NAME.PHASE3) {
+      bonusAmount = Number(phaseMap.phase3 || 0);
+    }
   }
 
   return Number(bonusAmount.toFixed(2));
@@ -602,3 +610,8 @@ const SHUFFLE_MAX_ID_BY_OBJECT_COUNT = {
   5: 34, // shuffle trials with id 0–34 (i.e., first 35 trials)
   6: 19, // shuffle trials with id 0–19 (i.e., first 20 trials)
 };
+
+function getBonusThreshold() {
+  const objCount = getObjCount();
+  return BONUS_THRESHOLD[objCount];
+}

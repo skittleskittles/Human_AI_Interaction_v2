@@ -1,10 +1,9 @@
 import {
   globalState,
   AI_HELP_TYPE,
-  getGlobalTotalCorrectTrials,
-  getObjCount,
-  getBonusThreshold,
   isNoAIExpGroup,
+  getBonusAmount,
+  PHASE_NAME,
 } from "./data/variable";
 import { User } from "./collectData";
 import {
@@ -28,7 +27,6 @@ export function showFeedback() {
       const aiFreeResponse = document.getElementById("aiFreeResponse");
       const submitFeedback = document.getElementById("submitFeedback");
       const radioGroups = document.querySelectorAll("input[type='radio']");
-      let thankYouMessage = document.getElementById("thankYouMessage");
 
       if (!isNoAIExpGroup()) {
         aiFeedback.style.display = "block";
@@ -73,13 +71,13 @@ export function showFeedback() {
       if (submitFeedback) {
         submitFeedback.disabled = true;
         submitFeedback.addEventListener("click", () =>
-          submitFeedbackForm(submitFeedback, thankYouMessage)
+          submitFeedbackForm(submitFeedback)
         );
       }
     });
 }
 
-async function submitFeedbackForm(submitButton, thankYouMessage) {
+async function submitFeedbackForm(submitButton) {
   const now = getCurDate();
 
   // Get AI helpfulness slider value (if visible)
@@ -110,30 +108,42 @@ async function submitFeedbackForm(submitButton, thankYouMessage) {
   await saveFeedbackData(feedbackData);
 
   submitButton.disabled = true;
-  let message = "";
+  const bonusMessage = document.getElementById("bonusMessage");
+  const thankYouMessage = document.getElementById("thankYouMessage");
+
+  let bonusMessageContent = "",
+    thankYouMessageContent = "";
   let redirectFn = null;
 
   if (User.is_passed_attention_check) {
-    const totalCorrectTrials = getGlobalTotalCorrectTrials();
-    if (totalCorrectTrials >= getBonusThreshold()) {
-      message = `Thank you for participating in the game! 
+    const totalBonus = getBonusAmount("all");
+    const phase1_2Bonus = getBonusAmount(PHASE_NAME.PHASE2);
+    const phase3Bonus = getBonusAmount(PHASE_NAME.PHASE3);
+
+    if (totalBonus > 0) {
+      bonusMessageContent = `Your total bonus is $${totalBonus},
+       which breaks down to $${phase1_2Bonus} for phase 1 and 2, $${phase3Bonus} for phase 3.`;
+      thankYouMessageContent = `Thank you for participating in the game! 
 Your bonus payment will be distributed shortly.
 Now you will be redirected back to Prolific.`;
       redirectFn = redirectProlificBonusPayment;
     } else {
-      message = `Thank you for participating in the game!
+      thankYouMessageContent = `Thank you for participating in the game!
 Now you will be redirected back to Prolific.`;
       redirectFn = redirectProlificCompleted;
     }
   } else {
-    message = `Thank you for participating in the game.
+    bonusMessageContent = `Your total bonus is $0 as you failed the attention check.`;
+    thankYouMessageContent = `Thank you for participating in the game.
 Now you will be redirected back to Prolific.`;
     showEndGameFailedAllAttentionCheckPopUp();
     redirectFn = redirectProlificFailedAllAttentionCheck;
   }
 
   // update UI first
-  thankYouMessage.textContent = message;
+  bonusMessage.textContent = bonusMessageContent;
+  bonusMessage.style.display = bonusMessageContent === "" ? "none" : "block";
+  thankYouMessage.textContent = thankYouMessageContent;
   thankYouMessage.style.display = "block";
 
   // redirect
