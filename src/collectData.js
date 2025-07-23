@@ -6,7 +6,6 @@
 import {
     getBonusAmount,
     getCurPhase,
-    getGlobalCurTrialIndex,
     getGroupType,
     getObjCount,
     getPhaseCurTrialIndex,
@@ -152,12 +151,7 @@ export function createNewTrialData(
 export function updateExperimentData(
     experiment,
     performance,
-    isComprehensionCheck
 ) {
-    if (isComprehensionCheck) {
-        return;
-    }
-
     experiment.num_trials = experiment.trials.length;
     experiment.is_passed_attention_check = User.is_passed_attention_check;
     experiment.total_correct_trials = performance.globalTotalCorrectTrials;
@@ -213,18 +207,12 @@ export function getCurPhaseTrialList() {
  * Returns the current Trial object from User based on globalState.
  * @returns {Trial}
  */
-export function getCurTrialData(isComprehensionCheck) {
+export function getCurTrialData() {
     const currentExperiment = getCurExperimentData();
     if (!currentExperiment) return null;
 
-    if (isComprehensionCheck) {
-        // comprehension trials
-        const trialIndex = getGlobalCurTrialIndex() - 1;
-        return currentExperiment.comprehension_trials[trialIndex] || null;
-    } else {
-        const trialIndex = getPhaseCurTrialIndex() - 1;
-        return getCurPhaseTrialList()[trialIndex] || null;
-    }
+    const trialIndex = getPhaseCurTrialIndex() - 1;
+    return getCurPhaseTrialList()[trialIndex] || null;
 }
 
 /**

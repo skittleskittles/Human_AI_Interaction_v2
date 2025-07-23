@@ -88,15 +88,17 @@ export const globalState = {
 
         phaseWeightedCorrectTrials: {
             // Total number of 100% correct trials after reducing ai cost (phase)
-            phase1: 0,
-            phase2: 0,
-            phase3: 0,
+            [PHASE_NAME.COMPREHENSION_CHECK]: 0,
+            [PHASE_NAME.PHASE1]: 0,
+            [PHASE_NAME.PHASE2]: 0,
+            [PHASE_NAME.PHASE3]: 0,
         },
         phaseTotalCorrectTrials: {
             // Total number of 100% correct trials (phase)
-            phase1: 0,
-            phase2: 0,
-            phase3: 0,
+            [PHASE_NAME.COMPREHENSION_CHECK]: 0,
+            [PHASE_NAME.PHASE1]: 0,
+            [PHASE_NAME.PHASE2]: 0,
+            [PHASE_NAME.PHASE3]: 0,
         },
         phaseBonusAmount: {
             phase1_2: 0,
@@ -467,7 +469,7 @@ export function updatePerformanceAfterSubmission(correctChoice, score) {
         const bonusAmount = calBonusAmount(getCurPhase());
         if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(getCurPhase())) {
             globalState.performance.phaseBonusAmount.phase1_2 = bonusAmount;
-        } else if (getCurPhase() == PHASE_NAME.PHASE3) {
+        } else if (getCurPhase() === PHASE_NAME.PHASE3) {
             globalState.performance.phaseBonusAmount.phase3 = bonusAmount;
         }
     }
@@ -475,10 +477,6 @@ export function updatePerformanceAfterSubmission(correctChoice, score) {
 
 export function getPerformance() {
     return globalState.performance;
-}
-
-export function getGlobalTotalCorrectTrials() {
-    return globalState.performance.globalTotalCorrectTrials;
 }
 
 export function getPhasePoints(phase) {

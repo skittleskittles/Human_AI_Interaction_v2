@@ -33,7 +33,7 @@ export function showInstructions() {
 }
 
 let currentPageNum = 1;
-let totalPages = 11;
+let totalPages = 10;
 const unlockedPages = new Set(); // record page idx
 let timer = null;
 let countdownInterval = null;
@@ -45,7 +45,7 @@ const commonPages = {
     imgPageId: [1, 2, 3, 5, 7, 12], // []page id that shows img
 }
 const instructionPageIdByGroup = {// key: Group type; value: []page id
-    [GROUP_TYPE.NO_AI]: [...commonPages.pageId, 8, 10, 11].sort((a, b) => a - b),
+    [GROUP_TYPE.NO_AI]: [...commonPages.pageId, 10, 11].sort((a, b) => a - b),
     [GROUP_TYPE.LOW_COST_AI]: [...commonPages.pageId, 8, 9, 10, 11].sort((a, b) => a - b),
     [GROUP_TYPE.HIGH_COST_AI]: [...commonPages.pageId, 8, 9, 10, 11].sort((a, b) => a - b),
 };
@@ -98,7 +98,7 @@ function loadInstructionsHTML(html) {
 
 function initializeInstructionState() {
     currentPageNum = 1;
-    totalPages = isNoAIGroup() ? 11 : 12;
+    totalPages = isNoAIGroup() ? 10 : 12;
     unlockedPages.clear();
 }
 

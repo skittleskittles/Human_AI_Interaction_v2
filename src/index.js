@@ -40,7 +40,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
             setGroupType(URL_GROUP_CODE_MAP[groupCode]);
             User.exp_group = GROUP_TYPE_NAME_MAP[getGroupType()];
         } else {
-            console.warn("❗ Unrecognized group code. Set as default group.");
+            console.warn("❗Unrecognized group code. Set as default group.");
             setGroupType(GROUP_TYPE.HIGH_COST_AI);
             User.exp_group = GROUP_TYPE_NAME_MAP[getGroupType()];
         }
@@ -149,7 +149,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
                 bindTrialButtons();
                 await loadModal(); // Make sure modal loads before experiment
                 await startExperiment(false, false);
-                // await startExperiment(true, true);
+                // await startExperiment(true, false);
             },
         });
     } catch (error) {
