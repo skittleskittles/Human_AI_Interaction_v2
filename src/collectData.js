@@ -4,16 +4,15 @@
  */
 
 import {
-  GROUP_TYPE_MAP,
-  calBonusAmount,
-  getAIHelpType,
-  getBonusAmount,
-  getCurPhase,
-  getGlobalCurTrialIndex,
-  getObjCount,
-  getPhaseCurTrialIndex,
+    getBonusAmount,
+    getCurPhase,
+    getGlobalCurTrialIndex,
+    getGroupType,
+    getObjCount,
+    getPhaseCurTrialIndex,
+    GROUP_TYPE_NAME_MAP,
 } from "./data/variable.js";
-import { getCurDate } from "./utils.js";
+import {getCurDate} from "./utils.js";
 
 /**
  * @typedef {Object} User
@@ -30,18 +29,18 @@ import { getCurDate } from "./utils.js";
  * @property {Experiment[]} experiments
  */
 export const User = {
-  prolific_pid: "",
-  firebase_uid: "",
-  create_time: new Date(),
-  end_time: new Date(),
-  is_consent: false,
-  is_passed_comprehension: false,
-  is_passed_attention_check: false,
-  is_passed_all_experiments: false, // pass attention check and finish all 20 minutes
-  total_bonus_amount: 0,
-  experiments: {}, // key: phase name, val: Experiment
-  num_objects: getObjCount(),
-  exp_group: GROUP_TYPE_MAP[getAIHelpType()],
+    prolific_pid: "",
+    firebase_uid: "",
+    create_time: new Date(),
+    end_time: new Date(),
+    is_consent: false,
+    is_passed_comprehension: false,
+    is_passed_attention_check: false,
+    is_passed_all_experiments: false, // pass attention check and finish all 20 minutes
+    total_bonus_amount: 0,
+    experiments: {}, // key: phase name, val: Experiment
+    num_objects: getObjCount(),
+    exp_group: GROUP_TYPE_NAME_MAP[getGroupType()],
 };
 
 /**
@@ -60,20 +59,20 @@ export const User = {
  * @property {Trial[]} trials
  */
 export function createNewExperimentData(experiment_id = getCurPhase()) {
-  return {
-    experiment_id, // phase name
-    create_time: getCurDate(),
-    end_time: getCurDate(), // will be updated at the end
-    is_passed_attention_check: false,
-    is_finished: false,
-    num_trials: 0,
-    phase_correct_trials: 0,
-    phase_weighted_trials: 0,
-    total_correct_trials: 0,
-    total_ask_ai_count: 0,
-    bonus_amount: 0,
-    trials: [],
-  };
+    return {
+        experiment_id, // phase name
+        create_time: getCurDate(),
+        end_time: getCurDate(), // will be updated at the end
+        is_passed_attention_check: false,
+        is_finished: false,
+        num_trials: 0,
+        phase_correct_trials: 0,
+        phase_weighted_trials: 0,
+        total_correct_trials: 0,
+        total_ask_ai_count: 0,
+        bonus_amount: 0,
+        trials: [],
+    };
 }
 
 /**
@@ -81,11 +80,11 @@ export function createNewExperimentData(experiment_id = getCurPhase()) {
  * @returns {Experiment}
  */
 export function getCurExperimentData() {
-  const curPhase = getCurPhase();
-  if (!User.experiments || !User.experiments[curPhase]) {
-    return null;
-  }
-  return User.experiments[curPhase];
+    const curPhase = getCurPhase();
+    if (!User.experiments || !User.experiments[curPhase]) {
+        return null;
+    }
+    return User.experiments[curPhase];
 }
 
 /**
@@ -116,34 +115,34 @@ export function getCurExperimentData() {
  * @returns {Trial}
  */
 export function createNewTrialData(
-  trial_id,
-  question_id,
-  answer,
-  is_comprehension_check,
-  is_attention_check
-) {
-  return {
     trial_id,
     question_id,
-    create_time: getCurDate(),
-    end_time: getCurDate(),
-    is_comprehension_check: is_comprehension_check,
-    is_attention_check: is_attention_check,
-    has_click_reveal_soluton: false,
-    score: 0,
-    correct_num: 0,
-    ai_choice: [], // []Choice
-    best_choice: [{ choices: answer, score: 100 }], // []Choice
-    user_choice: [], // []Choice
-    ask_ai_count: 0,
-    total_steps: 0,
-    total_submissions: 0,
-    weighted_correct_rate: 0,
-    cur_total_weighted_correct_trials: 0,
-    cur_total_correct_trials: 0,
-    cur_total_ask_ai_count: 0,
-    total_time: 0,
-  };
+    answer,
+    is_comprehension_check,
+    is_attention_check
+) {
+    return {
+        trial_id,
+        question_id,
+        create_time: getCurDate(),
+        end_time: getCurDate(),
+        is_comprehension_check: is_comprehension_check,
+        is_attention_check: is_attention_check,
+        has_click_reveal_soluton: false,
+        score: 0,
+        correct_num: 0,
+        ai_choice: [], // []Choice
+        best_choice: [{choices: answer, score: 100}], // []Choice
+        user_choice: [], // []Choice
+        ask_ai_count: 0,
+        total_steps: 0,
+        total_submissions: 0,
+        weighted_correct_rate: 0,
+        cur_total_weighted_correct_trials: 0,
+        cur_total_correct_trials: 0,
+        cur_total_ask_ai_count: 0,
+        total_time: 0,
+    };
 }
 
 /**
@@ -151,52 +150,52 @@ export function createNewTrialData(
  * Handles attention check results and final trial checks.
  */
 export function updateExperimentData(
-  experiment,
-  performance,
-  isComprehensionCheck
+    experiment,
+    performance,
+    isComprehensionCheck
 ) {
-  if (isComprehensionCheck) {
-    return;
-  }
+    if (isComprehensionCheck) {
+        return;
+    }
 
-  experiment.num_trials = experiment.trials.length;
-  experiment.is_passed_attention_check = User.is_passed_attention_check;
-  experiment.total_correct_trials = performance.globalTotalCorrectTrials;
-  experiment.phase_correct_trials =
-    performance.phaseTotalCorrectTrials[getCurPhase()];
-  experiment.phase_weighted_trials =
-    performance.phaseWeightedCorrectTrials[getCurPhase()];
-  experiment.bonus_amount = getBonusAmount(getCurPhase()); // in db: phase 1 bonus_amount does not include phase2；phase2 does include phase1
-  User.total_bonus_amount = getBonusAmount("all");
-  experiment.total_ask_ai_count = performance.totalAskAICount;
+    experiment.num_trials = experiment.trials.length;
+    experiment.is_passed_attention_check = User.is_passed_attention_check;
+    experiment.total_correct_trials = performance.globalTotalCorrectTrials;
+    experiment.phase_correct_trials =
+        performance.phaseTotalCorrectTrials[getCurPhase()];
+    experiment.phase_weighted_trials =
+        performance.phaseWeightedCorrectTrials[getCurPhase()];
+    experiment.bonus_amount = getBonusAmount(getCurPhase()); // in db: phase 1 bonus_amount does not include phase2；phase2 does include phase1
+    User.total_bonus_amount = getBonusAmount("all");
+    experiment.total_ask_ai_count = performance.totalAskAICount;
 }
 
 /**
  * Updates the end info for the current trial
  */
 export function updateTrialData(
-  trial,
-  performance,
-  trialTimeSec,
-  isSubmission
+    trial,
+    performance,
+    trialTimeSec,
+    isSubmission
 ) {
-  trial.end_time = getCurDate();
-  if (isSubmission) {
-    trial.score = performance.lastSubmission.score;
-    trial.weighted_correct_rate =
-      performance.lastSubmission.weightedCorrectRate;
-    trial.correct_num = performance.lastSubmission.correctChoice;
-    trial.total_submissions = performance.submissionCount;
-    trial.total_steps = performance.totalSteps;
-  }
-  trial.has_click_reveal_soluton = performance.hasClickRevealSol;
-  trial.ask_ai_count = performance.curTrialAskAICount;
-  trial.cur_total_correct_trials =
-    performance.phaseTotalCorrectTrials[getCurPhase()];
-  trial.cur_total_weighted_correct_trials =
-    performance.phaseWeightedCorrectTrials[getCurPhase()];
-  trial.cur_total_ask_ai_count = performance.totalAskAICount;
-  trial.total_time = trialTimeSec;
+    trial.end_time = getCurDate();
+    if (isSubmission) {
+        trial.score = performance.lastSubmission.score;
+        trial.weighted_correct_rate =
+            performance.lastSubmission.weightedCorrectRate;
+        trial.correct_num = performance.lastSubmission.correctChoice;
+        trial.total_submissions = performance.submissionCount;
+        trial.total_steps = performance.totalSteps;
+    }
+    trial.has_click_reveal_soluton = performance.hasClickRevealSol;
+    trial.ask_ai_count = performance.curTrialAskAICount;
+    trial.cur_total_correct_trials =
+        performance.phaseTotalCorrectTrials[getCurPhase()];
+    trial.cur_total_weighted_correct_trials =
+        performance.phaseWeightedCorrectTrials[getCurPhase()];
+    trial.cur_total_ask_ai_count = performance.totalAskAICount;
+    trial.total_time = trialTimeSec;
 }
 
 /**
@@ -204,10 +203,10 @@ export function updateTrialData(
  * @returns {Trial[]}
  */
 export function getCurPhaseTrialList() {
-  const currentExperiment = getCurExperimentData();
-  if (!currentExperiment) return null;
+    const currentExperiment = getCurExperimentData();
+    if (!currentExperiment) return null;
 
-  return currentExperiment.trials;
+    return currentExperiment.trials;
 }
 
 /**
@@ -215,17 +214,17 @@ export function getCurPhaseTrialList() {
  * @returns {Trial}
  */
 export function getCurTrialData(isComprehensionCheck) {
-  const currentExperiment = getCurExperimentData();
-  if (!currentExperiment) return null;
+    const currentExperiment = getCurExperimentData();
+    if (!currentExperiment) return null;
 
-  if (isComprehensionCheck) {
-    // comprehension trials
-    const trialIndex = getGlobalCurTrialIndex() - 1;
-    return currentExperiment.comprehension_trials[trialIndex] || null;
-  } else {
-    const trialIndex = getPhaseCurTrialIndex() - 1;
-    return getCurPhaseTrialList()[trialIndex] || null;
-  }
+    if (isComprehensionCheck) {
+        // comprehension trials
+        const trialIndex = getGlobalCurTrialIndex() - 1;
+        return currentExperiment.comprehension_trials[trialIndex] || null;
+    } else {
+        const trialIndex = getPhaseCurTrialIndex() - 1;
+        return getCurPhaseTrialList()[trialIndex] || null;
+    }
 }
 
 /**
@@ -238,26 +237,26 @@ export function getCurTrialData(isComprehensionCheck) {
  */
 
 export function recordUserChoiceData(
-  trial,
-  userAns,
-  performance,
-  submissionTimeSec
+    trial,
+    userAns,
+    performance,
+    submissionTimeSec
 ) {
-  const userChoice = createChoice(userAns, performance, submissionTimeSec);
-  trial.user_choice.push(userChoice);
+    const userChoice = createChoice(userAns, performance, submissionTimeSec);
+    trial.user_choice.push(userChoice);
 }
 
 export function createChoice(userAns, performance, submissionTimeSec) {
-  const userChoice = {
-    choices: userAns,
-    correct_num: performance.lastSubmission.correctChoice,
-    score: performance.lastSubmission.score,
-    steps: performance.lastSubmission.steps,
-    time_spent: submissionTimeSec,
-    ask_ai_count: performance.lastSubmission.askAICount,
-  };
+    const userChoice = {
+        choices: userAns,
+        correct_num: performance.lastSubmission.correctChoice,
+        score: performance.lastSubmission.score,
+        steps: performance.lastSubmission.steps,
+        time_spent: submissionTimeSec,
+        ask_ai_count: performance.lastSubmission.askAICount,
+    };
 
-  return userChoice;
+    return userChoice;
 }
 
 /**
@@ -273,12 +272,12 @@ export function createChoice(userAns, performance, submissionTimeSec) {
  * @param {boolean} isAfterAI
  */
 export function addToCustomCount(countObj, value, isAfterAI) {
-  if (!countObj || typeof value !== "number") return;
+    if (!countObj || typeof value !== "number") return;
 
-  if (isAfterAI) {
-    countObj.after_ai_show += value;
-  } else {
-    countObj.before_ai_show += value;
-  }
-  countObj.total += value;
+    if (isAfterAI) {
+        countObj.after_ai_show += value;
+    } else {
+        countObj.before_ai_show += value;
+    }
+    countObj.total += value;
 }

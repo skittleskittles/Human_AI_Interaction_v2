@@ -1,10 +1,17 @@
-import { instructionsContainer, gameContainer } from "./data/domElements.js";
-import { setCurPhase, shouldShowComprehensionCheck } from "./data/variable";
-import { getCurDate } from "./utils.js";
-import { getObjCount } from "./data/variable";
-import { startGame } from "./index.js";
-import { showEnterComprehensionTrialsPopUp } from "./modal.js";
-import { showButtonTooltip } from "./uiState.js";
+import {gameContainer, instructionsContainer} from "./data/domElements.js";
+import {
+    getGroupType,
+    GROUP_TYPE,
+    GROUP_TYPE_NAME_MAP,
+    isNoAIGroup,
+    PHASE_NAME,
+    setCurPhase,
+    shouldShowComprehensionCheck
+} from "./data/variable";
+import {getCurDate} from "./utils.js";
+import {startGame} from "./index.js";
+import {showEnterComprehensionTrialsPopUp} from "./modal.js";
+import {showButtonTooltip} from "./uiState.js";
 
 /*
 --------------------------------------------------------------------------------------
@@ -15,153 +22,264 @@ import { showButtonTooltip } from "./uiState.js";
 */
 
 export function showInstructions() {
-  fetch("instructions.html")
-    .then((response) => response.text())
-    .then((html) => {
-      loadInstructionsHTML(html);
-      initializeInstructionState();
-      setupInstructionNavigation();
-      showInstructionPage(currentPage);
-    });
+    fetch("instructions.html")
+        .then((response) => response.text())
+        .then((html) => {
+            loadInstructionsHTML(html);
+            initializeInstructionState();
+            setupInstructionNavigation();
+            showInstructionPage(currentPageNum);
+        });
 }
 
-let currentPage = 1;
-const totalPages = 9;
-const unlockedPages = new Set();
+let currentPageNum = 1;
+let totalPages = 11;
+const unlockedPages = new Set(); // record page idx
 let timer = null;
 let countdownInterval = null;
 let originalNextText = "Next";
 
+const commonPages = {
+    pageId: [1, 2, 3, 4, 5, 6, 7, 12], // []page id for all groups
+    videoPageId: [3, 6], // []page id that shows video
+    imgPageId: [1, 2, 3, 5, 7, 12], // []page id that shows img
+}
+const instructionPageIdByGroup = {// key: Group type; value: []page id
+    [GROUP_TYPE.NO_AI]: [...commonPages.pageId, 8, 10, 11].sort((a, b) => a - b),
+    [GROUP_TYPE.LOW_COST_AI]: [...commonPages.pageId, 8, 9, 10, 11].sort((a, b) => a - b),
+    [GROUP_TYPE.HIGH_COST_AI]: [...commonPages.pageId, 8, 9, 10, 11].sort((a, b) => a - b),
+};
+
+const videoPageId = {
+    [GROUP_TYPE.NO_AI]: [...commonPages.videoPageId],
+    [GROUP_TYPE.LOW_COST_AI]: [...commonPages.videoPageId, 8],
+    [GROUP_TYPE.HIGH_COST_AI]: [...commonPages.videoPageId, 8],
+}
+const VIDEO_DESCRIPTIONS = {
+    3: `<p>You can drag or swap objects, or click RESET to return to the original state.</p>`,
+    6: `<p>Immediately after each submission,
+            you may choose to reveal the correct answer for this trial by clicking REVEAL ANSWER.</p>
+        <p><strong><em>Warning</em></strong>: Once you click REVEAL ANSWER, you <strong>CANNOT revise your answer or
+            re-SUBMIT</strong>.</p>
+        <p>Click NEXT TRIAL to move on to the next trial.</p>`,
+    8: `<p><strong>An AI agent is available to assist you during Phase 2 only.</strong></p>
+        <p>The AI agent is available for unlimited, on-demand use. However, you must first place all objects in
+            position before using it.</p>
+        <p>Each time you use it, the AI agent will randomly reveal the location of 1 object.</p>`,
+};
+
 function loadInstructionsHTML(html) {
-  instructionsContainer.innerHTML = html;
-  instructionsContainer.style.display = "block";
+    const groupType = getGroupType();
+    const groupName = GROUP_TYPE_NAME_MAP[groupType];
 
-  const objCount = getObjCount();
+    const instructionPages = getPageMapForGroup();
+    const videoPages = new Set(videoPageId[groupType]);
 
-  for (let i = currentPage; i < totalPages; i++) {
-    if (i === 3) {
-      const video = document.getElementById(`instruction${i}`);
-      const source = document.getElementById(`videoSource`);
-      if (video && source) {
-        source.src = `instructions${objCount}-${i}.mp4`;
-        video.load();
-      }
-    } else {
-      const img = document.getElementById(`instruction${i}`);
-      if (img) {
-        img.src = `instructions${objCount}-${i}.png`;
-      }
-    }
-  }
+    instructionsContainer.innerHTML = html;
+    instructionsContainer.style.display = "block";
+    const pageContentContainer = document.getElementById("instructions-page-content");
+    instructionPages.forEach((pageId) => {
+        let pageType = videoPages.has(pageId) ? "video" : "image";
+        let src = `instructions${pageId}`;
+        if (!commonPages.pageId.includes(pageId)) {
+            src += `-${groupName}`;
+        }
+        src += pageType === "video" ? ".mp4" : ".png";
+
+        const pageEl = createInstructionPage({
+            id: pageId,
+            type: pageType,
+            src,
+            description: VIDEO_DESCRIPTIONS[pageId] || "",
+        });
+        pageContentContainer.appendChild(pageEl);
+    })
 }
 
 function initializeInstructionState() {
-  currentPage = 1;
-  unlockedPages.clear();
+    currentPageNum = 1;
+    totalPages = isNoAIGroup() ? 11 : 12;
+    unlockedPages.clear();
 }
 
 function setupInstructionNavigation() {
-  const prevButton = document.getElementById("prevInstructionBtn");
-  const nextButton = document.getElementById("nextInstructionBtn");
+    const prevButton = document.getElementById("prevInstructionBtn");
+    const nextButton = document.getElementById("nextInstructionBtn");
 
-  prevButton.addEventListener("click", () => {
-    if (currentPage > 1) {
-      currentPage--;
-      showInstructionPage(currentPage);
-    }
-  });
+    prevButton.addEventListener("click", () => {
+        if (currentPageNum > 1) {
+            currentPageNum--;
+            showInstructionPage(currentPageNum);
+        }
+    });
 
-  nextButton.addEventListener("click", () => {
-    const page = document.getElementById(`instructionPage-${currentPage}`);
-    const video = page?.querySelector("video");
+    nextButton.addEventListener("click", () => {
+        const page = document.getElementById(`instructionPage-${getPageIdByPageNum(currentPageNum)}`);
+        const video = page?.querySelector("video");
 
-    if (nextButton.dataset.locked === "true") {
-      if (video) {
-        showButtonTooltip(
-          "next-tooltip",
-          "Please watch full video to continue"
-        );
-      }
-      return;
-    }
-    if (currentPage < totalPages) {
-      currentPage++;
-      showInstructionPage(currentPage);
-    } else {
-      instructionsContainer.style.display = "none";
-      gameContainer.style.display = "flex";
-      shouldShowComprehensionCheck();
-      showEnterComprehensionTrialsPopUp();
-      setCurPhase(PHASE_NAME.COMPREHENSION_CHECK);
-      startGame();
-      // update user data before enter eduation trials
-      import("./firebase/saveData2Firebase.js").then((module) => {
-        module.saveOrUpdateUser(getCurDate());
-      });
-    }
-  });
+        if (nextButton.dataset.locked === "true") {
+            if (video) {
+                showButtonTooltip(
+                    "next-tooltip",
+                    "Please watch full video to continue"
+                );
+            }
+            return;
+        }
+        if (currentPageNum < totalPages) {
+            currentPageNum++;
+            showInstructionPage(currentPageNum);
+        } else {
+            instructionsContainer.style.display = "none";
+            gameContainer.style.display = "flex";
+            shouldShowComprehensionCheck();
+            showEnterComprehensionTrialsPopUp();
+            setCurPhase(PHASE_NAME.COMPREHENSION_CHECK);
+            startGame();
+            // update user data before enter eduation trials
+            import("./firebase/saveData2Firebase.js").then((module) => {
+                module.saveOrUpdateUser(getCurDate());
+            });
+        }
+    });
 }
 
-function showInstructionPage(index) {
-  if (timer) clearTimeout(timer);
-  if (countdownInterval) clearInterval(countdownInterval);
-
-  for (let i = 1; i <= totalPages; i++) {
-    document.getElementById(`instructionPage-${i}`)?.classList.remove("active");
-  }
-  document.getElementById(`instructionPage-${index}`)?.classList.add("active");
-
-  const prevButton = document.getElementById("prevInstructionBtn");
-  const nextButton = document.getElementById("nextInstructionBtn");
-
-  prevButton.hidden = index === 1;
-  nextButton.textContent = index === totalPages ? "Start" : originalNextText;
-
-  handleInstructionUnlock(index);
-}
-
-function handleInstructionUnlock(pageIndex) {
-  const nextButton = document.getElementById("nextInstructionBtn");
-  if (unlockedPages.has(pageIndex)) {
-    nextButton.classList.remove("disabled-visual");
-    nextButton.dataset.locked = "false";
-    nextButton.textContent =
-      currentPage === totalPages ? "Start" : originalNextText;
-    return;
-  }
-
-  const page = document.getElementById(`instructionPage-${pageIndex}`);
-  const video = page?.querySelector("video");
-  nextButton.classList.add("disabled-visual");
-  nextButton.dataset.locked = "true";
-
-  if (video) {
-    const onEnded = () => {
-      nextButton.classList.remove("disabled-visual");
-      nextButton.dataset.locked = "false";
-      nextButton.textContent =
-        currentPage === totalPages ? "Start" : originalNextText;
-      unlockedPages.add(pageIndex);
-      video.removeEventListener("ended", onEnded);
-    };
-    video.addEventListener("ended", onEnded);
-  } else {
+function showInstructionPage(currentPageNum) {
     if (timer) clearTimeout(timer);
     if (countdownInterval) clearInterval(countdownInterval);
-    let remaining = 3;
-    nextButton.textContent = `${originalNextText} (${remaining})`;
 
-    countdownInterval = setInterval(() => {
-      remaining--;
-      nextButton.textContent = `${originalNextText} (${remaining})`;
-      if (remaining <= 0) {
-        clearInterval(countdownInterval);
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        document.getElementById(`instructionPage-${getPageIdByPageNum(pageNum)}`)?.classList.remove("active");
+    }
+    document.getElementById(`instructionPage-${getPageIdByPageNum(currentPageNum)}`)?.classList.add("active");
+
+    const prevButton = document.getElementById("prevInstructionBtn");
+    const nextButton = document.getElementById("nextInstructionBtn");
+
+    prevButton.hidden = currentPageNum === 1;
+    nextButton.textContent = currentPageNum === totalPages ? "Start" : originalNextText;
+
+    handleInstructionUnlock(currentPageNum);
+    updatePageIndicator(currentPageNum, totalPages);
+}
+
+function updatePageIndicator(currentPageNum, totalPages) {
+    const indicator = document.getElementById("pageIndicator");
+    if (indicator) {
+        indicator.textContent = `Page ${currentPageNum} / ${totalPages}`;
+    }
+}
+
+function handleInstructionUnlock(pageNum) {
+    const pageId = getPageIdByPageNum(pageNum);
+    const nextButton = document.getElementById("nextInstructionBtn");
+    if (unlockedPages.has(pageId)) {
         nextButton.classList.remove("disabled-visual");
         nextButton.dataset.locked = "false";
         nextButton.textContent =
-          currentPage === totalPages ? "Start" : originalNextText;
-        unlockedPages.add(pageIndex);
-      }
-    }, 1000);
-  }
+            pageNum === totalPages ? "Start" : originalNextText;
+        return;
+    }
+
+    const page = document.getElementById(`instructionPage-${pageId}`);
+    const video = page?.querySelector("video");
+    nextButton.classList.add("disabled-visual");
+    nextButton.dataset.locked = "true";
+
+    if (video) {
+        const onEnded = () => {
+            nextButton.classList.remove("disabled-visual");
+            nextButton.dataset.locked = "false";
+            nextButton.textContent =
+                currentPageNum === totalPages ? "Start" : originalNextText;
+            unlockedPages.add(pageId);
+            video.removeEventListener("ended", onEnded);
+        };
+        video.addEventListener("ended", onEnded);
+    } else {
+        if (timer) clearTimeout(timer);
+        if (countdownInterval) clearInterval(countdownInterval);
+        let remaining = 3;
+        nextButton.textContent = `${originalNextText} (${remaining})`;
+
+        countdownInterval = setInterval(() => {
+            remaining--;
+            nextButton.textContent = `${originalNextText} (${remaining})`;
+            if (remaining <= 0) {
+                clearInterval(countdownInterval);
+                nextButton.classList.remove("disabled-visual");
+                nextButton.dataset.locked = "false";
+                nextButton.textContent =
+                    currentPageNum === totalPages ? "Start" : originalNextText;
+                unlockedPages.add(pageId);
+            }
+        }, 1000);
+    }
+}
+
+function getPageMapForGroup() {
+    const group = getGroupType();
+    return instructionPageIdByGroup[group];
+}
+
+function getPageIdByPageNum(pageNum) {
+    const list = getPageMapForGroup();
+    return list[pageNum - 1] ?? null;
+}
+
+/**
+ * HTML element
+ */
+
+export function createInstructionPage({id, type, src, description}) {
+    const container = document.createElement("div");
+    container.className = "pageContainer";
+    container.id = `instructionPage-${id}`;
+
+    // Page 1 has custom intro text
+    if (id === 1) {
+        container.innerHTML = `
+      <h2 style="color: red">Please Read All Instructions Carefully</h2>
+      <p style="font-size: large">
+        This experiment explores how people solve logical puzzles under time
+        pressure. You will solve a series of logical puzzles by reordering
+        objects based on provided statements. Your goal is to complete as many
+        trials as accurately as possible within 20 minutes.
+      </p>
+      <p style="font-size: large; line-height: 1.6">
+        <strong>
+          Make your browser window FULL SCREEN and CLOSE ALL OTHER TABS.<br/>
+          DO NOT REFRESH YOUR BROWSER during the study.
+        </strong>
+      </p>
+      <p style="font-size: large">
+        If you believe a trial is problematic, note the trial ID and message
+        us via Prolific after completing the study.
+      </p>
+      <div class="image-wrapper">
+        <img class="image-frame" id="instruction${id}" src="${src}"/>
+      </div>
+    `;
+        return container;
+    }
+
+    if (type === "video") {
+        container.innerHTML = `
+      ${description ? `${description}` : ""}
+      <div class="video-frame">
+        <video id="instruction${id}-video" width="100%" height="100%" controls>
+          <source id="instruction${id}-videoSource" src="${src}" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    `;
+    } else if (type === "image") {
+        container.innerHTML = `
+      <div class="image-wrapper">
+        <img class="image-frame" id="instruction${id}" src="${src}"/>
+      </div>
+    `;
+    }
+
+    return container;
 }
