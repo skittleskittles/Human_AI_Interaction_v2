@@ -63,7 +63,7 @@ const VIDEO_DESCRIPTIONS = {
             re-SUBMIT</strong>.</p>
         <p>Click NEXT TRIAL to move on to the next trial.</p>`,
     8: `<p><strong>An AI agent is available to assist you during Phase 2 only.</strong></p>
-        <p>The AI agent is available for unlimited, on-demand use. However, you must first place all objects in
+        <p>The AI agent is available for unlimited, on-demand use for each submission. However, you must first place all objects in
             position before using it.</p>
         <p>Each time you use it, the AI agent will randomly reveal the location of 1 randomly selected object.</p>`,
 };
