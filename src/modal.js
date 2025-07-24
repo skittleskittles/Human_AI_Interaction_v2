@@ -145,7 +145,7 @@ export function showEnterMainGamePopUp(onCloseFunc) {
        Great job! You’ve passed the comprehension check!<br/><br/>
        Now entering <strong>Phase 1</strong>. <br/>
        You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} trials.  <br/>
-       If 8 minutes pass first, keep going until you finish ${getNoAIPhaseTrialsLimit()} trials.
+       If you do not complete ${getNoAIPhaseTrialsLimit()} trials within 8 minutes, please continue until you finish ${getNoAIPhaseTrialsLimit()} trials.
     </p>`,
         onClose: onCloseFunc,
     });
@@ -182,7 +182,7 @@ export function showEnterPhase3(onCloseFunc) {
     let htmlContent = `<p>
       Now entering <strong>Phase 3</strong>, the final challenge!<br/><br/>
       You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} trials.<br/>
-      If 8 minutes pass first, keep going until you finish ${getNoAIPhaseTrialsLimit()} trials.
+      If you do not complete ${getNoAIPhaseTrialsLimit()} trials within 8 minutes, please continue until you finish ${getNoAIPhaseTrialsLimit()} trials.
     </p>`;
     if (!isNoAIGroup()) {
         htmlContent +=

@@ -65,7 +65,7 @@ const VIDEO_DESCRIPTIONS = {
     8: `<p><strong>An AI agent is available to assist you during Phase 2 only.</strong></p>
         <p>The AI agent is available for unlimited, on-demand use. However, you must first place all objects in
             position before using it.</p>
-        <p>Each time you use it, the AI agent will randomly reveal the location of 1 object.</p>`,
+        <p>Each time you use it, the AI agent will randomly reveal the location of 1 randomly selected object.</p>`,
 };
 
 function loadInstructionsHTML(html) {
@@ -241,8 +241,7 @@ export function createInstructionPage({id, type, src, description}) {
         container.innerHTML = `
       <h2 style="color: red">Please Read All Instructions Carefully</h2>
       <p style="font-size: large">
-        This experiment explores how people solve logical puzzles under time
-        pressure. You will solve a series of logical puzzles by reordering
+        This experiment explores how people solve logical puzzles given a time limit. You will solve a series of logical puzzles by reordering
         objects based on provided statements. Your goal is to complete as many
         trials as accurately as possible within 20 minutes.
       </p>
