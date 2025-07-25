@@ -28,20 +28,20 @@ export function renderInstructions(instructionText) {
 
   if (isAttentionCheck()) {
     instruction = `<p>
-      This is the attention check trial.</p>
-      <p>The timer is paused for this trial.</p>
-      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.</p>
-      <p>You need to score 100 to pass this trial.</p>
+      This is the attention check problem.</p>
+      <p>The timer is paused for this problem.</p>
+      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this problem.</p>
+      <p>You need to place all objects correctly to pass this problem.</p>
       <p>If you fail the attention check, you will not get the bonus payment regardless of your overall performance.</p>`;
   } else if (isComprehensionCheck()) {
-    instruction = `<p>This is a comprehension check trial.</p>
-      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.</p>
-      <p>You need to score 100 to pass this trial.</p>
-      <p>If you fail this trial twice, the experiment ends automatically.</p>`;
+    instruction = `<p>This is a comprehension check problem.</p>
+      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this problem.</p>
+      <p>You need to place all objects correctly to pass this problem.</p>
+      <p>If you fail this problem twice, the experiment ends automatically.</p>`;
   } else {
     instruction = `<p>${instructionText}</p>
-      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this trial.</p>
-      <p>Maximize your score with minimal time.</p>`;
+      <p>You have <span id="submission-count" style="color:brown;">${submitLimit}</span> submission(s) remaining for this problem.</p>
+      <p>Solve as many problems as you can correctly in this phase.</p>`;
   }
 
   document.getElementById("instruction-text").innerHTML = instruction;
@@ -60,7 +60,7 @@ export function renderAIChat() {
     (getAIRevealCounts() === 1 ? "object's location" : "objects' locations");
 
   updateAskAICost();
-  
+
   const chatBox = document.getElementById("ai-chat");
   chatBox.innerHTML = "";
   const initialBubble = document.createElement("div");
@@ -88,10 +88,10 @@ export function renderBoxesAndOptions(questionData) {
   const styleMap = questionData.styleMap || {};
 
   if (isAttentionCheck()) {
-    document.getElementById("trialID").textContent = "ATTENTION CHECK Trial";
+    document.getElementById("trialID").textContent = "ATTENTION CHECK Problem";
   } else {
     document.getElementById("trialID").textContent =
-      "Trial " +
+      "Problem " +
       (isComprehensionCheck()
         ? getGlobalCurTrialIndex()
         : getCurQuestionIndex());

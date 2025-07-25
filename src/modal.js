@@ -1,104 +1,109 @@
-import {clearPageContent, modalContainer} from "./data/domElements";
-import {showFeedback} from "./feedback.js";
-import {getComprehensionTrialsNum, getNoAIPhaseTrialsLimit, isNoAIGroup,} from "./data/variable.js";
-import {resetTrial} from "./trialAction.js";
+import { clearPageContent, modalContainer } from "./data/domElements";
+import { showFeedback } from "./feedback.js";
+import {
+  getComprehensionTrialsNum,
+  getNoAIPhaseTrialsLimit,
+  isNoAIGroup,
+} from "./data/variable.js";
+import { resetTrial } from "./trialAction.js";
 
 // Load Modal
 export async function loadModal() {
-    const response = await fetch("modal.html");
-    const html = await response.text();
-    modalContainer.innerHTML = html;
+  const response = await fetch("modal.html");
+  const html = await response.text();
+  modalContainer.innerHTML = html;
 
-    document.getElementById("closeModal").addEventListener("click", () => {
-        document.getElementById("modalOverlay").style.display = "none";
-    });
+  document.getElementById("closeModal").addEventListener("click", () => {
+    document.getElementById("modalOverlay").style.display = "none";
+  });
 }
 
 // showModal
 
 export function showModal({
-                              context = null,
-                              html,
-                              buttonText = "OK",
-                              onClose = null,
-                              confirmButtons = false,
-                              onConfirm = null,
-                              onCancel = null,
-                          }) {
-    modalContainer.style.display = "block";
-    const modalInfo = document.getElementById("modalInfo");
-    modalInfo.innerHTML = html;
+  context = null,
+  html,
+  buttonText = "OK",
+  onClose = null,
+  confirmButtons = false,
+  onConfirm = null,
+  onCancel = null,
+}) {
+  modalContainer.style.display = "block";
+  const modalInfo = document.getElementById("modalInfo");
+  modalInfo.innerHTML = html;
 
-    const overlay = document.getElementById("modalOverlay");
-    overlay.style.display = "flex";
+  const overlay = document.getElementById("modalOverlay");
+  overlay.style.display = "flex";
 
-    const buttonWrapper = document.getElementById("modalButtonWrapper");
-    buttonWrapper.innerHTML = ""; // clear old buttons
+  const buttonWrapper = document.getElementById("modalButtonWrapper");
+  buttonWrapper.innerHTML = ""; // clear old buttons
 
-    if (confirmButtons) {
-        // Confirm Button
-        const confirmBtn = document.createElement("button");
-        confirmBtn.textContent = "Confirm";
-        confirmBtn.addEventListener("click", () => {
-            overlay.style.display = "none";
-            if (typeof onConfirm === "function") onConfirm();
-        });
+  if (confirmButtons) {
+    // Confirm Button
+    const confirmBtn = document.createElement("button");
+    confirmBtn.textContent = "Confirm";
+    confirmBtn.addEventListener("click", () => {
+      overlay.style.display = "none";
+      if (typeof onConfirm === "function") onConfirm();
+    });
 
-        // Cancel Button
-        const cancelBtn = document.createElement("button");
-        cancelBtn.textContent = "Cancel";
-        cancelBtn.style.marginLeft = "10px";
-        cancelBtn.addEventListener("click", () => {
-            overlay.style.display = "none";
-            if (typeof onCancel === "function") onCancel();
-        });
+    // Cancel Button
+    const cancelBtn = document.createElement("button");
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.style.marginLeft = "10px";
+    cancelBtn.addEventListener("click", () => {
+      overlay.style.display = "none";
+      if (typeof onCancel === "function") onCancel();
+    });
 
-        buttonWrapper.appendChild(confirmBtn);
-        buttonWrapper.appendChild(cancelBtn);
-    } else {
-        // OK Button
-        const okBtn = document.createElement("button");
-        okBtn.textContent = buttonText;
-        okBtn.addEventListener("click", () => {
-            overlay.style.display = "none";
-            if (typeof onClose === "function") onClose();
-        });
+    buttonWrapper.appendChild(confirmBtn);
+    buttonWrapper.appendChild(cancelBtn);
+  } else {
+    // OK Button
+    const okBtn = document.createElement("button");
+    okBtn.textContent = buttonText;
+    okBtn.addEventListener("click", () => {
+      overlay.style.display = "none";
+      if (typeof onClose === "function") onClose();
+    });
 
-        buttonWrapper.appendChild(okBtn);
-    }
+    buttonWrapper.appendChild(okBtn);
+  }
 }
 
 export function showEnterComprehensionTrialsPopUp() {
-    const numTrials = getComprehensionTrialsNum();
-    showModal({
-        context: "comprehension",
-        html: `<p>
-      Now, you will play <strong>${numTrials} comprehension check</strong> trials.<br/><br/>
+  const numTrials = getComprehensionTrialsNum();
+  showModal({
+    context: "comprehension",
+    html: `<p>
+      Now, you will play <strong>${numTrials} comprehension check</strong> problems.<br/><br/>
       Please carefully read the instructions and make your choices.
     </p>`,
-    });
+  });
 }
 
 export function showEndGameFailedComprehensionCheckPopUp() {
-    showModal({
-        context: "fail-comprehension",
-        html: `<p>
-      You did not pass this comprehension check trial after two attempts, 
+  showModal({
+    context: "fail-comprehension",
+    html: `<p>
+      You did not pass this comprehension check problem after two attempts,<br/>
       so the study has ended, and <strong>no compensation will be provided.</strong><br/><br/>
-      Please <strong>return</strong> your submission by closing this study and clicking ‘Stop Without Completing’ on Prolific.
+      Please <strong>return</strong> your submission by <strong>closing this study</strong><br/>
+      and clicking <strong>‘Stop Without Completing’</strong> on Prolific.
     </p>`,
-    });
+  });
 }
 
 export function showEndGameFailedAllAttentionCheckPopUp() {
-    showModal({
-        context: "fail-attention-all",
-        html: `<p>
-      Unfortunately, you did not pass the attention check trial.<br/>
+  showModal({
+    context: "fail-attention-all",
+    html: `<p>
+      Unfortunately, you did not pass the attention check problem.<br/>
       Now the game is over, 
       and you will be redirected back to Prolific.
     </p>`,
-    });
+  });
 }
 
 // export function showFailedAttentionCheckPopUp() {
@@ -113,7 +118,7 @@ export function showEndGameFailedAllAttentionCheckPopUp() {
 //   } else if (failedCount === 2) {
 //     message = `<p>
 //       You’ve failed another attention check.<br/>
-//       Since this is your second failure, you may continue the experiment,<br/> 
+//       Since this is your second failure, you may continue the experiment,<br/>
 //       but <strong>you will not be compensated</strong>.
 //     </p>`;
 //   }
@@ -125,99 +130,100 @@ export function showEndGameFailedAllAttentionCheckPopUp() {
 // }
 
 export function showMultipleAttemptsPopUp() {
-    showModal({
-        context: "multiple-attempts",
-        html: `<p>
+  showModal({
+    context: "multiple-attempts",
+    html: `<p>
       You have already participated in this study.<br/>
       Participation is limited to one time only.<br/><br/>
-      Please <strong>return</strong> your submission by <strong>closing this study</strong> <br/>
-      and
-      clicking <strong>‘Stop Without Completing’</strong> on Prolific.
+      Please <strong>return</strong> your submission by <strong>closing this study</strong><br/>
+      and clicking <strong>‘Stop Without Completing’</strong> on Prolific.
     </p>`,
-    });
-    clearPageContent();
+  });
+  clearPageContent();
 }
 
 export function showEnterMainGamePopUp(onCloseFunc) {
-    showModal({
-        context: "start-main-game",
-        html: `<p>
+  showModal({
+    context: "start-main-game",
+    html: `<p>
        Great job! You’ve passed the comprehension check!<br/><br/>
-       Now entering <strong>Phase 1</strong>. <br/>
-       You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} trials.  <br/>
-       If you do not complete ${getNoAIPhaseTrialsLimit()} trials within 8 minutes, please continue until you finish ${getNoAIPhaseTrialsLimit()} trials.
+       Now entering <strong>Phase 1</strong>.<br/>
+       You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} problems.<br/><br/>
+       If you do not complete ${getNoAIPhaseTrialsLimit()} problems within 8 minutes,<br/>
+       please continue until you finish ${getNoAIPhaseTrialsLimit()} problems.
     </p>`,
-        onClose: onCloseFunc,
-    });
+    onClose: onCloseFunc,
+  });
 }
 
 export function showNeedMoreTrialsPopUp() {
-    showModal({
-        context: "need-more-trials",
-        html: `<p>
+  showModal({
+    context: "need-more-trials",
+    html: `<p>
       Time’s up!<br/>
-      However, you must complete <strong> ${getNoAIPhaseTrialsLimit()} trials</strong> to enter the next part. <br/>
+      However, you must complete <strong> ${getNoAIPhaseTrialsLimit()} problems</strong> to enter the next part. <br/>
       Please continue until you meet this requirement.
     </p>`,
-    });
+  });
 }
 
 export function showEnterPhase2(onCloseFunc) {
-    let htmlContent = `<p>
+  let htmlContent = `<p>
       Now entering <strong>Phase 2</strong>.<br/>
       You will have <strong>20 minutes</strong> for this phase.
     </p>`;
-    if (!isNoAIGroup()) {
-        htmlContent += `<p><em>Note</em>: AI assistance is on-demand and unlimited,<br/>
-       with a cost per use in this phase. Usage resets for each trial.</p>`;
-    }
-    showModal({
-        context: "enter-phase2",
-        html: htmlContent,
-        onClose: onCloseFunc,
-    });
+  if (!isNoAIGroup()) {
+    htmlContent += `<p><em>Note</em>: AI assistance is on-demand and unlimited,<br/>
+       with a cost per use in this phase. Usage resets for each problem.</p>`;
+  }
+  showModal({
+    context: "enter-phase2",
+    html: htmlContent,
+    onClose: onCloseFunc,
+  });
 }
 
 export function showEnterPhase3(onCloseFunc) {
-    let htmlContent = `<p>
+  let htmlContent = `<p>
       Now entering <strong>Phase 3</strong>, the final challenge!<br/><br/>
-      You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} trials.<br/>
-      If you do not complete ${getNoAIPhaseTrialsLimit()} trials within 8 minutes, please continue until you finish ${getNoAIPhaseTrialsLimit()} trials.
+      You have 8 minutes and must complete a minimum of ${getNoAIPhaseTrialsLimit()} problems.<br/><br/>
+      If you do not complete ${getNoAIPhaseTrialsLimit()} problems within 8 minutes,<br/>
+      please continue until you finish ${getNoAIPhaseTrialsLimit()} problems.
     </p>`;
-    if (!isNoAIGroup()) {
-        htmlContent +=
-            "<p><em>Note</em>: No AI assistance in this phase. Do your best!</p>";
-    }
-    showModal({
-        context: "enter-phase3",
-        html: htmlContent,
-        onClose: onCloseFunc,
-    });
+  if (!isNoAIGroup()) {
+    htmlContent +=
+      "<p><em>Note</em>: No AI assistance in this phase. Do your best!</p>";
+  }
+  showModal({
+    context: "enter-phase3",
+    html: htmlContent,
+    onClose: onCloseFunc,
+  });
 }
 
 export function showEndTimePopUp() {
-    showModal({
-        context: "end-time",
-        html: `<p>
+  showModal({
+    context: "end-time",
+    html: `<p>
       Thanks for completing the main study! <br>
       Please take a moment to complete a brief survey.
     </p>`,
-        onClose: () => {
-            gameContainer.style.display = "none";
-            showFeedback();
-        },
-    });
+    onClose: () => {
+      gameContainer.style.display = "none";
+      showFeedback();
+    },
+  });
 }
 
 export function showErrorModal() {
-    showModal({
-        context: "error-modal",
-        html: `<p>
+  showModal({
+    context: "error-modal",
+    html: `<p>
       <strong>Network error detected.</strong><br/>
       Please close this page and contact the researcher via Prolific.<br/>
       Do not refresh or continue the task, as your progress may not be saved.
     </p>`,
-    });
+  });
 }
 
 // export function showConfirmReset() {

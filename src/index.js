@@ -148,8 +148,8 @@ async function initExperimentEnvironment(shouldShuffle = false) {
 
                 bindTrialButtons();
                 await loadModal(); // Make sure modal loads before experiment
-                await startExperiment(false, false);
-                // await startExperiment(true, false);
+                // await startExperiment(false, false);
+                await startExperiment(true, false);
             },
         });
     } catch (error) {

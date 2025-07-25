@@ -45,7 +45,9 @@ export function refreshInteractionState({
   const canReset = hasRevealedSol()
     ? false
     : !allInStartZone && remainingSubmissions() > 0 && score !== 100;
-  const canNext = isComprehensionCheck() ? score === 100 : forceEnableNext;
+  const canNext = isComprehensionCheck()
+    ? score === 100
+    : hasRevealedSol() && forceEnableNext;
   const canAskAI =
     forceDisableAskAI || hasRevealedSol()
       ? false
@@ -58,7 +60,6 @@ export function refreshInteractionState({
   const canRevealSol = hasRevealedSol()
     ? false
     : performance.submissionCount > 0 &&
-      score !== 100 &&
       (justSubmitted || performance.curSubmission.steps == 0);
 
   updateButtons({
@@ -111,9 +112,9 @@ export function showResultContent() {
 
   document.getElementById("correct-choice").textContent =
     performance.curSubmission.correctChoice;
-  document.getElementById(
-    "score"
-  ).textContent = `${performance.curSubmission.score}`;
+  // document.getElementById(
+  //   "score"
+  // ).textContent = `${performance.curSubmission.score}`;
 
   updateTotalPassMessage();
 
@@ -130,10 +131,11 @@ export function showResultContent() {
   } else if (isComprehensionCheck()) {
     additionalMessage.style.display = "block";
     if (performance.curSubmission.score !== 100) {
-      additionalMessage.textContent = "You did not score 100.";
+      additionalMessage.textContent =
+        "You did not place all 3 objects correctly.";
       additionalMessage.style.color = "red";
     } else {
-      additionalMessage.textContent = "You passed this trial! ";
+      additionalMessage.textContent = "You passed this problem! ";
       additionalMessage.style.color = "green";
     }
   }
