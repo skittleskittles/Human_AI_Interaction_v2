@@ -242,8 +242,8 @@ export function createInstructionPage({id, type, src, description}) {
       <h2 style="color: red">Please Read All Instructions Carefully</h2>
       <p style="font-size: large">
         This experiment explores how people solve logical puzzles given a time limit. You will solve a series of logical puzzles by correctly ordering
-        objects based on provided statements. Your goal is to complete as many
-        trials as accurately as possible within 20 minutes.
+        objects based on provided statements. There are 3 phases in this study and your goal is to complete as many trials as accurately as possible in each phase.
+
       </p>
       <p style="font-size: large; line-height: 1.6">
         <strong>
