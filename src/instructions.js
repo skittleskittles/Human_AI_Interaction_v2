@@ -10,7 +10,8 @@ import {
 } from "./data/variable";
 import { getCurDate } from "./utils.js";
 import { startGame } from "./index.js";
-import { showEnterComprehensionproblemsPopUp } from "./modal.js";
+// a typo? : import { showEnterComprehensionproblemsPopUp } from "./modal.js";
+import { showEnterComprehensionTrialsPopUp } from "./modal.js";
 import { showButtonTooltip } from "./uiState.js";
 
 /*
