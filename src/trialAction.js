@@ -33,6 +33,7 @@ import {
   shouldEndAttentionCheck,
   shouldEndComprehensionCheck,
   shouldShowAttentionCheck,
+  showAttentionCheck,
   updatePerformanceAfterSubmission,
 } from "./data/variable.js";
 import {
@@ -280,6 +281,7 @@ export async function nextTrial(fromClickButton = false) {
 
   let answer = [];
   if (shouldShowAttentionCheck()) {
+    showAttentionCheck();
     pauseTimer(getCurPhase());
   }
 
@@ -590,7 +592,7 @@ function renderTrial(trial) {
   updateTotalPassMessage();
   hideSubmissionResultContent();
   document.getElementById("reveal-sol-btn").style.display =
-    isComprehensionCheck() ? "none" : "block";
+    isComprehensionCheck() || isAttentionCheck() ? "none" : "block";
   initializeAfterNextTrial();
 }
 

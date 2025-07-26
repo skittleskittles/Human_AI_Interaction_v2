@@ -47,7 +47,7 @@ export function refreshInteractionState({
     : !allInStartZone && remainingSubmissions() > 0 && score !== 100;
   const canNext = isComprehensionCheck()
     ? score === 100
-    : hasRevealedSol() && forceEnableNext;
+    : (isAttentionCheck() || hasRevealedSol()) && forceEnableNext;
   const canAskAI =
     forceDisableAskAI || hasRevealedSol()
       ? false

@@ -14,7 +14,7 @@ import { showNeedMoreTrialsPopUp } from "./modal.js";
 // const PHASE3_DURATION = 8 * 60;
 
 // todo fsy
-const PHASE1_DURATION = 5;
+const PHASE1_DURATION = 10;
 const PHASE2_DURATION = 120;
 const PHASE3_DURATION = 120;
 
@@ -53,7 +53,7 @@ export function startTimer(mode) {
           clearInterval(timer.interval);
           timer.interval = null;
 
-          setPhaseTimerEnded(true); 
+          setPhaseTimerEnded(true);
           if (
             [PHASE_NAME.PHASE1, PHASE_NAME.PHASE3].includes(getCurPhase()) &&
             getPhaseCurTrialIndex() < getNoAIPhaseTrialsLimit()

@@ -169,7 +169,11 @@ export function getNoAIPhaseTrialsLimit() {
 }
 
 export function canEndPhase() {
-  // NoAI Phase
+  if (shouldShowAttentionCheck()) {
+    // show attention check first, then move to next phase
+    return false;
+  }
+
   if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE3].includes(getCurPhase())) {
     return (
       phaseTimerEnded() && getPhaseCurTrialIndex() >= getNoAIPhaseTrialsLimit()
@@ -554,12 +558,15 @@ export function shouldShowAttentionCheck() {
     !globalState.comprehensionCheckShown &&
     !globalState.attentionCheckShown
   ) {
-    globalState.attentionCheckPending = false;
-    globalState.attentionCheckShown = true;
-    globalState.isAttentionCheckVisible = true;
     return true;
   }
   return false;
+}
+
+export function showAttentionCheck() {
+  globalState.attentionCheckPending = false;
+  globalState.attentionCheckShown = true;
+  globalState.isAttentionCheckVisible = true;
 }
 
 export function isAttentionCheck() {
