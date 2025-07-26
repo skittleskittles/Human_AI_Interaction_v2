@@ -47,7 +47,7 @@ export function refreshInteractionState({
     : !allInStartZone && remainingSubmissions() > 0 && score !== 100;
   const canNext = isComprehensionCheck()
     ? score === 100
-    : hasRevealedSol() && forceEnableNext;
+  : hasRevealedSol() && forceEnableNext;
   const canAskAI =
     forceDisableAskAI || hasRevealedSol()
       ? false
@@ -142,23 +142,24 @@ export function showResultContent() {
 }
 
 export function updateTotalPassMessage() {
-  let totalPassMessageContent = `You have got ${0} point(s) so far.`;
+  let totalPassMessageContent = `You have got <span style='color: green'>${0}</span> point(s) so far.`;
   if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(getCurPhase())) {
     let points = getPhasePoints(PHASE_NAME.PHASE1);
     if (getCurPhase() == PHASE_NAME.PHASE2) {
       points += getPhasePoints(PHASE_NAME.PHASE2);
     }
-    totalPassMessageContent = `You have got 
-    ${Number(points.toFixed(2))} point(s) so far.`;
+    totalPassMessageContent = `You have got <span style='color: green'>${Number(
+      points.toFixed(2)
+    )}</span> point(s) so far.`;
   } else if (getCurPhase() == PHASE_NAME.PHASE3) {
     const pointsA =
       getPhasePoints(PHASE_NAME.PHASE1) + getPhasePoints(PHASE_NAME.PHASE2);
-    totalPassMessageContent = `You have got ${Number(
+    totalPassMessageContent = `You have got <span style='color: green'>${Number(
       pointsA.toFixed(2)
-    )} point(s) in phase 1 and 2.<br/>
-    You have got ${Number(
+    )}</span> point(s) in phase 1 and 2.<br/>
+    You have got <span style='color: green'>${Number(
       getPhasePoints(PHASE_NAME.PHASE3).toFixed(2)
-    )} point(s) in phase 3.`;
+    )}</span> point(s) in phase 3.`;
   }
   document.getElementById("totalPassMessage").innerHTML =
     totalPassMessageContent;

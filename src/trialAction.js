@@ -153,6 +153,9 @@ function updateAfterSubmission(
   updateRemainingSubmissionInfo();
 
   refreshInteractionState({ forceEnableNext: true, justSubmitted: true });
+  if (remainingSubmissions() == 0 && !hasRevealedSol()) {
+    showAnswers(); // pop answers automatically
+  }
 
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const trialTimeSec = getTimerValue("trial");
@@ -508,6 +511,10 @@ function showAskAIAnswers() {
 }
 
 function showAnswers() {
+  if (isComprehensionCheck() || isAttentionCheck()) {
+    return;
+  }
+
   const revealSolBtn = document.getElementById("reveal-sol-btn");
   const isDisabled = revealSolBtn.classList.contains("disabled-visual");
   if (isDisabled && revealSolBtn.dataset.locked === "true") {
@@ -548,7 +555,7 @@ function showAnswers() {
 
     revealSolMessage.style.display = "block";
     refreshInteractionState();
-  }, 500);
+  }, 0);
 
   /* update db */
   const performance = JSON.parse(JSON.stringify(getPerformance()));
