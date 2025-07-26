@@ -62,15 +62,15 @@ const videoPageId = {
 };
 const VIDEO_DESCRIPTIONS = {
   3: `<p>You can drag or swap objects, or click RESET to return to the original state.</p>`,
-  6: `<p>Immediately after each submission,
-            you may choose to reveal the correct answer for this problem by clicking REVEAL ANSWER.</p>
-        <p><strong><em>Warning</em></strong>: Once you click REVEAL ANSWER, you <strong>CANNOT revise your answer or
-            re-SUBMIT</strong>.</p>
+  6: `<p>If your first submission is not fully correct, 
+            you may immediately click REVEAL SOLUTION to view the correct solution.</p>
+        <p><strong><em>Warning</em></strong>: Once you click REVEAL SOLUTION, you <strong>CANNOT 
+            revise your answer or re-SUBMIT</strong>.</p>
         <p>Click NEXT PROBLEM to move on to the next problem.</p>`,
   8: `<p><strong>An AI agent is available to assist you during Phase 2 only.</strong></p>
         <p>The AI agent is available for unlimited, on-demand use for each submission. However, you must first place all objects in
             position before using it.</p>
-        <p>Each time you use it, the AI agent will randomly reveal the location of 1 randomly selected object.</p>`,
+        <p>Each time you use it, the AI agent will reveal the location of 1 randomly selected object.</p>`,
 };
 
 function loadInstructionsHTML(html) {
@@ -256,7 +256,7 @@ export function createInstructionPage({ id, type, src, description }) {
       <h2 style="color: red">Please Read All Instructions Carefully</h2>
       <p style="font-size: large">
         This experiment explores how people solve logical puzzles given a time limit. You will solve a series of logical puzzles by correctly ordering
-        objects based on provided statements. There are 3 phases in this study and your goal is to complete as many problems as accurately as possible in each phase.
+        objects based on provided statements. There are 3 phases in this study, and your goal is to complete as many problems as accurately as possible in each phase.
 
       </p>
       <p style="font-size: large; line-height: 1.6">
