@@ -47,7 +47,7 @@ export function refreshInteractionState({
     : !allInStartZone && remainingSubmissions() > 0 && score !== 100;
   const canNext = isComprehensionCheck()
     ? score === 100
-  : hasRevealedSol() && forceEnableNext;
+    : hasRevealedSol() && forceEnableNext;
   const canAskAI =
     forceDisableAskAI || hasRevealedSol()
       ? false
@@ -80,7 +80,15 @@ export function refreshInteractionState({
 export function updateButtons({ submit, reset, next, askAI, revealSol }) {
   document.getElementById("submit-btn").disabled = !submit;
   document.getElementById("reset-btn").disabled = !reset;
-  document.getElementById("next-btn").disabled = !next;
+
+  const nextBtn = document.getElementById("next-btn");
+  if (next) {
+    nextBtn.classList.remove("disabled-visual");
+    nextBtn.dataset.locked = "false";
+  } else {
+    nextBtn.classList.add("disabled-visual");
+    nextBtn.dataset.locked = "true";
+  }
 
   const askAIBtn = document.getElementById("askAI-btn");
   if (askAI) {
@@ -219,4 +227,18 @@ export function showButtonTooltip(
   } else if (mode == "mouseleave" && disableAutoHide) {
     hide();
   }
+}
+
+export function canClickRevealBtn() {
+  const revealSolBtn = document.getElementById("reveal-sol-btn");
+  const isDisabled = revealSolBtn.classList.contains("disabled-visual");
+  const isLocked = revealSolBtn.dataset.locked === "true";
+  return !(isDisabled && isLocked);
+}
+
+export function canClickNextBtn() {
+  const nextBtn = document.getElementById("next-btn");
+  const isDisabled = nextBtn.classList.contains("disabled-visual");
+  const isLocked = nextBtn.dataset.locked === "true";
+  return !(isDisabled && isLocked);
 }

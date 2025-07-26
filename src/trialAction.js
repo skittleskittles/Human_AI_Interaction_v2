@@ -36,6 +36,8 @@ import {
   updatePerformanceAfterSubmission,
 } from "./data/variable.js";
 import {
+  canClickNextBtn,
+  canClickRevealBtn,
   hideSubmissionResultContent,
   refreshInteractionState,
   showButtonTooltip,
@@ -89,7 +91,9 @@ import { disableDrag } from "./dragDrop.js";
 export function bindTrialButtons() {
   document.getElementById("submit-btn").addEventListener("click", submitTrial);
   document.getElementById("reset-btn").addEventListener("click", resetTrial);
-  document.getElementById("next-btn").addEventListener("click", nextTrial);
+  document.getElementById("next-btn").addEventListener("click", () => {
+    nextTrial(true);
+  });
   document
     .getElementById("askAI-btn")
     .addEventListener("click", showAskAIAnswers);
@@ -105,13 +109,10 @@ export function bindTrialButtons() {
 }
 
 function showRevealSolHint(mode) {
-  const revealSolBtn = document.getElementById("reveal-sol-btn");
-  const isDisabled = revealSolBtn.classList.contains("disabled-visual");
-  const isLocked = revealSolBtn.dataset.locked === "true";
-  if (!isDisabled && !isLocked) {
+  if (canClickRevealBtn()) {
     showButtonTooltip(
       "reveal-sol-tooltip",
-      "Once clicked, you <strong>CANNOT</strong><br/>revise your answer or re-SUBMIT.",
+      `Once clicked, you <strong>CANNOT</strong><br/>revise your answer or re-SUBMIT.<br/>`,
       true,
       mode
     );
@@ -227,7 +228,19 @@ function initializeAfterReset() {
  * Next Trial
  ********************************************
  */
-export async function nextTrial() {
+export async function nextTrial(fromClickButton = false) {
+  if (fromClickButton) {
+    if (!canClickNextBtn()) {
+      if (canClickRevealBtn()) {
+        showButtonTooltip(
+          "next-tooltip",
+          "Reveal solutions<br/> before you move to next"
+        );
+      }
+      return;
+    }
+  }
+
   /* initial database */
   if (User.experiments.length === 0) {
     // Initialize experiment if it doesn't exist
@@ -515,9 +528,7 @@ function showAnswers() {
     return;
   }
 
-  const revealSolBtn = document.getElementById("reveal-sol-btn");
-  const isDisabled = revealSolBtn.classList.contains("disabled-visual");
-  if (isDisabled && revealSolBtn.dataset.locked === "true") {
+  if (!canClickRevealBtn()) {
     let tooltipText = "Available only right after you submit.";
     if (hasRevealedSol()) {
       tooltipText =

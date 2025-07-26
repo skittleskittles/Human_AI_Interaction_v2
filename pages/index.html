@@ -125,6 +125,29 @@
         transition: opacity 0.3s;
       }
 
+      #next-btn.disabled-visual {
+        background-color: gray;
+        cursor: not-allowed;
+        pointer-events: auto;
+        opacity: 0.6;
+      }
+
+      #next-tooltip {
+        position: absolute;
+        background-color: #555555;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        top: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
       button {
         padding: 0.625rem 1rem;
         font-size: 1rem;
@@ -302,7 +325,12 @@
                 </button>
                 <div id="reveal-sol-tooltip" style="display: none"></div>
               </div>
-              <button id="next-btn" disabled>NEXT<br />PROBLEM</button>
+              <div style="position: relative">
+                <button id="next-btn" data-locked="false">
+                  NEXT<br />PROBLEM
+                </button>
+                <div id="next-tooltip" style="display: none"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -341,8 +369,9 @@
               <h3>Results</h3>
               <div id="submission-result-content" style="display: none">
                 <div>
-                  You got <span id="correct-choice" style="color: green;">0</span> objects placed
-                  correctly.
+                  You got
+                  <span id="correct-choice" style="color: green">0</span>
+                  objects placed correctly.
                 </div>
                 <!-- <div>Score (0–100): <span id="score">--</span></div> -->
                 <div id="additionalMessage" style="display: none"></div>
