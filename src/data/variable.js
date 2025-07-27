@@ -8,7 +8,7 @@ import {
 const MAX_SUBMISSION_LIMIT = 2;
 const NUM_COMPREHENSION_TRIALS = 2;
 
-const NO_AI_PHASE_TRIALS_LIMIT = 2; // todo fsy: default 4
+const NO_AI_PHASE_TRIALS_LIMIT = 1; // todo fsy: default 4
 
 // if CAN_ASK_AI_UNLIMITES == false, MAX_ASK_AI_LIMIT takes effect
 const MAX_ASK_AI_LIMIT = 5;
@@ -23,15 +23,15 @@ export const PHASE_NAME = {
 
 export const phaseState = {
   PHASE_QUESTIONS: {
-    phase1: [],
-    phase2: [],
-    phase3: [],
+    [PHASE_NAME.PHASE1]: [],
+    [PHASE_NAME.PHASE2]: [],
+    [PHASE_NAME.PHASE3]: [],
     extra: [], // not shuffled
   },
   phaseIndexMap: {
-    phase1: -1, // [-1, PHASE_QUESTIONS.length]
-    phase2: -1,
-    phase3: -1,
+    [PHASE_NAME.PHASE1]: -1, // [-1, PHASE_QUESTIONS.length]
+    [PHASE_NAME.PHASE2]: -1,
+    [PHASE_NAME.PHASE3]: -1,
     extra: -1,
   },
 };
@@ -81,6 +81,7 @@ export const globalState = {
       steps: 0, // Number of drag steps made in the most recent submission
       weightedCorrectRate: 0, // [0, 1], counted ai cost
       askAICount: 0,
+      askAIAns: [],
     },
 
     curTrialAskAICount: 0, // Number of ask ai count in this trial
@@ -444,6 +445,10 @@ export function resetTrialSteps() {
   globalState.performance.totalSteps = 0;
 }
 
+export function recordSubmissionAIAnswer(aiChoice) {
+  globalState.performance.curSubmission.askAIAns.push(aiChoice);
+}
+
 export function resetTrialPerformance() {
   resetSubmissionPerformance();
   globalState.performance.curTrialAskAICount = 0;
@@ -458,6 +463,7 @@ export function resetSubmissionPerformance() {
   globalState.performance.curSubmission.weightedCorrectRate = 0;
   globalState.performance.curSubmission.steps = 0;
   globalState.performance.curSubmission.askAICount = 0;
+  globalState.performance.curSubmission.askAIAns = [];
 }
 
 export function updatePerformanceAfterSubmission(correctChoice, score) {
@@ -493,13 +499,13 @@ export function getPhasePoints(phase) {
 
 export function calBonusAmount(phase) {
   let bonusAmount = 0;
-  const correctTrials = getPerformance().phaseWeightedCorrectTrials[phase];
+  let correctTrials = getPerformance().phaseWeightedCorrectTrials[phase];
 
   if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(phase)) {
-    if (phase == PHASE_NAME.phase2) {
+    if (phase == PHASE_NAME.PHASE2) {
       // phase2 bonus include phase1
       correctTrials +=
-        globalState.performance.phaseWeightedCorrectTrials[phase1];
+        getPerformance().phaseWeightedCorrectTrials[PHASE_NAME.PHASE1];
     }
 
     bonusAmount = 0.15 * correctTrials;

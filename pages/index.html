@@ -53,6 +53,7 @@
         display: flex;
         flex-direction: column;
         position: relative;
+        padding: 0 3.05rem;
         margin-left: auto;
       }
       #right-panel {
@@ -80,26 +81,23 @@
       }
 
       #reveal-sol-message {
-        position: absolute;
-        bottom: 15rem;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        box-sizing: border-box;
+        margin-top: 1.8rem;
         color: green;
         font-size: 1rem;
         font-weight: bold;
+        display: flex;
       }
 
       #reset-btn {
         margin-right: auto;
-        margin-left: 4rem;
+        margin-left: 1rem;
       }
 
       .right-buttons {
         display: flex;
         gap: 1rem;
-        margin: 0 2rem 0 auto;
+        margin: 0 auto 0 auto;
       }
 
       #reveal-sol-btn.disabled-visual {
@@ -303,16 +301,16 @@
             <div class="solution" id="solution-E">E</div>
           </div>
 
+          <div id="reveal-sol-message" style="display: none">
+            Any object you placed correctly is highlighted in green.
+          </div>
+
           <div id="option-container">
             <div class="option" draggable="true" id="A">A</div>
             <div class="option" draggable="true" id="B">B</div>
             <div class="option" draggable="true" id="C">C</div>
             <div class="option" draggable="true" id="D">D</div>
             <div class="option" draggable="true" id="E">E</div>
-          </div>
-
-          <div id="reveal-sol-message" style="display: none">
-            Any object you placed correctly is highlighted in green.
           </div>
 
           <div class="buttons-container">

@@ -70,6 +70,7 @@ import {
   getCurExperimentData,
   getCurPhaseTrialList,
   getCurTrialData,
+  recordAIChoiceData,
   recordUserChoiceData,
   updateExperimentData,
   updateTrialData,
@@ -174,14 +175,13 @@ function updateAfterSubmission(
   restartTimer("submission"); // restart submission timer
 
   /* database */
-  dbRecordTrial(
-    performance,
-    userAns,
-    submissionTimeSec,
-    trialTimeSec,
-    true,
-    getCurPhase()
-  );
+  dbRecordTrial({
+    performance: performance,
+    userAns: userAns,
+    submissionTimeSec: submissionTimeSec,
+    trialTimeSec: trialTimeSec,
+    isSubmission: true,
+  });
 
   /* end comprehension check trials */
   if (isComprehensionCheck()) {
@@ -261,7 +261,10 @@ export async function nextTrial(fromClickButton = false) {
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
 
-  dbRecordTrial(performance, [], 0, trialTimeSec, false, getCurPhase()); // Record last trial total time
+  dbRecordTrial({
+    performance: performance,
+    trialTimeSec: trialTimeSec,
+  }); // Record last trial total time
 
   if (canEndPhase()) {
     await proceedToNextPhase();
@@ -384,7 +387,7 @@ function handleTimeOut() {
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const trialTimeSec = getTimerValue("trial");
 
-  dbRecordTrial(performance, [], 0, trialTimeSec, false, getCurPhase());
+  dbRecordTrial({ performance: performance, trialTimeSec: trialTimeSec });
 }
 
 /*
@@ -522,7 +525,12 @@ function showAskAIAnswers() {
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
 
-  dbRecordTrial(performance, [], 0, trialTimeSec, false, getCurPhase());
+  dbRecordTrial({
+    performance: performance,
+    userAns: getUserAnswer(),
+    aiAns: revealedObjects,
+    trialTimeSec: trialTimeSec,
+  });
 }
 
 function showAnswers() {
@@ -575,7 +583,7 @@ function showAnswers() {
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
 
-  dbRecordTrial(performance, [], 0, trialTimeSec, false, getCurPhase);
+  dbRecordTrial({ performance: performance, trialTimeSec: trialTimeSec });
 }
 
 /*
@@ -643,23 +651,31 @@ function dbInitTrialData(questionId, answer) {
   getCurPhaseTrialList().push(newTrial);
 }
 
-export function dbRecordTrial(
+export function dbRecordTrial({
   performance,
   userAns = [],
+  aiAns = [],
   submissionTimeSec = 0,
   trialTimeSec = 0,
   isSubmission = false,
-  phaseKey
-) {
+  phaseKey = getCurPhase(),
+} = {}) {
   const curExperiment = getCurExperimentData();
   const lastTrial = getCurTrialData();
 
   if (!lastTrial) return;
 
+  if (aiAns.length > 0 && userAns.length > 0) {
+    // Add ai ans if asked ai
+    recordAIChoiceData(lastTrial, aiAns, userAns, trialTimeSec);
+  }
+
   if (isSubmission && userAns.length > 0 && submissionTimeSec != 0) {
     // Add submission-level user choice if provided
+    // todo: add ai choice`
     recordUserChoiceData(lastTrial, userAns, performance, submissionTimeSec);
   }
+
 
   // Always update trial-level summary
   updateTrialData(lastTrial, performance, trialTimeSec, isSubmission);
