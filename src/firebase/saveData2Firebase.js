@@ -192,6 +192,7 @@ async function saveTrialData(expRef, trial, phaseKey) {
       cur_total_correct_trials: trial.cur_total_correct_trials,
       cur_total_ask_ai_count: trial.cur_total_ask_ai_count,
       total_time: trial.total_time,
+      total_time_all: trial.total_time_all,
     });
   } catch (error) {
     console.error("❌ Failed to save trial data:", error);

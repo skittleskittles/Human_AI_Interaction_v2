@@ -162,14 +162,7 @@ function updateAfterSubmission(
 
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const trialTimeSec = getTimerValue("trial");
-  // console.log(
-  //   "updateAfterSubmission:",
-  //   "submissionTimeSec:",
-  //   submissionTimeSec,
-  //   "trialTimeSec:",
-  //   trialTimeSec
-  // );
-  // console.log("performance:", performance);
+  const trialTimeAllSec = getTimerValue("trial_total");
 
   resetSubmissionPerformance();
   restartTimer("submission"); // restart submission timer
@@ -180,6 +173,7 @@ function updateAfterSubmission(
     userAns: userAns,
     submissionTimeSec: submissionTimeSec,
     trialTimeSec: trialTimeSec,
+    trialTimeAllSec: trialTimeAllSec,
     isSubmission: true,
   });
 
@@ -260,10 +254,12 @@ export async function nextTrial(fromClickButton = false) {
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
+  const trialTimeAllSec = getTimerValue("trial_total");
 
   dbRecordTrial({
     performance: performance,
     trialTimeSec: trialTimeSec,
+    trialTimeAllSec: trialTimeAllSec,
   }); // Record last trial total time
 
   if (canEndPhase()) {
@@ -276,6 +272,7 @@ export async function nextTrial(fromClickButton = false) {
   /* start next trial */
 
   restartTimer("trial");
+  restartTimer("trial_total");
   restartTimer("submission");
 
   if (shouldEndAttentionCheck()) {
@@ -376,8 +373,7 @@ function handleTimeOut() {
   // end game and show feedback page
   showEndTimePopUp();
 
-  pauseTimer("submission");
-  pauseTimer("trial");
+  clearAllTimers();
 
   // update db
   const curExperiment = getCurExperimentData();
@@ -386,8 +382,13 @@ function handleTimeOut() {
 
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const trialTimeSec = getTimerValue("trial");
+  const trialTimeAllSec = getTimerValue("trial_total");
 
-  dbRecordTrial({ performance: performance, trialTimeSec: trialTimeSec });
+  dbRecordTrial({
+    performance: performance,
+    trialTimeSec: trialTimeSec,
+    trialTimeAllSec: trialTimeAllSec,
+  });
 }
 
 /*
@@ -524,12 +525,14 @@ function showAskAIAnswers() {
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
+  const trialTimeAllSec = getTimerValue("trial_total");
 
   dbRecordTrial({
     performance: performance,
     userAns: getUserAnswer(),
     aiAns: revealedObjects,
     trialTimeSec: trialTimeSec,
+    trialTimeAllSec: trialTimeAllSec,
   });
 }
 
@@ -582,8 +585,13 @@ function showAnswers() {
   const performance = JSON.parse(JSON.stringify(getPerformance()));
   const submissionTimeSec = getTimerValue("submission");
   const trialTimeSec = getTimerValue("trial");
+  const trialTimeAllSec = getTimerValue("trial_total");
 
-  dbRecordTrial({ performance: performance, trialTimeSec: trialTimeSec });
+  dbRecordTrial({
+    performance: performance,
+    trialTimeSec: trialTimeSec,
+    trialTimeAllSec: trialTimeAllSec,
+  });
 }
 
 /*
@@ -657,6 +665,7 @@ export function dbRecordTrial({
   aiAns = [],
   submissionTimeSec = 0,
   trialTimeSec = 0,
+  trialTimeAllSec = 0,
   isSubmission = false,
   phaseKey = getCurPhase(),
 } = {}) {
@@ -676,9 +685,14 @@ export function dbRecordTrial({
     recordUserChoiceData(lastTrial, userAns, performance, submissionTimeSec);
   }
 
-
   // Always update trial-level summary
-  updateTrialData(lastTrial, performance, trialTimeSec, isSubmission);
+  updateTrialData(
+    lastTrial,
+    performance,
+    trialTimeSec,
+    trialTimeAllSec,
+    isSubmission
+  );
 
   // Update experiment-level tracking
   updateExperimentData(curExperiment, performance);

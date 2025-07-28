@@ -14,9 +14,9 @@ import { showNeedMoreTrialsPopUp } from "./modal.js";
 // const PHASE3_DURATION = 8 * 60;
 
 // todo fsy
-const PHASE1_DURATION = 10;
-const PHASE2_DURATION = 10;
-const PHASE3_DURATION = 10;
+const PHASE1_DURATION = 120;
+const PHASE2_DURATION = 120;
+const PHASE3_DURATION = 120;
 
 // todo fsy: NO AI version
 export const timerManager = {
@@ -26,6 +26,7 @@ export const timerManager = {
     phase3: { seconds: PHASE3_DURATION, interval: null },
     trial: { seconds: 0, interval: null },
     submission: { seconds: 0, interval: null },
+    trial_total: { seconds: 0, interval: null }, // 包括离开屏幕的时间
   },
 };
 
@@ -80,7 +81,12 @@ export function startTimer(mode) {
       }
 
       // Accumulative timers (e.g. trial, submission)
-      else if (document.visibilityState === "visible") {
+      else if (mode == "trial_total") {
+        timer.seconds += elapsedSec;
+      } else if (
+        ["trial", "submission"].includes(mode) &&
+        document.visibilityState === "visible"
+      ) {
         timer.seconds += elapsedSec;
       }
     }

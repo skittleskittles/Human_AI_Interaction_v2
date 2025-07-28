@@ -109,6 +109,7 @@ export function getCurExperimentData() {
  * @property {number} cur_total_correct_trials
  * @property {number} cur_total_ask_ai_count
  * @property {Number} total_time // seconds, 每一轮trial总时间
+ * @property {Number} total_time_all // seconds, 每一轮trial总时间，包括离开屏幕的时间
  */
 /**
  * Creates a new Trial
@@ -142,6 +143,7 @@ export function createNewTrialData(
     cur_total_correct_trials: 0,
     cur_total_ask_ai_count: 0,
     total_time: 0,
+    total_time_all: 0,
   };
 }
 
@@ -169,6 +171,7 @@ export function updateTrialData(
   trial,
   performance,
   trialTimeSec,
+  trialTimeAllSec,
   isSubmission
 ) {
   trial.end_time = getCurDate();
@@ -188,6 +191,7 @@ export function updateTrialData(
     performance.phaseWeightedCorrectTrials[getCurPhase()];
   trial.cur_total_ask_ai_count = performance.totalAskAICount;
   trial.total_time = trialTimeSec;
+  trial.total_time_all = trialTimeAllSec;
 }
 
 /**
