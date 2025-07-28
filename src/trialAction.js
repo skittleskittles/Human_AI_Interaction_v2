@@ -55,15 +55,8 @@ import {
   updateAskAICost,
   updateSideLabels,
 } from "./render.js";
-import { evaluateAnswer, getUserAnswer } from "./utils.js";
-import {
-  clearAllTimers,
-  getTimerValue,
-  pauseTimer,
-  restartTimer,
-  resumeTimer,
-  startTimer,
-} from "./timer.js";
+import {evaluateAnswer, getUserAnswer} from "./utils.js";
+import {clearAllTimers, getTimerValue, pauseTimer, restartTimer, resumeTimer, startTimer,} from "./timer.js";
 import {
   createNewExperimentData,
   createNewTrialData,
@@ -83,44 +76,40 @@ import {
   showEnterPhase2,
   showEnterPhase3,
 } from "./modal.js";
-import {
-  revealSolMessage,
-  solutionLabel,
-  timeBox,
-} from "./data/domElements.js";
-import { disableDrag } from "./dragDrop.js";
+import {revealSolMessage, solutionLabel, timeBox,} from "./data/domElements.js";
+import {disableDrag} from "./dragDrop.js";
 
 export function bindTrialButtons() {
-  document.getElementById("submit-btn").addEventListener("click", submitTrial);
-  document.getElementById("reset-btn").addEventListener("click", resetTrial);
-  document.getElementById("next-btn").addEventListener("click", () => {
-    nextTrial(true);
-  });
-  document
-    .getElementById("askAI-btn")
-    .addEventListener("click", showAskAIAnswers);
+    document.getElementById("submit-btn").addEventListener("click", submitTrial);
+    document.getElementById("reset-btn").addEventListener("click", resetTrial);
+    document.getElementById("next-btn").addEventListener("click", () => {
+        nextTrial(true);
+    });
+    document
+        .getElementById("askAI-btn")
+        .addEventListener("click", showAskAIAnswers);
 
-  const revealBtn = document.getElementById("reveal-sol-btn");
-  revealBtn.addEventListener("click", showAnswers);
-  revealBtn.addEventListener("mouseenter", () => {
-    showRevealSolHint("mouseenter");
-  });
-  revealBtn.addEventListener("mouseleave", () => {
-    showRevealSolHint("mouseleave");
-  });
+    const revealBtn = document.getElementById("reveal-sol-btn");
+    revealBtn.addEventListener("click", showAnswers);
+    revealBtn.addEventListener("mouseenter", () => {
+        showRevealSolHint("mouseenter");
+    });
+    revealBtn.addEventListener("mouseleave", () => {
+        showRevealSolHint("mouseleave");
+    });
 }
 
 function showRevealSolHint(mode) {
-  if (canClickRevealBtn()) {
-    showButtonTooltip(
-      "reveal-sol-tooltip",
-      `Once clicked, you <strong>CANNOT</strong><br/>revise your answer or re-SUBMIT.<br/>`,
-      true,
-      mode
-    );
-  } else if (mode == "mouseleave") {
-    showButtonTooltip("reveal-sol-tooltip", "", true, mode);
-  }
+    if (canClickRevealBtn()) {
+        showButtonTooltip(
+            "reveal-sol-tooltip",
+            `Once clicked, you <strong>CANNOT</strong><br/>revise your answer or re-SUBMIT.<br/>`,
+            true,
+            mode
+        );
+    } else if (mode == "mouseleave") {
+        showButtonTooltip("reveal-sol-tooltip", "", true, mode);
+    }
 }
 
 /*
@@ -129,73 +118,73 @@ function showRevealSolHint(mode) {
  ********************************************
  */
 function submitTrial() {
-  if (remainingSubmissions() <= 0) return;
+    if (remainingSubmissions() <= 0) return;
 
-  const submissionTimeSec = getTimerValue("submission"); // once submit, recore submission interval
+    const submissionTimeSec = getTimerValue("submission"); // once submit, recore submission interval
 
-  const userAns = getUserAnswer();
-  let correctChoiceCnt, correctChoices, score;
+    const userAns = getUserAnswer();
+    let correctChoiceCnt, correctChoices, score;
 
-  ({ correctChoiceCnt, correctChoices, score } = evaluateAnswer(
-    userAns,
-    getCurQuestionData().answer
-  ));
-  updateAfterSubmission(userAns, correctChoiceCnt, score, submissionTimeSec);
+    ({correctChoiceCnt, correctChoices, score} = evaluateAnswer(
+        userAns,
+        getCurQuestionData().answer
+    ));
+    updateAfterSubmission(userAns, correctChoiceCnt, score, submissionTimeSec);
 }
 
 function updateAfterSubmission(
-  userAns,
-  correctChoice,
-  score,
-  submissionTimeSec
+    userAns,
+    correctChoice,
+    score,
+    submissionTimeSec
 ) {
-  incrementSteps();
-  decrementSubmissions(score);
-  updatePerformanceAfterSubmission(correctChoice, score);
-  showResultContent();
-  updateRemainingSubmissionInfo();
+    incrementSteps();
+    decrementSubmissions(score);
+    updatePerformanceAfterSubmission(correctChoice, score);
+    showResultContent();
+    updateRemainingSubmissionInfo();
 
-  refreshInteractionState({ forceEnableNext: true, justSubmitted: true });
-  if (remainingSubmissions() == 0 && !hasRevealedSol()) {
-    showAnswers(); // pop answers automatically
-  }
-
-  const performance = JSON.parse(JSON.stringify(getPerformance()));
-  const trialTimeSec = getTimerValue("trial");
-  const trialTimeAllSec = getTimerValue("trial_total");
-
-  resetSubmissionPerformance();
-  restartTimer("submission"); // restart submission timer
-
-  /* database */
-  dbRecordTrial({
-    performance: performance,
-    userAns: userAns,
-    submissionTimeSec: submissionTimeSec,
-    trialTimeSec: trialTimeSec,
-    trialTimeAllSec: trialTimeAllSec,
-    isSubmission: true,
-  });
-
-  /* end comprehension check trials */
-  if (isComprehensionCheck()) {
-    if (score !== 100 && remainingSubmissions() == 0) {
-      showEndGameFailedComprehensionCheckPopUp();
-      clearAllTimers();
+    refreshInteractionState({forceEnableNext: true, justSubmitted: true});
+    if (remainingSubmissions() == 0 && !hasRevealedSol()) {
+        showAnswers(); // pop answers automatically
     }
-    if (
-      score === 100 &&
-      getGlobalCurTrialIndex() === getComprehensionTrialsNum()
-    ) {
-      User.is_passed_comprehension = true;
-      proceedToNextPhase(); // pass comprehension check; enter phase 1
+
+    const performance = JSON.parse(JSON.stringify(getPerformance()));
+    const trialTimeSec = getTimerValue("trial");
+    const trialTimeAllSec = getTimerValue("trial_total");
+
+    resetSubmissionPerformance();
+    restartTimer("submission"); // restart submission timer
+
+    /* database */
+    dbRecordTrial({
+        performance: performance,
+        userAns: userAns,
+        submissionTimeSec: submissionTimeSec,
+        trialTimeSec: trialTimeSec,
+        trialTimeAllSec: trialTimeAllSec,
+        isSubmission: true,
+    });
+
+    /* end comprehension check trials */
+    if (isComprehensionCheck()) {
+        if (score !== 100 && remainingSubmissions() == 0) {
+            showEndGameFailedComprehensionCheckPopUp();
+            clearAllTimers();
+        }
+        if (
+            score === 100 &&
+            getGlobalCurTrialIndex() === getComprehensionTrialsNum()
+        ) {
+            User.is_passed_comprehension = true;
+            proceedToNextPhase(); // pass comprehension check; enter phase 1
+        }
     }
-  }
 }
 
 function updateRemainingSubmissionInfo() {
-  const count = document.getElementById("submission-count");
-  if (count) count.textContent = remainingSubmissions();
+    const count = document.getElementById("submission-count");
+    if (count) count.textContent = remainingSubmissions();
 }
 
 /*
@@ -204,18 +193,18 @@ function updateRemainingSubmissionInfo() {
  ********************************************
  */
 function resetTrial() {
-  clearBoxes();
-  renderBoxesAndOptions(getCurQuestionData());
-  initializeAfterReset();
+    clearBoxes();
+    renderBoxesAndOptions(getCurQuestionData());
+    initializeAfterReset();
 }
 
 function clearBoxes() {
-  document.querySelectorAll(".box").forEach((box) => (box.innerHTML = ""));
+    document.querySelectorAll(".box").forEach((box) => (box.innerHTML = ""));
 }
 
 function initializeAfterReset() {
-  incrementSteps();
-  refreshInteractionState();
+    incrementSteps();
+    refreshInteractionState();
 }
 
 /*
@@ -224,93 +213,93 @@ function initializeAfterReset() {
  ********************************************
  */
 export async function nextTrial(fromClickButton = false) {
-  if (fromClickButton) {
-    if (!canClickNextBtn()) {
-      if (canClickRevealBtn()) {
-        showButtonTooltip(
-          "next-tooltip",
-          "Reveal solutions<br/> before you move to next"
-        );
-      }
-      return;
+    if (fromClickButton) {
+        if (!canClickNextBtn()) {
+            if (canClickRevealBtn()) {
+                showButtonTooltip(
+                    "next-tooltip",
+                    "Reveal solutions<br/> before you move to next"
+                );
+            }
+            return;
+        }
     }
-  }
 
-  /* initial database */
-  if (User.experiments.length === 0) {
-    // Initialize experiment if it doesn't exist
-    dbInitExperimentData();
-  }
-
-  /* start global timer */
-  if (!isComprehensionCheck() && timeBox.style.display === "none") {
-    timeBox.style.display = "block";
-    startTimer(PHASE_NAME.PHASE1);
-  } else if (isComprehensionCheck()) {
-    timeBox.style.display = "none";
-  }
-
-  /* record last trial data */
-  const performance = JSON.parse(JSON.stringify(getPerformance()));
-  const submissionTimeSec = getTimerValue("submission");
-  const trialTimeSec = getTimerValue("trial");
-  const trialTimeAllSec = getTimerValue("trial_total");
-
-  dbRecordTrial({
-    performance: performance,
-    trialTimeSec: trialTimeSec,
-    trialTimeAllSec: trialTimeAllSec,
-  }); // Record last trial total time
-
-  if (canEndPhase()) {
-    await proceedToNextPhase();
-    if (getCurPhase() == "") {
-      return;
+    /* initial database */
+    if (User.experiments.length === 0) {
+        // Initialize experiment if it doesn't exist
+        dbInitExperimentData();
     }
-  }
 
-  /* start next trial */
+    /* start global timer */
+    if (!isComprehensionCheck() && timeBox.style.display === "none") {
+        timeBox.style.display = "block";
+        startTimer(PHASE_NAME.PHASE1);
+    } else if (isComprehensionCheck()) {
+        timeBox.style.display = "none";
+    }
 
-  restartTimer("trial");
-  restartTimer("trial_total");
-  restartTimer("submission");
+    /* record last trial data */
+    const performance = JSON.parse(JSON.stringify(getPerformance()));
+    const submissionTimeSec = getTimerValue("submission");
+    const trialTimeSec = getTimerValue("trial");
+    const trialTimeAllSec = getTimerValue("trial_total");
 
-  if (shouldEndAttentionCheck()) {
-    resumeTimer(getCurPhase());
-  }
+    dbRecordTrial({
+        performance: performance,
+        trialTimeSec: trialTimeSec,
+        trialTimeAllSec: trialTimeAllSec,
+    }); // Record last trial total time
 
-  let answer = [];
-  if (shouldShowAttentionCheck()) {
-    showAttentionCheck();
-    pauseTimer(getCurPhase());
-  }
+    if (canEndPhase()) {
+        await proceedToNextPhase();
+        if (getCurPhase() == "") {
+            return;
+        }
+    }
 
-  if (!advanceTrial(isAttentionCheck() || isComprehensionCheck())) return;
-  console.log(
-    `--Trail idx ${getGlobalCurTrialIndex()}--Question idx ${getCurQuestionIndex()}--Question id ${
-      getCurQuestionData().question_id
-    }--${getCurPhase()}--`
-  );
+    /* start next trial */
 
-  renderTrial(getCurQuestionData());
+    restartTimer("trial");
+    restartTimer("trial_total");
+    restartTimer("submission");
 
-  answer = getCurQuestionData().answer;
-  const questionId = getCurQuestionData().question_id;
+    if (shouldEndAttentionCheck()) {
+        resumeTimer(getCurPhase());
+    }
 
-  dbInitTrialData(questionId, answer); // Init next trial data
+    let answer = [];
+    if (shouldShowAttentionCheck()) {
+        showAttentionCheck();
+        pauseTimer(getCurPhase());
+    }
+
+    if (!advanceTrial(isAttentionCheck() || isComprehensionCheck())) return;
+    console.log(
+        `--Trail idx ${getGlobalCurTrialIndex()}--Question idx ${getCurQuestionIndex()}--Question id ${
+            getCurQuestionData().question_id
+        }--${getCurPhase()}--`
+    );
+
+    renderTrial(getCurQuestionData());
+
+    answer = getCurQuestionData().answer;
+    const questionId = getCurQuestionData().question_id;
+
+    dbInitTrialData(questionId, answer); // Init next trial data
 }
 
 function initializeAfterNextTrial() {
-  resetTrialSteps();
-  resetAskAI();
-  setHasRevealedSol(false);
-  resetSubmissions();
-  resetTrialPerformance();
+    resetTrialSteps();
+    resetAskAI();
+    setHasRevealedSol(false);
+    resetSubmissions();
+    resetTrialPerformance();
 
-  updateUseAIMessage();
-  updateRemainingSubmissionInfo();
+    updateUseAIMessage();
+    updateRemainingSubmissionInfo();
 
-  refreshInteractionState();
+    refreshInteractionState();
 }
 
 /*
@@ -319,76 +308,76 @@ function initializeAfterNextTrial() {
  ********************************************
  */
 export function proceedToNextPhase() {
-  return new Promise((resolve) => {
-    if (getCurPhase() === PHASE_NAME.COMPREHENSION_CHECK) {
-      showEnterMainGamePopUp(() => {
-        shouldEndComprehensionCheck();
-        setCurPhase(PHASE_NAME.PHASE1);
-        resetTrialID();
-        resetPhaseCurTrialIndex();
-        setPhaseTimerEnded(false);
-        timeBox.style.display = "block";
-        document.getElementById("timer").textContent = "08:00";
-        startTimer(PHASE_NAME.PHASE1);
-        nextTrial();
-        resolve();
-      });
-    } else if (getCurPhase() === PHASE_NAME.PHASE1) {
-      showEnterPhase2(() => {
-        setCurPhase(PHASE_NAME.PHASE2);
-        resetPhaseCurTrialIndex();
-        setPhaseTimerEnded(false);
-        document.getElementById("timer").textContent = "20:00";
-        startTimer(PHASE_NAME.PHASE2);
-        resolve();
-      });
-    } else if (getCurPhase() === PHASE_NAME.PHASE2) {
-      showEnterPhase3(() => {
-        setCurPhase(PHASE_NAME.PHASE3);
-        resetPhaseCurTrialIndex();
-        setPhaseTimerEnded(false);
-        document.getElementById("timer").textContent = "08:00";
-        startTimer(PHASE_NAME.PHASE3);
-        resolve();
-      });
-    } else if (getCurPhase() === PHASE_NAME.PHASE3) {
-      handleTimeOut(); // todo fsy: after submit feedback
-      setCurPhase("");
-      resolve();
-    } else {
-      resolve(); // fallback
-    }
-  });
+    return new Promise((resolve) => {
+        if (getCurPhase() === PHASE_NAME.COMPREHENSION_CHECK) {
+            showEnterMainGamePopUp(() => {
+                shouldEndComprehensionCheck();
+                setCurPhase(PHASE_NAME.PHASE1);
+                resetTrialID();
+                resetPhaseCurTrialIndex();
+                setPhaseTimerEnded(false);
+                timeBox.style.display = "block";
+                document.getElementById("timer").textContent = "08:00";
+                startTimer(PHASE_NAME.PHASE1);
+                nextTrial();
+                resolve();
+            });
+        } else if (getCurPhase() === PHASE_NAME.PHASE1) {
+            showEnterPhase2(() => {
+                setCurPhase(PHASE_NAME.PHASE2);
+                resetPhaseCurTrialIndex();
+                setPhaseTimerEnded(false);
+                document.getElementById("timer").textContent = "20:00";
+                startTimer(PHASE_NAME.PHASE2);
+                resolve();
+            });
+        } else if (getCurPhase() === PHASE_NAME.PHASE2) {
+            showEnterPhase3(() => {
+                setCurPhase(PHASE_NAME.PHASE3);
+                resetPhaseCurTrialIndex();
+                setPhaseTimerEnded(false);
+                document.getElementById("timer").textContent = "08:00";
+                startTimer(PHASE_NAME.PHASE3);
+                resolve();
+            });
+        } else if (getCurPhase() === PHASE_NAME.PHASE3) {
+            handleTimeOut(); // todo fsy: after submit feedback
+            setCurPhase("");
+            resolve();
+        } else {
+            resolve(); // fallback
+        }
+    });
 }
 
 function handleTimeOut() {
-  // disbale all buttons
-  document.getElementById("submit-btn").disabled = true;
-  document.getElementById("reset-btn").disabled = true;
-  document.getElementById("next-btn").disabled = true;
+    // disbale all buttons
+    document.getElementById("submit-btn").disabled = true;
+    document.getElementById("reset-btn").disabled = true;
+    document.getElementById("next-btn").disabled = true;
 
-  // disable drag
-  disableDrag();
+    // disable drag
+    disableDrag();
 
-  // end game and show feedback page
-  showEndTimePopUp();
+    // end game and show feedback page
+    showEndTimePopUp();
 
-  clearAllTimers();
+    clearAllTimers();
 
-  // update db
-  const curExperiment = getCurExperimentData();
-  curExperiment.is_finished = true;
-  User.is_passed_all_experiments = User.is_passed_attention_check;
+    // update db
+    const curExperiment = getCurExperimentData();
+    curExperiment.is_finished = true;
+    User.is_passed_all_experiments = User.is_passed_attention_check;
 
-  const performance = JSON.parse(JSON.stringify(getPerformance()));
-  const trialTimeSec = getTimerValue("trial");
-  const trialTimeAllSec = getTimerValue("trial_total");
+    const performance = JSON.parse(JSON.stringify(getPerformance()));
+    const trialTimeSec = getTimerValue("trial");
+    const trialTimeAllSec = getTimerValue("trial_total");
 
-  dbRecordTrial({
-    performance: performance,
-    trialTimeSec: trialTimeSec,
-    trialTimeAllSec: trialTimeAllSec,
-  });
+    dbRecordTrial({
+        performance: performance,
+        trialTimeSec: trialTimeSec,
+        trialTimeAllSec: trialTimeAllSec,
+    });
 }
 
 /*
@@ -397,201 +386,201 @@ function handleTimeOut() {
  ********************************************
  */
 function getRandomAnsFromCorrectOrder(count) {
-  const answers = getCurQuestionData().answer;
-  const totalCount = answers.length;
+    const answers = getCurQuestionData().answer;
+    const totalCount = answers.length;
 
-  if (count === 1) {
-    // ensure no repeats until all have been revealed
-    const availableIndices = [...Array(totalCount).keys()].filter(
-      (i) => !getRevealedIndicesThisTrial().has(i)
-    );
+    if (count === 1) {
+        // ensure no repeats until all have been revealed
+        const availableIndices = [...Array(totalCount).keys()].filter(
+            (i) => !getRevealedIndicesThisTrial().has(i)
+        );
 
-    const chosenIndex =
-      availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        const chosenIndex =
+            availableIndices[Math.floor(Math.random() * availableIndices.length)];
 
-    recordRevealedIndicesThisTrial(chosenIndex);
+        recordRevealedIndicesThisTrial(chosenIndex);
 
-    return [
-      {
-        name: answers[chosenIndex],
-        pos: chosenIndex + 1,
-      },
-    ];
-  }
+        return [
+            {
+                name: answers[chosenIndex],
+                pos: chosenIndex + 1,
+            },
+        ];
+    }
 
-  // count > 1: allow repeats, but still track them
-  const shuffled = [...Array(totalCount).keys()]
-    .sort(() => 0.5 - Math.random())
-    .slice(0, count);
+    // count > 1: allow repeats, but still track them
+    const shuffled = [...Array(totalCount).keys()]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, count);
 
-  // record revealed indices
-  shuffled.forEach((i) => recordRevealedIndicesThisTrial(i));
+    // record revealed indices
+    shuffled.forEach((i) => recordRevealedIndicesThisTrial(i));
 
-  return shuffled.map((i) => ({
-    name: answers[i],
-    pos: i + 1,
-  }));
+    return shuffled.map((i) => ({
+        name: answers[i],
+        pos: i + 1,
+    }));
 }
 
 function appendChat(sender, message) {
-  const chatBox = document.getElementById("ai-chat");
-  const bubble = document.createElement("div");
-  bubble.classList.add("chat-bubble");
-  bubble.classList.add(sender.toLowerCase()); // 'ai' or 'user'
+    const chatBox = document.getElementById("ai-chat");
+    const bubble = document.createElement("div");
+    bubble.classList.add("chat-bubble");
+    bubble.classList.add(sender.toLowerCase()); // 'ai' or 'user'
 
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
-  avatar.textContent = sender === "AI" ? "🤖" : "😃";
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    avatar.textContent = sender === "AI" ? "🤖" : "😃";
 
-  const msg = document.createElement("div");
-  msg.className = "message";
-  msg.innerHTML = `${message}`;
+    const msg = document.createElement("div");
+    msg.className = "message";
+    msg.innerHTML = `${message}`;
 
-  bubble.appendChild(avatar);
-  bubble.appendChild(msg);
-  chatBox.appendChild(bubble);
-  chatBox.scrollTop = chatBox.scrollHeight;
+    bubble.appendChild(avatar);
+    bubble.appendChild(msg);
+    chatBox.appendChild(bubble);
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function showAskAIAnswers() {
-  const askAIBtn = document.getElementById("askAI-btn");
-  if (askAIBtn.dataset.locked === "true") {
-    let tooltipText =
-      remainingAskAICount() <= 0
-        ? "You’ve reached the hint limit for this problem."
-        : "Please place all objects first.";
-    if (!isAllowedAskAITrials()) {
-      tooltipText = "AI help is not available for this problem.";
+    const askAIBtn = document.getElementById("askAI-btn");
+    if (askAIBtn.dataset.locked === "true") {
+        let tooltipText =
+            remainingAskAICount() <= 0
+                ? "You’ve reached the hint limit for this problem."
+                : "Please place all objects first.";
+        if (!isAllowedAskAITrials()) {
+            tooltipText = "AI help is not available for this problem.";
+        }
+        if (hasRevealedSol()) {
+            tooltipText =
+                "You already revealed the solutions.<br/>Please click NEXT PROBLEM to continue.";
+        }
+        if (remainingSubmissions() == 0) {
+            tooltipText =
+                "You're out of submissions.<br/>Please click NEXT PROBLEM to continue.";
+        }
+        showButtonTooltip("askAI-tooltip", tooltipText);
+        return;
     }
-    if (hasRevealedSol()) {
-      tooltipText =
-        "You already revealed the solutions.<br/>Please click NEXT PROBLEM to continue.";
-    }
-    if (remainingSubmissions() == 0) {
-      tooltipText =
-        "You're out of submissions.<br/>Please click NEXT PROBLEM to continue.";
-    }
-    showButtonTooltip("askAI-tooltip", tooltipText);
-    return;
-  }
 
-  revealSolMessage.style.display = "none";
+    revealSolMessage.style.display = "none";
 
-  const revealCount = getAIRevealCounts();
-  const revealedObjects = getRandomAnsFromCorrectOrder(revealCount);
+    const revealCount = getAIRevealCounts();
+    const revealedObjects = getRandomAnsFromCorrectOrder(revealCount);
 
-  incrementSteps();
-  incrementAskAICount();
-  updateAskAICost();
-  refreshInteractionState({ forceDisableAskAI: true });
+    incrementSteps();
+    incrementAskAICount();
+    updateAskAICost();
+    refreshInteractionState({forceDisableAskAI: true});
 
-  const userMsg =
-    `Randomly revealed ${revealCount} ` +
-    (revealCount === 1 ? "object's location" : "objects' locations");
-  appendChat("User", userMsg);
+    const userMsg =
+        `Randomly revealed ${revealCount} ` +
+        (revealCount === 1 ? "object's location" : "objects' locations");
+    appendChat("User", userMsg);
 
-  setTimeout(() => {
-    // 1. Hide all AI suggestions first
-    const allSuggestions = document.querySelectorAll("[id^='solution-']");
-    allSuggestions.forEach((el) => {
-      el.style.visibility = "hidden";
+    setTimeout(() => {
+        // 1. Hide all AI suggestions first
+        const allSuggestions = document.querySelectorAll("[id^='solution-']");
+        allSuggestions.forEach((el) => {
+            el.style.visibility = "hidden";
+        });
+        solutionLabel.innerText = "AI suggestion";
+        solutionLabel.style.visibility = "visible";
+
+        // 2. Show only the revealed ones
+        revealedObjects.forEach((obj) => {
+            const el = document.getElementById(`solution-${obj.name}`);
+            if (el) {
+                el.style.visibility = "visible";
+            }
+        });
+
+        // 3. Append chat
+        const aiResponse = revealedObjects
+            .map(
+                (obj) =>
+                    `<strong>${obj.name}</strong> is at <strong>${obj.pos}</strong>.`
+            )
+            .join("<br/>");
+        appendChat("AI", aiResponse);
+
+        refreshInteractionState();
+    }, 500);
+
+    updateUseAIMessage();
+
+    /* update db */
+    const performance = JSON.parse(JSON.stringify(getPerformance()));
+    const submissionTimeSec = getTimerValue("submission");
+    const trialTimeSec = getTimerValue("trial");
+    const trialTimeAllSec = getTimerValue("trial_total");
+
+    dbRecordTrial({
+        performance: performance,
+        userAns: getUserAnswer(),
+        aiAns: revealedObjects,
+        trialTimeSec: trialTimeSec,
+        trialTimeAllSec: trialTimeAllSec,
     });
-    solutionLabel.innerText = "AI suggestion";
-    solutionLabel.style.visibility = "visible";
-
-    // 2. Show only the revealed ones
-    revealedObjects.forEach((obj) => {
-      const el = document.getElementById(`solution-${obj.name}`);
-      if (el) {
-        el.style.visibility = "visible";
-      }
-    });
-
-    // 3. Append chat
-    const aiResponse = revealedObjects
-      .map(
-        (obj) =>
-          `<strong>${obj.name}</strong> is at <strong>${obj.pos}</strong>.`
-      )
-      .join("<br/>");
-    appendChat("AI", aiResponse);
-
-    refreshInteractionState();
-  }, 500);
-
-  updateUseAIMessage();
-
-  /* update db */
-  const performance = JSON.parse(JSON.stringify(getPerformance()));
-  const submissionTimeSec = getTimerValue("submission");
-  const trialTimeSec = getTimerValue("trial");
-  const trialTimeAllSec = getTimerValue("trial_total");
-
-  dbRecordTrial({
-    performance: performance,
-    userAns: getUserAnswer(),
-    aiAns: revealedObjects,
-    trialTimeSec: trialTimeSec,
-    trialTimeAllSec: trialTimeAllSec,
-  });
 }
 
 function showAnswers() {
-  if (isComprehensionCheck() || isAttentionCheck()) {
-    return;
-  }
-
-  if (!canClickRevealBtn()) {
-    let tooltipText = "Available only right after you submit.";
-    if (hasRevealedSol()) {
-      tooltipText =
-        "You already revealed the solutions.<br/>Please click NEXT PROBLEM to continue.";
-    } else if (remainingSubmissions() == 0) {
-      tooltipText =
-        "You already answered correctly.<br/>Please click NEXT PROBLEM to continue.";
+    if (isComprehensionCheck() || isAttentionCheck()) {
+        return;
     }
-    showButtonTooltip("reveal-sol-tooltip", tooltipText);
-    return;
-  }
 
-  incrementSteps();
-  setHasRevealedSol(true);
+    if (!canClickRevealBtn()) {
+        let tooltipText = "Available only right after you submit.";
+        if (hasRevealedSol()) {
+            tooltipText =
+                "You already revealed the solutions.<br/>Please click NEXT PROBLEM to continue.";
+        } else if (remainingSubmissions() === 0) {
+            tooltipText =
+                "You already answered correctly.<br/>Please click NEXT PROBLEM to continue.";
+        }
+        showButtonTooltip("reveal-sol-tooltip", tooltipText);
+        return;
+    }
 
-  setTimeout(() => {
-    const allSoltions = document.querySelectorAll("[id^='solution-']");
-    allSoltions.forEach((el) => {
-      el.style.visibility = "hidden";
+    incrementSteps();
+    setHasRevealedSol(true);
+
+    setTimeout(() => {
+        const allSoltions = document.querySelectorAll("[id^='solution-']");
+        allSoltions.forEach((el) => {
+            el.style.visibility = "hidden";
+        });
+        solutionLabel.innerText = "Correct answer";
+        solutionLabel.style.visibility = "visible";
+
+        // show all answers
+        const answers = getCurQuestionData().answer;
+        answers.forEach((ans) => {
+            const el = document.getElementById(`solution-${ans}`);
+            if (el) {
+                el.style.visibility = "visible";
+            }
+        });
+
+        // update correct options
+        highlightCorrectUserChice();
+
+        revealSolMessage.style.display = "block";
+        refreshInteractionState();
+    }, 0);
+
+    /* update db */
+    const performance = JSON.parse(JSON.stringify(getPerformance()));
+    const submissionTimeSec = getTimerValue("submission");
+    const trialTimeSec = getTimerValue("trial");
+    const trialTimeAllSec = getTimerValue("trial_total");
+
+    dbRecordTrial({
+        performance: performance,
+        trialTimeSec: trialTimeSec,
+        trialTimeAllSec: trialTimeAllSec,
     });
-    solutionLabel.innerText = "Correct answer";
-    solutionLabel.style.visibility = "visible";
-
-    // show all answers
-    const answers = getCurQuestionData().answer;
-    answers.forEach((ans) => {
-      const el = document.getElementById(`solution-${ans}`);
-      if (el) {
-        el.style.visibility = "visible";
-      }
-    });
-
-    // update correct options
-    highlightCorrectUserChice();
-
-    revealSolMessage.style.display = "block";
-    refreshInteractionState();
-  }, 0);
-
-  /* update db */
-  const performance = JSON.parse(JSON.stringify(getPerformance()));
-  const submissionTimeSec = getTimerValue("submission");
-  const trialTimeSec = getTimerValue("trial");
-  const trialTimeAllSec = getTimerValue("trial_total");
-
-  dbRecordTrial({
-    performance: performance,
-    trialTimeSec: trialTimeSec,
-    trialTimeAllSec: trialTimeAllSec,
-  });
 }
 
 /*
@@ -600,16 +589,16 @@ function showAnswers() {
  ********************************************
  */
 function renderTrial(trial) {
-  renderInstructions(trial.instruction);
-  renderAIChat();
-  renderBoxesAndOptions(trial);
-  renderStatements(trial.statements, trial.answer);
-  updateSideLabels(trial.front_end);
-  updateTotalPassMessage();
-  hideSubmissionResultContent();
-  document.getElementById("reveal-sol-btn").style.display =
-    isComprehensionCheck() || isAttentionCheck() ? "none" : "block";
-  initializeAfterNextTrial();
+    renderInstructions(trial.instruction);
+    renderAIChat();
+    renderBoxesAndOptions(trial);
+    renderStatements(trial.statements, trial.answer);
+    updateSideLabels(trial.front_end);
+    updateTotalPassMessage();
+    hideSubmissionResultContent();
+    document.getElementById("reveal-sol-btn").style.display =
+        isComprehensionCheck() || isAttentionCheck() ? "none" : "block";
+    initializeAfterNextTrial();
 }
 
 /*
@@ -618,87 +607,87 @@ function renderTrial(trial) {
  ********************************************
  */
 function dbInitExperimentData() {
-  const newExperiment = createNewExperimentData();
-  User.experiments[getCurPhase()] = newExperiment;
+    const newExperiment = createNewExperimentData();
+    User.experiments[getCurPhase()] = newExperiment;
 }
 
 function dbInitTrialData(questionId, answer) {
-  if (!getCurExperimentData()) {
-    // Initialize experiment if it doesn't exist
-    dbInitExperimentData();
-  }
+    if (!getCurExperimentData()) {
+        // Initialize experiment if it doesn't exist
+        dbInitExperimentData();
+    }
 
-  const isComprehension = isComprehensionCheck();
-  const isAttention = isAttentionCheck();
+    const isComprehension = isComprehensionCheck();
+    const isAttention = isAttentionCheck();
 
-  let trialId;
-  if (isComprehension) {
-    trialId = getGlobalCurTrialIndex();
-  } else if (isAttention) {
-    trialId = "attention check";
-  } else {
-    trialId = getCurQuestionIndex();
-  }
+    let trialId;
+    if (isComprehension) {
+        trialId = getGlobalCurTrialIndex();
+    } else if (isAttention) {
+        trialId = "attention check";
+    } else {
+        trialId = getCurQuestionIndex();
+    }
 
-  // Check if trial already exists (for comprehension trials only)
-  if (
-    isComprehension &&
-    getCurPhaseTrialList().some((t) => t.trial_id === trialId)
-  ) {
-    return; // Trial already exists, do not re-add
-  }
+    // Check if trial already exists (for comprehension trials only)
+    if (
+        isComprehension &&
+        getCurPhaseTrialList().some((t) => t.trial_id === trialId)
+    ) {
+        return; // Trial already exists, do not re-add
+    }
 
-  const newTrial = createNewTrialData(
-    trialId,
-    questionId,
-    answer,
-    isComprehension,
-    isAttention
-  );
+    const newTrial = createNewTrialData(
+        trialId,
+        questionId,
+        answer,
+        isComprehension,
+        isAttention
+    );
 
-  getCurPhaseTrialList().push(newTrial);
+    getCurPhaseTrialList().push(newTrial);
 }
 
 export function dbRecordTrial({
-  performance,
-  userAns = [],
-  aiAns = [],
-  submissionTimeSec = 0,
-  trialTimeSec = 0,
-  trialTimeAllSec = 0,
-  isSubmission = false,
-  phaseKey = getCurPhase(),
-} = {}) {
-  const curExperiment = getCurExperimentData();
-  const lastTrial = getCurTrialData();
+                                  performance,
+                                  userAns = [],
+                                  aiAns = [],
+                                  submissionTimeSec = 0,
+                                  trialTimeSec = 0,
+                                  trialTimeAllSec = 0,
+                                  isSubmission = false,
+                                  phaseKey = getCurPhase(),
+                              } = {}) {
+    const curExperiment = getCurExperimentData();
+    const lastTrial = getCurTrialData();
 
-  if (!lastTrial) return;
+    if (!lastTrial) return;
 
-  if (aiAns.length > 0 && userAns.length > 0) {
-    // Add ai ans if asked ai
-    recordAIChoiceData(lastTrial, aiAns, userAns, trialTimeSec);
-  }
+    if (aiAns.length > 0 && userAns.length > 0) {
+        // Add ai ans if asked ai
+        recordAIChoiceData(lastTrial, aiAns, userAns, trialTimeSec);
+    }
 
-  if (isSubmission && userAns.length > 0 && submissionTimeSec != 0) {
-    // Add submission-level user choice if provided
-    // todo: add ai choice`
-    recordUserChoiceData(lastTrial, userAns, performance, submissionTimeSec);
-  }
+    if (isSubmission && userAns.length > 0 && submissionTimeSec != 0) {
+        // Add submission-level user choice if provided
+        // todo: add ai choice`
+        recordUserChoiceData(lastTrial, userAns, performance, submissionTimeSec);
+    }
 
-  // Always update trial-level summary
-  updateTrialData(
-    lastTrial,
-    performance,
-    trialTimeSec,
-    trialTimeAllSec,
-    isSubmission
-  );
+    // Always update trial-level summary
+    updateTrialData(
+        lastTrial,
+        performance,
+        trialTimeSec,
+        trialTimeAllSec,
+        isSubmission
+    );
 
-  // Update experiment-level tracking
-  updateExperimentData(curExperiment, performance);
+    // Update experiment-level tracking
+    updateExperimentData(curExperiment, performance);
 
-  // Save to Firestore
-  import("./firebase/saveData2Firebase.js").then((module) => {
-    module.saveSingleTrial(curExperiment, lastTrial, phaseKey);
-  });
+    // Save to Firestore
+    import("./firebase/saveData2Firebase.js").then((module) => {
+        module.saveSingleTrial(curExperiment, lastTrial, phaseKey);
+    });
 }
