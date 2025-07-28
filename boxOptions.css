@@ -37,12 +37,10 @@
 }
 
 #solution-label {
-  margin-left: 1rem;
-  margin-top: 1rem;
+  position: absolute;
   font-weight: bold;
   font-size: 0.78rem;
   width: 6rem;
-  text-align: center;
   visibility: hidden;
   opacity: 0.7;
 }
@@ -106,10 +104,14 @@
   font-family: "Fira Code", monospace;
 }
 
+.solution-wrapper {
+  display: flex;
+  margin: 1rem auto 0rem auto;
+}
 #solution-container {
   display: flex;
-  margin-top: 0.4rem;
-  margin-left: 1rem;
+  margin-left: 0.5rem;
+  margin-top: 1.5rem;
   gap: 2.25rem;
 }
 .solution {
