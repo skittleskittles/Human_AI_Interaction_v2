@@ -41,7 +41,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
             User.exp_group = GROUP_TYPE_NAME_MAP[getGroupType()];
         } else {
             console.warn("❗Unrecognized group code. Set as default group.");
-            setGroupType(GROUP_TYPE.HIGH_COST_AI);
+            setGroupType(GROUP_TYPE.LOW_COST_AI);
             User.exp_group = GROUP_TYPE_NAME_MAP[getGroupType()];
         }
 
