@@ -476,7 +476,7 @@ function showAskAIAnswers() {
     refreshInteractionState({forceDisableAskAI: true});
 
     const userMsg =
-        `Randomly revealed ${revealCount} ` +
+        `Randomly reveal ${revealCount} ` +
         (revealCount === 1 ? "object's location" : "objects' locations");
     appendChat("User", userMsg);
 

@@ -262,7 +262,7 @@ export function createInstructionPage({id, type, src, description}) {
       </p>
       <p style="font-size: large; line-height: 1.6">
         <strong>
-          Make your browser window FULL SCREEN and CLOSE ALL OTHER TABS. Your screen time will be recorded.<br/>
+          Make your browser window FULL SCREEN and CLOSE ALL OTHER TABS.<br/>
           DO NOT REFRESH YOUR BROWSER during the study.
         </strong>
       </p>
