@@ -123,13 +123,13 @@ export function renderBoxesAndOptions(questionData) {
   options.forEach((optionText, i) => {
     // Top label: 1, 2, ...
     const label = document.createElement("div");
-    label.className = "label";
+    label.className = "label no-select";
     label.textContent = i + 1;
     labelContainer.appendChild(label);
 
     // Option
     const option = document.createElement("div");
-    option.className = "option";
+    option.className = "option no-select";
     option.id = optionText;
     option.textContent = optionText;
     applyPatternStyle(option, styleMap[optionText] || "blank");
@@ -147,7 +147,7 @@ export function renderBoxesAndOptions(questionData) {
 
     if (i === 0 || i === options.length - 1) {
       const label = document.createElement("div");
-      label.className = "side-label-under";
+      label.className = "side-label-under no-select";
       label.id = i === 0 ? "front-label-under" : "end-label-under";
       label.textContent = i === 0 ? "front" : "end"; // default
       boxGroup.appendChild(label);
@@ -163,7 +163,7 @@ export function renderBoxesAndOptions(questionData) {
   const answer = questionData.answer;
   answer.forEach((ans, i) => {
     const solution = document.createElement("div");
-    solution.className = "solution";
+    solution.className = "solution no-select";
     solution.id = `solution-${ans}`;
     solution.textContent = ans;
     applyPatternStyle(solution, styleMap[ans] || "blank");
