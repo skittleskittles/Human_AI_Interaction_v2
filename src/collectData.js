@@ -108,8 +108,8 @@ export function getCurExperimentData() {
  * @property {number} cur_total_weighted_correct_trials
  * @property {number} cur_total_correct_trials
  * @property {number} cur_total_ask_ai_count
- * @property {Number} total_time // seconds, 每一轮trial总时间
- * @property {Number} total_time_all // seconds, 每一轮trial总时间，包括离开屏幕的时间
+ * @property {Number} total_time // ms, 每一轮trial总时间
+ * @property {Number} total_time_all // ms, 每一轮trial总时间，包括离开屏幕的时间
  */
 /**
  * Creates a new Trial

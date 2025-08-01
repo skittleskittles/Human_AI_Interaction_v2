@@ -9,9 +9,9 @@ import {
 } from "./data/variable.js";
 import {showNeedMoreTrialsPopUp} from "./modal.js";
 
-const PHASE1_DURATION = 8 * 60;
-const PHASE2_DURATION = 20 * 60;
-const PHASE3_DURATION = 8 * 60;
+const PHASE1_DURATION = 8 * 60 * 1000; // ms
+const PHASE2_DURATION = 20 * 60 * 1000; // ms
+const PHASE3_DURATION = 8 * 60 * 1000; // ms
 
 // todo fsy
 // const PHASE1_DURATION = 5;
@@ -21,12 +21,12 @@ const PHASE3_DURATION = 8 * 60;
 // todo fsy: NO AI version
 export const timerManager = {
     timers: {
-        phase1: {seconds: PHASE1_DURATION, interval: null},
-        phase2: {seconds: PHASE2_DURATION, interval: null},
-        phase3: {seconds: PHASE3_DURATION, interval: null},
-        trial: {seconds: 0, interval: null},
-        submission: {seconds: 0, interval: null},
-        trial_total: {seconds: 0, interval: null}, // 包括离开屏幕的时间
+        phase1: {millisecond: PHASE1_DURATION, interval: null},
+        phase2: {millisecond: PHASE2_DURATION, interval: null},
+        phase3: {millisecond: PHASE3_DURATION, interval: null},
+        trial: {millisecond: 0, interval: null},
+        submission: {millisecond: 0, interval: null},
+        trial_total: {millisecond: 0, interval: null}, // 包括离开屏幕的时间
     },
 };
 
@@ -38,7 +38,7 @@ export function startTimer(mode) {
 
     timer.interval = setInterval(() => {
         const now = Date.now();
-        const elapsedSec = Math.floor((now - lastUpdateTime) / 1000);
+        const elapsedSec = now - lastUpdateTime;
 
         if (elapsedSec >= 1) {
             lastUpdateTime = now;
@@ -47,18 +47,19 @@ export function startTimer(mode) {
             if (
                 [PHASE_NAME.PHASE1, PHASE_NAME.PHASE2, PHASE_NAME.PHASE3].includes(mode)
             ) {
-                timer.seconds -= elapsedSec;
+                timer.millisecond -= elapsedSec;
 
-                if (timer.seconds <= 0) {
-                    timer.seconds = 0;
+                if (timer.millisecond <= 0) {
+                    timer.millisecond = 0;
                 }
 
                 // Update UI
-                const min = String(Math.floor(timer.seconds / 60)).padStart(2, "0");
-                const sec = String(timer.seconds % 60).padStart(2, "0");
+                const totalSeconds = Math.floor(timer.millisecond / 1000);
+                const min = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+                const sec = String(totalSeconds % 60).padStart(2, "0");
                 document.getElementById("timer").textContent = `${min}:${sec}`;
 
-                if (timer.seconds === 0) {
+                if (timer.millisecond === 0) {
                     clearInterval(timer.interval);
                     timer.interval = null;
 
@@ -76,7 +77,7 @@ export function startTimer(mode) {
                 // attention check logic
                 if (
                     mode === PHASE_NAME.PHASE2 &&
-                    timer.seconds <= 600 &&
+                    timer.millisecond <= 10 * 60 * 1000 &&
                     !attentionCheckShown()
                 ) {
                     enableAttentionCheckPending();
@@ -85,12 +86,12 @@ export function startTimer(mode) {
 
             // Accumulative timers (e.g. trial, submission)
             else if (mode === "trial_total") {
-                timer.seconds += elapsedSec;
+                timer.millisecond += elapsedSec;
             } else if (
                 ["trial", "submission"].includes(mode) &&
                 document.visibilityState === "visible"
             ) {
-                timer.seconds += elapsedSec;
+                timer.millisecond += elapsedSec;
             }
         }
     }, 500);
@@ -118,7 +119,7 @@ export function resumeTimer(mode) {
 
 export function resetTimer(mode, value = 0) {
     const timer = timerManager.timers[mode];
-    if (timer) timer.seconds = value;
+    if (timer) timer.millisecond = value;
 }
 
 export function restartTimer(mode, value = 0) {
@@ -128,5 +129,5 @@ export function restartTimer(mode, value = 0) {
 }
 
 export function getTimerValue(mode) {
-    return timerManager.timers[mode]?.seconds ?? 0;
+    return timerManager.timers[mode]?.millisecond ?? 0;
 }
