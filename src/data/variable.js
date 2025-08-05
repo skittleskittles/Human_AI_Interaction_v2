@@ -6,9 +6,8 @@ const NUM_COMPREHENSION_TRIALS = 2;
 
 const NO_AI_PHASE_TRIALS_LIMIT = 4; // todo fsy: default 4
 
-// if CAN_ASK_AI_UNLIMITES == false, MAX_ASK_AI_LIMIT takes effect
-const MAX_ASK_AI_LIMIT = 5;
-const CAN_ASK_AI_UNLIMITES = true;
+// if globalState.CAN_ASK_AI_UNLIMITED == false, MAX_ASK_AI_LIMIT takes effect
+const MAX_ASK_AI_LIMIT = 1;
 
 export const PHASE_NAME = {
     COMPREHENSION_CHECK: "comprehension_check",
@@ -36,23 +35,23 @@ export const GROUP_TYPE = {
     NO_AI: 0,
     LOW_COST_AI: 1,
     HIGH_COST_AI: 2,
-    AI_QUESTION_A: 3,
-    AI_QUESTION_B: 4,
+    AI_REVEAL_ONE: 3,
+    AI_REVEAL_THREE: 4,
 };
 export const GROUP_TYPE_NAME_MAP = {
     [GROUP_TYPE.NO_AI]: "no_ai",
     [GROUP_TYPE.LOW_COST_AI]: "low_cost_ai",
     [GROUP_TYPE.HIGH_COST_AI]: "high_cost_ai",
-    [GROUP_TYPE.AI_QUESTION_A]: "ai_question_a",
-    [GROUP_TYPE.AI_QUESTION_B]: "ai_question_b",
+    [GROUP_TYPE.AI_REVEAL_ONE]: "ai_reveal_one",
+    [GROUP_TYPE.AI_REVEAL_THREE]: "ai_reveal_three",
 };
 // eg: https://xxxx?g=alp
 export const URL_GROUP_CODE_MAP = {
     alp: GROUP_TYPE.NO_AI,
     ba: GROUP_TYPE.LOW_COST_AI,
     gam: GROUP_TYPE.HIGH_COST_AI,
-    dlta: GROUP_TYPE.AI_QUESTION_A,
-    epsi: GROUP_TYPE.AI_QUESTION_B,
+    dlta: GROUP_TYPE.AI_REVEAL_ONE,
+    epsi: GROUP_TYPE.AI_REVEAL_THREE,
 };
 
 export const globalState = {
@@ -110,6 +109,7 @@ export const globalState = {
     remainingSubmissions: MAX_SUBMISSION_LIMIT,
 
     /* AI */
+    CAN_ASK_AI_UNLIMITED: true,
     NUM_REVEAL_OBJECTS: 1,
     remainingAskAICount: MAX_ASK_AI_LIMIT,
     revealedIndicesThisTrial: new Set(), // 记录这一轮AI返回的idx
@@ -298,6 +298,13 @@ export function isNoAIGroup() {
 
 export function setGroupType(type) {
     globalState.GROUP_TYPE = type;
+    if (globalState.GROUP_TYPE === GROUP_TYPE.AI_REVEAL_ONE) {
+        globalState.CAN_ASK_AI_UNLIMITED = false;
+        globalState.NUM_REVEAL_OBJECTS = 1;
+    } else if (globalState.GROUP_TYPE === GROUP_TYPE.AI_REVEAL_THREE) {
+        globalState.CAN_ASK_AI_UNLIMITED = false;
+        globalState.NUM_REVEAL_OBJECTS = 3;
+    }
 }
 
 export function getGroupType() {
@@ -337,7 +344,7 @@ export function resetAskAI() {
 }
 
 export function incrementAskAICount() {
-    if (!CAN_ASK_AI_UNLIMITES && globalState.remainingAskAICount > 0) {
+    if (!globalState.CAN_ASK_AI_UNLIMITED && globalState.remainingAskAICount > 0) {
         globalState.remainingAskAICount--;
     }
     globalState.performance.curSubmission.askAICount++;
@@ -360,36 +367,37 @@ export function recordRevealedIndicesThisTrial(idx) {
 export function calWeightedPointIfCorrect() {
     let points = 1;
     const askAICnt = globalState.performance.curTrialAskAICount;
-    if (askAICnt <= 5) {
-        if (globalState.GROUP_TYPE == GROUP_TYPE.HIGH_COST_AI) {
-            points = 1 - 0.18 * askAICnt;
-        }
-        if (globalState.GROUP_TYPE == GROUP_TYPE.LOW_COST_AI) {
-            points = 1 - 0.1 * askAICnt;
-        }
-    } else {
-        if (globalState.GROUP_TYPE == GROUP_TYPE.HIGH_COST_AI) {
-            points = 0.05;
-        }
-        if (globalState.GROUP_TYPE == GROUP_TYPE.LOW_COST_AI) {
-            points = 0.3;
-        }
+    if (globalState.GROUP_TYPE === GROUP_TYPE.NO_AI) {
+        points = 1;
+    }
+    if (globalState.GROUP_TYPE === GROUP_TYPE.HIGH_COST_AI) {
+        points = askAICnt <= 5 ? (1 - calAskAICost() * askAICnt) : 0.05;
+    }
+    if (globalState.GROUP_TYPE === GROUP_TYPE.LOW_COST_AI) {
+        points = askAICnt <= 5 ? (1 - calAskAICost() * askAICnt) : 0.3;
+    }
+    if (globalState.GROUP_TYPE === GROUP_TYPE.AI_REVEAL_ONE || globalState.GROUP_TYPE === GROUP_TYPE.AI_REVEAL_THREE) {
+        points = 1 - calAskAICost() * askAICnt;
     }
     return Number(points.toFixed(2));
 }
 
 export function calAskAICost() {
-    let cost = 0.18;
+    let cost = 0.2;
     const askAICnt = globalState.performance.curTrialAskAICount;
-    if (askAICnt <= 5) {
-        if (globalState.GROUP_TYPE == GROUP_TYPE.HIGH_COST_AI) {
-            cost = 0.18;
-        }
-        if (globalState.GROUP_TYPE == GROUP_TYPE.LOW_COST_AI) {
-            cost = 0.1;
-        }
-    } else {
+
+    if (globalState.GROUP_TYPE === GROUP_TYPE.NO_AI) {
         cost = 0;
+    }
+    if (globalState.GROUP_TYPE === GROUP_TYPE.HIGH_COST_AI) {
+        cost = askAICnt <= 5 ? 0.18 : 0;
+    }
+    if (globalState.GROUP_TYPE === GROUP_TYPE.LOW_COST_AI) {
+        cost = askAICnt <= 5 ? 0.1 : 0;
+    }
+    if (globalState.GROUP_TYPE === GROUP_TYPE.AI_REVEAL_ONE ||
+        globalState.GROUP_TYPE === GROUP_TYPE.AI_REVEAL_THREE) {
+        cost = 0.2;
     }
     return cost;
 }

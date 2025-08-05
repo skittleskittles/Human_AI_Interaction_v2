@@ -14,9 +14,9 @@ const PHASE2_DURATION = 20 * 60 * 1000; // ms
 const PHASE3_DURATION = 8 * 60 * 1000; // ms
 
 // todo fsy
-// const PHASE1_DURATION = 5;
-// const PHASE2_DURATION = 10;
-// const PHASE3_DURATION = 10;
+// const PHASE1_DURATION = 5000;
+// const PHASE2_DURATION = 10 * 1000;
+// const PHASE3_DURATION = 10 * 1000;
 
 // todo fsy: NO AI version
 export const timerManager = {

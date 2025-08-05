@@ -37,6 +37,7 @@ import {
     updatePerformanceAfterSubmission,
 } from "./data/variable.js";
 import {
+    canClickAskAIBtn,
     canClickNextBtn,
     canClickRevealBtn,
     hideSubmissionResultContent,
@@ -85,9 +86,16 @@ export function bindTrialButtons() {
     document.getElementById("next-btn").addEventListener("click", () => {
         nextTrial(true);
     });
-    document
-        .getElementById("askAI-btn")
-        .addEventListener("click", showAskAIAnswers);
+
+    const askAIBtn = document.getElementById("askAI-btn")
+    askAIBtn.addEventListener("click", showAskAIAnswers);
+    askAIBtn.addEventListener("mouseenter", () => {
+        showAskAIHint("mouseenter");
+    });
+    askAIBtn.addEventListener("mouseleave", () => {
+        showAskAIHint("mouseleave");
+    });
+
 
     const revealBtn = document.getElementById("reveal-sol-btn");
     revealBtn.addEventListener("click", showAnswers);
@@ -99,6 +107,19 @@ export function bindTrialButtons() {
     });
 }
 
+function showAskAIHint(mode) {
+    if (canClickAskAIBtn()) {
+        showButtonTooltip(
+            "askAI-tooltip",
+            `You can only use AI once per problem`,
+            true,
+            mode
+        );
+    } else if (mode === "mouseleave") {
+        showButtonTooltip("askAI-tooltip", "", true, mode);
+    }
+}
+
 function showRevealSolHint(mode) {
     if (canClickRevealBtn()) {
         showButtonTooltip(
@@ -107,7 +128,7 @@ function showRevealSolHint(mode) {
             true,
             mode
         );
-    } else if (mode == "mouseleave") {
+    } else if (mode === "mouseleave") {
         showButtonTooltip("reveal-sol-tooltip", "", true, mode);
     }
 }
@@ -448,16 +469,16 @@ function showAskAIAnswers() {
     if (askAIBtn.dataset.locked === "true") {
         let tooltipText =
             remainingAskAICount() <= 0
-                ? "You’ve reached the hint limit for this problem."
+                ? "AI used -- only one use allowed per problem"
                 : "Please place all objects first.";
         if (!isAllowedAskAITrials()) {
-            tooltipText = "AI help is not available for this problem.";
+            tooltipText = "AI help is not available for this problem";
         }
         if (hasRevealedSol()) {
             tooltipText =
                 "You already revealed the solutions.<br/>Please click NEXT PROBLEM to continue.";
         }
-        if (remainingSubmissions() == 0) {
+        if (remainingSubmissions() === 0) {
             tooltipText =
                 "You're out of submissions.<br/>Please click NEXT PROBLEM to continue.";
         }
@@ -594,7 +615,6 @@ function renderTrial(trial) {
     renderAIChat();
     renderBoxesAndOptions(trial);
     renderStatements(trial.statements, trial.answer);
-    updateSideLabels(trial.front_end);
     updateTotalPassMessage();
     hideSubmissionResultContent();
     document.getElementById("reveal-sol-btn").style.display =

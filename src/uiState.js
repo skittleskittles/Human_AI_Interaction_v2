@@ -215,16 +215,23 @@ export function showButtonTooltip(
         }, 300);
     };
 
-    if (mode == "click") {
+    if (mode === "click") {
         show();
         if (!disableAutoHide) {
             setTimeout(hide, 2000); // auto hide
         }
-    } else if (mode == "mouseenter" && disableAutoHide) {
+    } else if (mode === "mouseenter" && disableAutoHide) {
         show();
-    } else if (mode == "mouseleave" && disableAutoHide) {
+    } else if (mode === "mouseleave" && disableAutoHide) {
         hide();
     }
+}
+
+export function canClickAskAIBtn() {
+    const askAIBtn = document.getElementById("askAI-btn");
+    const isDisabled = askAIBtn.classList.contains("disabled-visual");
+    const isLocked = askAIBtn.dataset.locked === "true";
+    return !(isDisabled && isLocked);
 }
 
 export function canClickRevealBtn() {

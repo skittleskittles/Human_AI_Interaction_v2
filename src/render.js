@@ -21,6 +21,7 @@ import {
   labelContainer,
   optionContainer,
 } from "./data/domElements.js";
+import {updateTotalPassMessage} from "./uiState";
 
 export function renderInstructions(instructionText) {
   let instruction;
@@ -155,6 +156,8 @@ export function renderBoxesAndOptions(questionData) {
 
     boxContainer.appendChild(boxGroup);
   });
+
+  updateSideLabels(questionData.front_end);
 
   // Step 3: Render solutions
   const solutionContainer = document.getElementById("solution-container");
