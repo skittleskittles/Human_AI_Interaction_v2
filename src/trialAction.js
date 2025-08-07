@@ -89,12 +89,12 @@ export function bindTrialButtons() {
 
     const askAIBtn = document.getElementById("askAI-btn")
     askAIBtn.addEventListener("click", showAskAIAnswers);
-    askAIBtn.addEventListener("mouseenter", () => {
-        showAskAIHint("mouseenter");
-    });
-    askAIBtn.addEventListener("mouseleave", () => {
-        showAskAIHint("mouseleave");
-    });
+    // askAIBtn.addEventListener("mouseenter", () => {
+    //     showAskAIHint("mouseenter");
+    // });
+    // askAIBtn.addEventListener("mouseleave", () => {
+    //     showAskAIHint("mouseleave");
+    // });
 
 
     const revealBtn = document.getElementById("reveal-sol-btn");
