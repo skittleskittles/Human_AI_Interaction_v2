@@ -469,7 +469,7 @@ function showAskAIAnswers() {
     if (askAIBtn.dataset.locked === "true") {
         let tooltipText =
             remainingAskAICount() <= 0
-                ? "AI used -- only one use allowed per problem"
+                ? "Limit reached: one AI use per problem."
                 : "Please place all objects first.";
         if (!isAllowedAskAITrials()) {
             tooltipText = "AI help is not available for this problem";
