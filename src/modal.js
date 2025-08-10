@@ -3,6 +3,7 @@ import { showFeedback } from "./feedback.js";
 import {
   getComprehensionTrialsNum,
   getNoAIPhaseTrialsLimit,
+  isAILimitedGroup,
   isNoAIGroup,
 } from "./data/variable.js";
 import { resetTrial } from "./trialAction.js";
@@ -173,9 +174,15 @@ export function showEnterPhase2(onCloseFunc) {
       You will have <strong>20 minutes</strong> for this phase.
     </p>`;
   if (!isNoAIGroup()) {
-    htmlContent += `<p><em>Note</em>: AI assistance is on-demand and unlimited,<br/>
+    if (isAILimitedGroup()) {
+      htmlContent += `<p><em>Note</em>: AI assistance is on-demand, limited to one use per problem,<br/>
+      with a per-use cost in this phase. Usage resets each problem.</p>`;
+    } else {
+      htmlContent += `<p><em>Note</em>: AI assistance is on-demand and unlimited,<br/>
        with a cost per use in this phase. Usage resets for each problem.</p>`;
+    }
   }
+
   showModal({
     context: "enter-phase2",
     html: htmlContent,

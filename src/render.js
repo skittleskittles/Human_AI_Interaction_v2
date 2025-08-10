@@ -8,6 +8,7 @@ import {
   getCurQuestionIndex,
   getCurQuestionData,
   calAskAICost,
+  isAILimitedGroup,
 } from "./data/variable";
 import { bindDragDropEvents } from "./dragDrop.js";
 import {
@@ -21,7 +22,7 @@ import {
   labelContainer,
   optionContainer,
 } from "./data/domElements.js";
-import {updateTotalPassMessage} from "./uiState";
+import { updateTotalPassMessage } from "./uiState";
 
 export function renderInstructions(instructionText) {
   let instruction;
@@ -81,7 +82,12 @@ export function renderAIChat() {
 }
 
 export function updateAskAICost() {
-  document.getElementById("askAI-cost").textContent = calAskAICost();
+  let htmlText = ``;
+  if (isAILimitedGroup()) {
+    htmlText += `You may use AI only once per problem.</br>`;
+  }
+  htmlText += `Each extra AI use cost ${calAskAICost()} points.`;
+  document.getElementById("askAI-remind").innerHTML = htmlText;
 }
 
 export function renderBoxesAndOptions(questionData) {
