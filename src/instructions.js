@@ -88,7 +88,8 @@ function getVideoDescription(pageId) {
             However, you must first place all objects in position before using it.</p>
         <p>Each time you use it, the AI agent will reveal the location of ${
           getGroupType() === GROUP_TYPE.AI_REVEAL_ONE ? 1 : 3
-        } randomly selected object.</p>`;
+        } randomly selected object${
+          getGroupType() === GROUP_TYPE.AI_REVEAL_ONE ? "" : "s"}.</p>`;
     }
     return `<p><strong>An AI agent is available to assist you during Phase 2 only.</strong></p>
         <p>The AI agent is available for unlimited, on-demand use for each submission. However, you must first place all objects in
