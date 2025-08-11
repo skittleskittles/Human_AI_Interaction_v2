@@ -82,7 +82,8 @@ export function redirectProlificCompleted() {
     // Default (pass attention check and finish all 20 minutes + finish survey)
     setTimeout(() => {
         window.location.replace(
-            "https://app.prolific.com/submissions/complete?cc=C14MGQ5A"
+            // "https://app.prolific.com/submissions/complete?cc=C14MGQ5A" // for experiment 1
+            "https://app.prolific.com/submissions/complete?cc=C17UY6CX"
         );
     }, 3000);
 }
@@ -91,7 +92,8 @@ export function redirectProlificBonusPayment() {
     // Bonus Payment (pass attention check and finish all 20 minutes + get good performance + finish survey)
     setTimeout(() => {
         window.location.replace(
-            "https://app.prolific.com/submissions/complete?cc=CD4KZIFK"
+            // "https://app.prolific.com/submissions/complete?cc=CD4KZIFK" // for experiment 1
+            "https://app.prolific.com/submissions/complete?cc=CRACD9I6"
         );
     }, 3000);
 }
@@ -100,7 +102,8 @@ export function redirectProlificFailedAllAttentionCheck() {
     // Fail attention check and finish all 20 minutes + finish survey
     setTimeout(() => {
         window.location.replace(
-            "https://app.prolific.com/submissions/complete?cc=C18RWIP4"
+            // "https://app.prolific.com/submissions/complete?cc=C18RWIP4" // for experiment 1
+            "https://app.prolific.com/submissions/complete?cc=CF639J0W"
         );
     }, 3000);
 }
