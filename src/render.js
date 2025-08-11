@@ -84,9 +84,12 @@ export function renderAIChat() {
 export function updateAskAICost() {
   let htmlText = ``;
   if (isAILimitedGroup()) {
-    htmlText += `You may use AI only once per problem.</br>`;
+    htmlText += `You may use AI only once per problem.</br>
+                 Using AI for a problem costs ${calAskAICost()}  points.`;
   }
+  else{
   htmlText += `Each extra AI use cost ${calAskAICost()} points.`;
+  }
   document.getElementById("askAI-remind").innerHTML = htmlText;
 }
 
