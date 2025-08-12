@@ -41,6 +41,7 @@ export const GROUP_TYPE = {
   HIGH_COST_AI: 2,
   AI_REVEAL_ONE: 3,
   AI_REVEAL_THREE: 4,
+  EXP_GROUP_THREE: 5,
 };
 export const GROUP_TYPE_NAME_MAP = {
   [GROUP_TYPE.NO_AI]: "no_ai",
@@ -48,6 +49,7 @@ export const GROUP_TYPE_NAME_MAP = {
   [GROUP_TYPE.HIGH_COST_AI]: "high_cost_ai",
   [GROUP_TYPE.AI_REVEAL_ONE]: "ai_reveal_one",
   [GROUP_TYPE.AI_REVEAL_THREE]: "ai_reveal_three",
+  [GROUP_TYPE.EXP_GROUP_THREE]: "exp_group_three",
 };
 // eg: https://xxxx?g=alp
 export const URL_GROUP_CODE_MAP = {
@@ -56,6 +58,7 @@ export const URL_GROUP_CODE_MAP = {
   gam: GROUP_TYPE.HIGH_COST_AI,
   dlta: GROUP_TYPE.AI_REVEAL_ONE,
   epsi: GROUP_TYPE.AI_REVEAL_THREE,
+  san: GROUP_TYPE.EXP_GROUP_THREE,
 };
 
 export const globalState = {
@@ -315,6 +318,9 @@ export function setGroupType(type) {
   } else if (globalState.GROUP_TYPE === GROUP_TYPE.AI_REVEAL_THREE) {
     globalState.CAN_ASK_AI_UNLIMITED = false;
     globalState.NUM_REVEAL_OBJECTS = 3;
+  } else {
+    globalState.CAN_ASK_AI_UNLIMITED = true;
+    globalState.NUM_REVEAL_OBJECTS = 1;
   }
 }
 
@@ -381,7 +387,7 @@ export function recordRevealedIndicesThisTrial(idx) {
 export function calWeightedPointIfCorrect() {
   let points = 1;
   const askAICnt = globalState.performance.curTrialAskAICount;
-  if (globalState.GROUP_TYPE === GROUP_TYPE.NO_AI) {
+  if (globalState.GROUP_TYPE === GROUP_TYPE.NO_AI || globalState.GROUP_TYPE.EXP_GROUP_THREE) {
     points = 1;
   }
   if (globalState.GROUP_TYPE === GROUP_TYPE.HIGH_COST_AI) {
@@ -403,7 +409,7 @@ export function calAskAICost() {
   let cost = 0.2;
   const askAICnt = globalState.performance.curTrialAskAICount;
 
-  if (globalState.GROUP_TYPE === GROUP_TYPE.NO_AI) {
+  if (globalState.GROUP_TYPE === GROUP_TYPE.NO_AI || globalState.GROUP_TYPE.EXP_GROUP_THREE) {
     cost = 0;
   }
   if (globalState.GROUP_TYPE === GROUP_TYPE.HIGH_COST_AI) {
@@ -525,7 +531,7 @@ export function calBonusAmount(phase) {
   let correctTrials = getPerformance().phaseWeightedCorrectTrials[phase];
 
   if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(phase)) {
-    if (phase == PHASE_NAME.PHASE2) {
+    if (phase === PHASE_NAME.PHASE2) {
       // phase2 bonus include phase1
       correctTrials +=
         getPerformance().phaseWeightedCorrectTrials[PHASE_NAME.PHASE1];
@@ -555,14 +561,14 @@ export function calBonusAmount(phase) {
 export function getBonusAmount(phase) {
   let bonusAmount = 0;
   const phaseMap = globalState.performance.phaseBonusAmount || {};
-  if (phase == "all") {
+  if (phase === "all") {
     for (const phaseName in phaseMap) {
       bonusAmount += Number(phaseMap[phaseName] || 0);
     }
   } else {
     if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(phase)) {
       bonusAmount = Number(phaseMap.phase1_2 || 0);
-    } else if (phase == PHASE_NAME.PHASE3) {
+    } else if (phase === PHASE_NAME.PHASE3) {
       bonusAmount = Number(phaseMap.phase3 || 0);
     }
   }

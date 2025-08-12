@@ -55,7 +55,6 @@ import {
   renderInstructions,
   renderStatements,
   updateAskAICost,
-  updateSideLabels,
 } from "./render.js";
 import { evaluateAnswer, getUserAnswer } from "./utils.js";
 import {

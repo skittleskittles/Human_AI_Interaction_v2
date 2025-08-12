@@ -8,7 +8,7 @@ import {
   getCurQuestionIndex,
   getCurQuestionData,
   calAskAICost,
-  isAILimitedGroup,
+  isAILimitedGroup, getGroupType, GROUP_TYPE,
 } from "./data/variable";
 import { bindDragDropEvents } from "./dragDrop.js";
 import {
@@ -82,15 +82,21 @@ export function renderAIChat() {
 }
 
 export function updateAskAICost() {
+  const askAIRemind = document.getElementById("askAI-remind");
+
+  if (getGroupType() === GROUP_TYPE.EXP_GROUP_THREE) {
+    askAIRemind.style.display = "none";
+    return;
+  }
+
+  askAIRemind.style.display = "block";
   let htmlText = ``;
   if (isAILimitedGroup()) {
-    htmlText += `You may use AI only once per problem.</br>
-                 Using AI for a problem costs ${calAskAICost()}  points.`;
+    htmlText += `You may use AI only once per problem.</br>Using AI for a problem costs ${calAskAICost()} points.`;
+  } else {
+    htmlText += `Each extra AI use cost ${calAskAICost()} points.`;
   }
-  else{
-  htmlText += `Each extra AI use cost ${calAskAICost()} points.`;
-  }
-  document.getElementById("askAI-remind").innerHTML = htmlText;
+  askAIRemind.innerHTML = htmlText;
 }
 
 export function renderBoxesAndOptions(questionData) {
