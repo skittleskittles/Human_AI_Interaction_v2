@@ -1,4 +1,4 @@
-import {getBonusAmount, globalState, GROUP_TYPE, isNoAIGroup, PHASE_NAME,} from "./data/variable";
+import {getBonusAmount, getGroupType, globalState, GROUP_TYPE, isNoAIGroup, PHASE_NAME,} from "./data/variable";
 import {User} from "./collectData";
 import {
   getCurDate,
@@ -136,7 +136,7 @@ async function submitFeedbackForm(submitButton) {
 
         if (totalBonus > 0) {
             bonusMessageContent = `Your total bonus is $${totalBonus},
-       which breaks down to $${phase1_2Bonus} for phase 1 and 2, $${phase3Bonus} for phase 3.`;
+       which breaks down to $${phase1_2Bonus} for ${getGroupType()=== GROUP_TYPE.EXP_GROUP_THREE ? 'phase1' : 'phase 1 and 2'}, $${phase3Bonus} for phase 3.`;
             thankYouMessageContent = `Thank you for participating in the game! 
 Your bonus payment will be distributed shortly.
 Now you will be redirected back to Prolific.`;

@@ -1,8 +1,8 @@
 import { clearPageContent, modalContainer } from "./data/domElements";
 import { showFeedback } from "./feedback.js";
 import {
-  getComprehensionTrialsNum,
-  getNoAIPhaseTrialsLimit,
+  getComprehensionTrialsNum, getGroupType,
+  getNoAIPhaseTrialsLimit, GROUP_TYPE,
   isAILimitedGroup,
   isNoAIGroup,
 } from "./data/variable.js";
@@ -177,6 +177,8 @@ export function showEnterPhase2(onCloseFunc) {
     if (isAILimitedGroup()) {
       htmlContent += `<p><em>Note</em>: AI assistance is on-demand, limited to one use per problem,<br/>
       with a per-use cost in this phase. Usage resets each problem.</p>`;
+    } else if (getGroupType()=== GROUP_TYPE.EXP_GROUP_THREE) {
+      htmlContent += `<p><em>Note</em>: AI assistance is available on-demand and unlimited for each problem.`;
     } else {
       htmlContent += `<p><em>Note</em>: AI assistance is on-demand and unlimited,<br/>
        with a cost per use in this phase. Usage resets for each problem.</p>`;

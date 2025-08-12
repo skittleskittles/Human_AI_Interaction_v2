@@ -387,7 +387,10 @@ export function recordRevealedIndicesThisTrial(idx) {
 export function calWeightedPointIfCorrect() {
   let points = 1;
   const askAICnt = globalState.performance.curTrialAskAICount;
-  if (globalState.GROUP_TYPE === GROUP_TYPE.NO_AI || globalState.GROUP_TYPE.EXP_GROUP_THREE) {
+  if (
+    globalState.GROUP_TYPE === GROUP_TYPE.NO_AI ||
+    globalState.GROUP_TYPE.EXP_GROUP_THREE
+  ) {
     points = 1;
   }
   if (globalState.GROUP_TYPE === GROUP_TYPE.HIGH_COST_AI) {
@@ -409,7 +412,10 @@ export function calAskAICost() {
   let cost = 0.2;
   const askAICnt = globalState.performance.curTrialAskAICount;
 
-  if (globalState.GROUP_TYPE === GROUP_TYPE.NO_AI || globalState.GROUP_TYPE.EXP_GROUP_THREE) {
+  if (
+    globalState.GROUP_TYPE === GROUP_TYPE.NO_AI ||
+    globalState.GROUP_TYPE.EXP_GROUP_THREE
+  ) {
     cost = 0;
   }
   if (globalState.GROUP_TYPE === GROUP_TYPE.HIGH_COST_AI) {
@@ -531,23 +537,30 @@ export function calBonusAmount(phase) {
   let correctTrials = getPerformance().phaseWeightedCorrectTrials[phase];
 
   if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(phase)) {
-    if (phase === PHASE_NAME.PHASE2) {
+    if (
+      phase === PHASE_NAME.PHASE2 &&
+      getGroupType() !== GROUP_TYPE.EXP_GROUP_THREE
+    ) {
       // phase2 bonus include phase1
       correctTrials +=
         getPerformance().phaseWeightedCorrectTrials[PHASE_NAME.PHASE1];
     }
 
     bonusAmount = 0.15 * correctTrials;
-    if (bonusAmount > 2) {
-      bonusAmount = 2;
-    }
+    bonusAmount = Math.min(
+      bonusAmount,
+      getGroupType() === GROUP_TYPE.EXP_GROUP_THREE ? 1.5 : 2
+    );
   }
 
-  if (phase == PHASE_NAME.PHASE3) {
-    bonusAmount = 0.18 * correctTrials;
-    if (bonusAmount > 1.5) {
-      bonusAmount = 1.5;
-    }
+  if (phase === PHASE_NAME.PHASE3) {
+    bonusAmount =
+      (getGroupType() === GROUP_TYPE.EXP_GROUP_THREE ? 0.2 : 0.18) *
+      correctTrials;
+    bonusAmount = Math.min(
+      bonusAmount,
+      getGroupType() === GROUP_TYPE.EXP_GROUP_THREE ? 2 : 1.5
+    );
   }
 
   return Number(bonusAmount.toFixed(2));
@@ -567,7 +580,14 @@ export function getBonusAmount(phase) {
     }
   } else {
     if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(phase)) {
-      bonusAmount = Number(phaseMap.phase1_2 || 0);
+      if (
+        phase === PHASE_NAME.PHASE2 &&
+        getGroupType() === GROUP_TYPE.EXP_GROUP_THREE
+      ) {
+        bonusAmount = 0;
+      } else {
+        bonusAmount = Number(phaseMap.phase1_2 || 0);
+      }
     } else if (phase === PHASE_NAME.PHASE3) {
       bonusAmount = Number(phaseMap.phase3 || 0);
     }

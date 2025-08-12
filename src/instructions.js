@@ -60,6 +60,9 @@ const instructionPageIdByGroup = {
   [GROUP_TYPE.AI_REVEAL_THREE]: [...commonPages.pageId, 8, 9, 10, 11].sort(
     (a, b) => a - b
   ),
+  [GROUP_TYPE.EXP_GROUP_THREE]: [...commonPages.pageId, 8, 10, 11].sort(
+    (a, b) => a - b
+  ),
 };
 
 const videoPageId = {
@@ -68,6 +71,7 @@ const videoPageId = {
   [GROUP_TYPE.HIGH_COST_AI]: [...commonPages.videoPageId, 8],
   [GROUP_TYPE.AI_REVEAL_ONE]: [...commonPages.videoPageId, 8],
   [GROUP_TYPE.AI_REVEAL_THREE]: [...commonPages.videoPageId, 8],
+  [GROUP_TYPE.EXP_GROUP_THREE]: [...commonPages.videoPageId, 8],
 };
 
 function getVideoDescription(pageId) {
@@ -89,7 +93,8 @@ function getVideoDescription(pageId) {
         <p>Each time you use it, the AI agent will reveal the location of ${
           getGroupType() === GROUP_TYPE.AI_REVEAL_ONE ? 1 : 3
         } randomly selected object${
-          getGroupType() === GROUP_TYPE.AI_REVEAL_ONE ? "" : "s"}.</p>`;
+        getGroupType() === GROUP_TYPE.AI_REVEAL_ONE ? "" : "s"
+      }.</p>`;
     }
     return `<p><strong>An AI agent is available to assist you during Phase 2 only.</strong></p>
         <p>The AI agent is available for unlimited, on-demand use for each submission. However, you must first place all objects in
@@ -131,7 +136,7 @@ function loadInstructionsHTML(html) {
 
 function initializeInstructionState() {
   currentPageNum = 1;
-  totalPages = isNoAIGroup() ? 10 : 12;
+  totalPages = instructionPageIdByGroup[getGroupType()].length;
   unlockedPages.clear();
 }
 
