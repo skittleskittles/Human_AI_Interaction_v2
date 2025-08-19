@@ -171,7 +171,8 @@ export function showNeedMoreTrialsPopUp() {
 export function showEnterPhase2(onCloseFunc) {
   let htmlContent = `<p>
       Now entering <strong>Phase 2</strong>.<br/>
-      You will have <strong>20 minutes</strong> for this phase.
+      You will have <strong>20 minutes</strong> for this phase ${
+        getGroupType() === GROUP_TYPE.EXP_GROUP_THREE ? " to practice your skills." : "."}
     </p>`;
   if (!isNoAIGroup()) {
     if (isAILimitedGroup()) {
