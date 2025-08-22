@@ -1,8 +1,10 @@
 import { clearPageContent, modalContainer } from "./data/domElements";
 import { showFeedback } from "./feedback.js";
 import {
-  getComprehensionTrialsNum, getGroupType,
-  getNoAIPhaseTrialsLimit, GROUP_TYPE,
+  getComprehensionTrialsNum,
+  getGroupType,
+  getNoAIPhaseTrialsLimit,
+  GROUP_TYPE,
   isAILimitedGroup,
   isNoAIGroup,
 } from "./data/variable.js";
@@ -171,14 +173,17 @@ export function showNeedMoreTrialsPopUp() {
 export function showEnterPhase2(onCloseFunc) {
   let htmlContent = `<p>
       Now entering <strong>Phase 2</strong>.<br/>
-      You will have <strong>20 minutes</strong> for this phase ${
-        getGroupType() === GROUP_TYPE.EXP_GROUP_THREE ? " to practice your skills." : "."}
+      You will have <strong>20 minutes</strong> ${
+        getGroupType() === GROUP_TYPE.EXP_GROUP_THREE
+          ? "to practice your skills."
+          : "for this phase."
+      }
     </p>`;
   if (!isNoAIGroup()) {
     if (isAILimitedGroup()) {
       htmlContent += `<p><em>Note</em>: AI assistance is on-demand, limited to one use per problem,<br/>
       with a per-use cost in this phase. Usage resets each problem.</p>`;
-    } else if (getGroupType()=== GROUP_TYPE.EXP_GROUP_THREE) {
+    } else if (getGroupType() === GROUP_TYPE.EXP_GROUP_THREE) {
       htmlContent += `<p><em>Note</em>: AI assistance is available on-demand and unlimited for each problem.`;
     } else {
       htmlContent += `<p><em>Note</em>: AI assistance is on-demand and unlimited,<br/>
