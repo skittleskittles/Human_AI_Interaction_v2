@@ -83,7 +83,8 @@ export function redirectProlificCompleted() {
     setTimeout(() => {
         window.location.replace(
             // "https://app.prolific.com/submissions/complete?cc=C14MGQ5A" // for experiment 1
-            "https://app.prolific.com/submissions/complete?cc=C17UY6CX"
+            // "https://app.prolific.com/submissions/complete?cc=C17UY6CX" // for experiment 2
+            "https://app.prolific.com/submissions/complete?cc=CLFNXIO2"
         );
     }, 3000);
 }
@@ -93,7 +94,8 @@ export function redirectProlificBonusPayment() {
     setTimeout(() => {
         window.location.replace(
             // "https://app.prolific.com/submissions/complete?cc=CD4KZIFK" // for experiment 1
-            "https://app.prolific.com/submissions/complete?cc=CRACD9I6"
+            // "https://app.prolific.com/submissions/complete?cc=CRACD9I6" // fpr experiment 2
+            "https://app.prolific.com/submissions/complete?cc=C1PFBJ8P"
         );
     }, 3000);
 }
@@ -103,7 +105,8 @@ export function redirectProlificFailedAllAttentionCheck() {
     setTimeout(() => {
         window.location.replace(
             // "https://app.prolific.com/submissions/complete?cc=C18RWIP4" // for experiment 1
-            "https://app.prolific.com/submissions/complete?cc=CF639J0W"
+            // "https://app.prolific.com/submissions/complete?cc=CF639J0W" // for experiment 2
+            "https://app.prolific.com/submissions/complete?cc=C1AXOJWL"
         );
     }, 3000);
 }
