@@ -1,3 +1,7 @@
+import Papa from "papaparse";
+import { checkUserParticipation } from "./checkUserStatus.js";
+import { User } from "./collectData.js";
+import { showConsent } from "./consent.js";
 import { gameContainer } from "./data/domElements.js";
 import {
   getGroupType,
@@ -16,13 +20,9 @@ import {
   shouldShowComprehensionCheck,
   URL_GROUP_CODE_MAP,
 } from "./data/variable.js";
-import { User } from "./collectData.js";
 import { loadModal, showEnterComprehensionTrialsPopUp } from "./modal.js";
 import { bindTrialButtons, nextTrial } from "./trialAction.js";
-import Papa from "papaparse";
 import { generateUID, getUrlParameters, shuffleArray } from "./utils.js";
-import { showConsent } from "./consent.js";
-import { checkUserParticipation } from "./checkUserStatus.js";
 
 async function initExperimentEnvironment(shouldShuffle = false) {
   try {

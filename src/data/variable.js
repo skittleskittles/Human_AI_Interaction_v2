@@ -516,8 +516,12 @@ export function updatePerformanceAfterSubmission(correctChoice, score) {
 
     // calculate bonus
     const bonusAmount = calBonusAmount(getCurPhase());
-    if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(getCurPhase())) {
+    if (getCurPhase() === PHASE_NAME.PHASE1) {
       globalState.performance.phaseBonusAmount.phase1_2 = bonusAmount;
+    } else if (getCurPhase() === PHASE_NAME.PHASE2) {
+      if (getGroupType() !== GROUP_TYPE.EXP_GROUP_THREE) {
+        globalState.performance.phaseBonusAmount.phase1_2 = bonusAmount;
+      }
     } else if (getCurPhase() === PHASE_NAME.PHASE3) {
       globalState.performance.phaseBonusAmount.phase3 = bonusAmount;
     }
@@ -536,24 +540,24 @@ export function calBonusAmount(phase) {
   let bonusAmount = 0;
   let correctTrials = getPerformance().phaseWeightedCorrectTrials[phase];
 
-  if ([PHASE_NAME.PHASE1, PHASE_NAME.PHASE2].includes(phase)) {
-    if (
-      phase === PHASE_NAME.PHASE2 &&
-      getGroupType() !== GROUP_TYPE.EXP_GROUP_THREE
-    ) {
-      // phase2 bonus include phase1
-      correctTrials +=
-        getPerformance().phaseWeightedCorrectTrials[PHASE_NAME.PHASE1];
-    }
-
+  if (phase === PHASE_NAME.PHASE1) {
     bonusAmount = 0.15 * correctTrials;
     bonusAmount = Math.min(
       bonusAmount,
       getGroupType() === GROUP_TYPE.EXP_GROUP_THREE ? 1.5 : 2
     );
-  }
-
-  if (phase === PHASE_NAME.PHASE3) {
+  } else if (phase === PHASE_NAME.PHASE2) {
+    if (getGroupType() !== GROUP_TYPE.EXP_GROUP_THREE) {
+      // phase2 bonus include phase1
+      correctTrials +=
+        getPerformance().phaseWeightedCorrectTrials[PHASE_NAME.PHASE1];
+    }
+    bonusAmount = 0.15 * correctTrials;
+    bonusAmount = Math.min(
+      bonusAmount,
+      getGroupType() === GROUP_TYPE.EXP_GROUP_THREE ? 1.5 : 2
+    );
+  } else if (phase === PHASE_NAME.PHASE3) {
     bonusAmount =
       (getGroupType() === GROUP_TYPE.EXP_GROUP_THREE ? 0.2 : 0.18) *
       correctTrials;

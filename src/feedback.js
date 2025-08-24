@@ -1,13 +1,13 @@
-import {getBonusAmount, getGroupType, globalState, GROUP_TYPE, isNoAIGroup, PHASE_NAME,} from "./data/variable";
-import {User} from "./collectData";
+import { User } from "./collectData";
+import { getBonusAmount, getGroupType, globalState, GROUP_TYPE, isNoAIGroup, PHASE_NAME, } from "./data/variable";
+import { saveFeedbackData } from "./firebase/saveData2Firebase";
+import { showEndGameFailedAllAttentionCheckPopUp } from "./modal";
 import {
-  getCurDate,
-  redirectProlificBonusPayment,
-  redirectProlificCompleted,
-  redirectProlificFailedAllAttentionCheck,
+    getCurDate,
+    redirectProlificBonusPayment,
+    redirectProlificCompleted,
+    redirectProlificFailedAllAttentionCheck,
 } from "./utils";
-import {saveFeedbackData} from "./firebase/saveData2Firebase";
-import {showEndGameFailedAllAttentionCheckPopUp} from "./modal";
 
 export function showFeedback() {
     fetch("feedback.html")
@@ -135,8 +135,8 @@ async function submitFeedbackForm(submitButton) {
         const phase3Bonus = getBonusAmount(PHASE_NAME.PHASE3);
 
         if (totalBonus > 0) {
-    //         bonusMessageContent = `Your total bonus is $${totalBonus},
-    //    which breaks down to $${phase1_2Bonus} for ${getGroupType()=== GROUP_TYPE.EXP_GROUP_THREE ? 'phase1' : 'phase 1 and 2'}, $${phase3Bonus} for phase 3.`;
+            bonusMessageContent = `Your total bonus is $${totalBonus},
+       which breaks down to $${phase1_2Bonus} for ${getGroupType()=== GROUP_TYPE.EXP_GROUP_THREE ? 'phase1' : 'phase 1 and 2'}, $${phase3Bonus} for phase 3.`;
             thankYouMessageContent = `Thank you for participating in the game! 
 Your bonus payment will be distributed shortly.
 Now you will be redirected back to Prolific.`;
