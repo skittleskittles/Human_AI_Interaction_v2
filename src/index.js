@@ -65,11 +65,11 @@ async function initExperimentEnvironment(shouldShuffle = false) {
           const shuffleMaxId = getShuffleMaxId();
 
           const trialsToShuffle = rawData.filter(
-            (row) => Number(row.id) >= 0 && Number(row.id) <= shuffleMaxId
+            (row) => Number(row.id) >= 0 && Number(row.id) <= shuffleMaxId,
           );
 
           const trialsToKeep = rawData.filter(
-            (row) => Number(row.id) > shuffleMaxId
+            (row) => Number(row.id) > shuffleMaxId,
           );
 
           const shuffledTrials = shuffleArray(trialsToShuffle);
@@ -129,18 +129,18 @@ async function initExperimentEnvironment(shouldShuffle = false) {
         // for AI version: shuffle questions by phase
         phaseState.PHASE_QUESTIONS.phase1 = shuffleArray(
           parsedData.filter(
-            (row) => row.question_id >= 0 && row.question_id <= 9
-          )
+            (row) => row.question_id >= 0 && row.question_id <= 9,
+          ),
         );
         phaseState.PHASE_QUESTIONS.phase2 = shuffleArray(
           parsedData.filter(
-            (row) => row.question_id >= 10 && row.question_id <= 39
-          )
+            (row) => row.question_id >= 10 && row.question_id <= 39,
+          ),
         );
         phaseState.PHASE_QUESTIONS.phase3 = shuffleArray(
           parsedData.filter(
-            (row) => row.question_id >= 40 && row.question_id <= 49
-          )
+            (row) => row.question_id >= 40 && row.question_id <= 49,
+          ),
         );
         phaseState.PHASE_QUESTIONS.extra = parsedData
           .filter((row) => row.question_id >= 50)
@@ -159,7 +159,7 @@ async function initExperimentEnvironment(shouldShuffle = false) {
 
 export async function startExperiment(
   skipConsent = false,
-  skipComprehension = false
+  skipComprehension = false,
 ) {
   if (!skipConsent) {
     checkUserParticipation();
@@ -180,7 +180,7 @@ async function continueExperiment(skipConsent, skipComprehension) {
   }
 
   setCurPhase(
-    skipComprehension ? PHASE_NAME.PHASE1 : PHASE_NAME.COMPREHENSION_CHECK
+    skipComprehension ? PHASE_NAME.PHASE1 : PHASE_NAME.COMPREHENSION_CHECK,
   );
 
   gameContainer.style.display = "flex";
